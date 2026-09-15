@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#08764f">
+  <meta name="description" content="Calculadora de apoio à nutrição parenteral neonatal. Processamento local, sem histórico de casos.">
+  <meta name="referrer" content="no-referrer">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="NP_NEO by Prof. Jeffe">
+  <meta name="author" content="Jefferson Guilherme">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; worker-src 'self'">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./assets/icon-192.png">
+  <link rel="apple-touch-icon" href="./assets/icon-192.png">
+  <link rel="stylesheet" href="./styles.css">
+  <title>NP_NEO by Prof. Jeffe</title>
+</head>
+<body>
+  <div id="npp-app">
+    <header class="app-header">
+      <div class="brand-row"><div class="brand"><img class="brand-logo" src="./assets/uea-logo.png" alt="UEA — Universidade do Estado do Amazonas" width="267" height="36"><div><h1>NP_NEO <span class="brand-author">by Prof. Jeffe</span></h1><div class="brand-subtitle">Calculadora de nutrição parenteral</div></div></div><span class="version-label">Avaliação</span></div>
+      <div class="tabs" role="tablist" aria-label="Calculadora">
+        <button id="tab-parameters" role="tab" aria-controls="parameters" aria-selected="true" type="button">Parâmetros</button>
+        <button id="tab-results" role="tab" aria-controls="results" aria-selected="false" type="button">Resultado</button>
+      </div>
+    </header>
+    <main>
+      <section id="parameters" role="tabpanel" aria-labelledby="tab-parameters">
+        <form id="npp-form" autocomplete="off" novalidate>
+          <section class="section"><div class="section-inner">
+            <h2><span class="number">01</span> Dados para o cálculo</h2>
+            <div class="field-grid">
+              <label class="field">Peso atual<div class="input-box"><input id="weight" name="weight" inputmode="decimal" type="text" placeholder="0,000" required aria-label="Peso atual em kg"><span class="unit">kg</span></div></label>
+              <label class="field">Dia de vida<div class="input-box"><input id="day" name="day" inputmode="numeric" type="text" placeholder="1" required aria-label="Dia de vida"><span class="unit">dia</span></div></label>
+              <div class="field full"><span>Idade gestacional ao nascer</span><div class="input-box"><input id="ga" inputmode="numeric" type="text" placeholder="Semanas" aria-label="Idade gestacional em semanas" required><span class="unit">sem</span><input id="ga-days" inputmode="numeric" type="text" value="0" aria-label="Dias adicionais de gestação"><span class="unit">dias</span></div></div>
+              <fieldset class="field full access-field"><legend>Acesso venoso</legend><div class="access"><label><input type="radio" name="access" value="central"><span>Central</span></label><label><input type="radio" name="access" value="peripheral"><span>Periférico</span></label></div></fieldset>
+            </div><p class="help">O dia do nascimento é o 1º dia de vida.</p>
+          </div></section>
+          <section class="section"><div class="section-inner"><h2><span class="number">02</span> Volume e macronutrientes</h2>
+            <label class="field">Taxa hídrica destinada à NPP<div class="input-box"><input id="fluid" inputmode="decimal" type="text" placeholder="0,0" required aria-label="Taxa hídrica destinada à NPP"><span class="unit">mL/kg/dia</span></div></label>
+            <p class="help">Infusão em 24 horas · água para injeção q.s.p.</p><div id="macros"></div>
+          </div></section>
+          <details class="section"><summary><h2><span class="number">03</span> Eletrólitos</h2><span aria-hidden="true">⌄</span></summary><div class="section-inner" id="electrolytes"></div></details>
+          <details class="section"><summary><h2><span class="number">04</span> Vitaminas e oligoelementos</h2><span aria-hidden="true">⌄</span></summary><div class="section-inner" id="micros"></div></details>
+          <div id="form-errors" class="notice danger" role="alert" hidden></div>
+          <button class="primary" type="submit">Calcular NPP <span aria-hidden="true">→</span></button>
+        </form>
+      </section>
+      <section id="results" role="tabpanel" aria-labelledby="tab-results" hidden>
+        <h2 class="page-title">Resultado do cálculo</h2>
+        <p class="caption">Composição da NPP · 24 horas</p>
+        <div id="empty-result" class="section section-inner">Preencha os parâmetros e selecione <strong>Calcular NPP</strong>.</div>
+        <div id="calculated-result" hidden>
+          <div id="result-context" class="context"></div>
+          <div id="result-alerts" aria-live="polite"></div>
+          <div id="access-alert" class="notice danger" role="alert" hidden></div>
+          <div class="table-wrap"><table aria-label="Composição calculada da NPP"><thead><tr><th>Componente / quantidade</th><th>Volume (mL)</th></tr></thead><tbody id="result-rows"></tbody></table></div>
+          <div id="result-summary" class="summary"></div>
+          <div id="acknowledgements"></div>
+          <button id="export-pdf" class="primary" type="button">Exportar PDF</button>
+          <p id="pdf-status" class="help" role="status"></p>
+          <a id="pdf-download" class="download-link" hidden>Baixar relatório em PDF</a>
+          <button id="edit-parameters" class="secondary" type="button">Revisar parâmetros</button>
+        </div>
+      </section>
+      <footer class="app-footer">
+        <p>Versão de avaliação · conferir os resultados antes do uso assistencial.</p>
+        <span id="offline-status" role="status">Preparando uso offline…</span>
+        <button id="install-app" type="button" class="text-button" hidden>Instalar no celular</button>
+        <button id="install-help-button" type="button" class="text-button">Como instalar</button>
+        <p id="install-help" hidden>No iPhone: abra este link no Safari, toque em Compartilhar e em Adicionar à Tela de Início. No Android: abra no Chrome e use Instalar app ou Adicionar à tela inicial.</p>
+        <button id="update-app" type="button" class="text-button" hidden>Atualização disponível · reiniciar</button>
+        <details class="privacy"><summary>Privacidade e dados</summary><p>Parâmetros, cálculos e PDFs são processados neste aparelho. O app não cria histórico de casos nem envia esses campos a um servidor. Fechar ou recarregar a página descarta os dados do formulário. O PDF salvo ou compartilhado fica no destino escolhido por você. A hospedagem e o acesso ao link podem gerar registros técnicos do provedor.</p></details>
+        <span>NP_NEO by Prof. Jeffe · versão <span id="app-version"></span></span>
+      </footer>
+    </main>
+  </div>
+  <script src="./vendor/pdf-lib.min.js" defer></script>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
