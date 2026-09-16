@@ -1,6 +1,6 @@
 # NP_NEO by Prof. Jeffe
 
-Calculadora de apoio à nutrição parenteral neonatal e hidratação venosa. Versão de avaliação 0.2.1.
+Calculadora de apoio à nutrição parenteral neonatal e hidratação venosa. Versão de avaliação 0.3.0.
 
 O médico informa os parâmetros; o app calcula volumes e gera um relatório PDF no próprio aparelho. Não há cadastro de pacientes nem histórico de casos.
 
@@ -67,6 +67,28 @@ Vazão (mL/h) = VT / 24
 
 As comparações de viabilidade usam aritmética decimal racional, sem arredondamento intermediário. VT, vazão e volumes dos componentes são exibidos com uma casa decimal, arredondados para cima somente na apresentação; os cálculos internos preservam a precisão completa. SG 5% completa o VT. A oferta deve ser conferida após o arredondamento de preparo.
 
-Não há composição quando os eletrólitos consomem todo o VT ou quando a VIG exige SG 5% ou SG 50% negativo. A faixa possível informada é uma restrição matemática das duas soluções, não uma meta clínica. O módulo não acrescenta limites de dose, regras de acesso ou validação de compatibilidade físico-química da mistura. Formulários e resultados da NP e da HV são independentes. A exportação PDF existente continua vinculada à NP.
+Não há composição quando os eletrólitos consomem todo o VT ou quando a VIG exige SG 5% ou SG 50% negativo. A faixa possível informada é uma restrição matemática das duas soluções, não uma meta clínica. O módulo não acrescenta limites de dose, regras de acesso ou validação de compatibilidade físico-química da mistura. Formulários e resultados da NP e da HV são independentes. A NP individualizada e a NP padrão possuem exportação PDF independente.
 
 Verificação local: 177 testes aprovados, incluindo os 124 anteriores, 46 testes novos do motor de HV e 7 novos fluxos de interface simulada. Consulte `RELATORIO_HIDRATACAO_VENOSA.md` para o registro da entrega.
+
+### NP padrão (0.3.0)
+
+A quarta aba usa Numeta G13%E, três câmaras ativadas (300 mL), sem diluição.
+Entradas: peso, dia de vida, acesso e taxa destinada ao Numeta (mL/kg/dia)
+ou proteína (g/kg/dia). No segundo modo, taxa = proteína × 300 / 9,4.
+As ofertas são calculadas a partir dos valores por bolsa inteira; não se usa
+3,1 g/100 mL arredondado para inverter a dose. Volume = taxa × peso;
+vazão média = volume / 24. Resultados têm precisão interna completa e duas
+casas na exibição. Não se aplica o arredondamento para cima exclusivo da HV.
+
+A apresentação acompanha a NP individualizada: composição, contexto,
+resumo e detalhamento de ofertas. A exportação PDF inclui composição, indicadores fixos e variáveis, ofertas
+e alertas. Entradas alteradas invalidam o PDF e bloqueios impedem exportar. Vitaminas, oligoelementos, diluição e outros aportes não são calculados.
+Acesso periférico e volume acima do máximo de bula impedem apresentar o texto
+de prescrição, mantendo os cálculos visíveis para revisão. Os alertas do projeto
+sobre proteína e lipídios são sinalizados separadamente dos limites de bula.
+
+Fonte da composição e limites: Baxter, SmPC Numeta G13%E, atualizado em
+19/05/2026, seções 2 e 4.2; consulta em 16/09/2026:
+https://www.medicines.org.uk/emc/product/7400/smpc
+A composição deverá ser confrontada com a apresentação local antes da liberação.

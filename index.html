@@ -22,9 +22,10 @@
     <header class="app-header">
       <div class="brand-row"><div class="brand"><img class="brand-logo" src="./assets/uea-logo.png" alt="UEA — Universidade do Estado do Amazonas" width="267" height="36"><div><h1>NP_NEO <span class="brand-author">by Prof. Jeffe</span></h1><div class="brand-subtitle">Calculadora de nutrição parenteral</div></div></div><span class="version-label">Avaliação</span></div>
       <div class="tabs" role="tablist" aria-label="Calculadora">
-        <button id="tab-parameters" role="tab" aria-controls="parameters" aria-selected="true" type="button">Parâmetros</button>
-        <button id="tab-results" role="tab" aria-controls="results" aria-selected="false" type="button">Resultado</button>
-        <button id="tab-hydration" role="tab" aria-controls="hydration" aria-selected="false" type="button">Hidratação venosa</button>
+        <button id="tab-parameters" role="tab" aria-controls="parameters" aria-selected="true" type="button" title="Nutrição parenteral individualizada">NP ind</button>
+        <button id="tab-results" role="tab" aria-controls="results" aria-selected="false" type="button">Resultados</button>
+        <button id="tab-hydration" role="tab" aria-controls="hydration" aria-selected="false" type="button" title="Hidratação venosa">HV</button>
+        <button id="tab-standard" role="tab" aria-controls="standard" aria-selected="false" type="button">NP padrão</button>
       </div>
     </header>
     <main>
@@ -112,6 +113,38 @@
             <p class="help">O volume dos eletrólitos está incluído no VT. A glicose calculada inclui SG 5% e SG 50%. VT, vazão e volumes são exibidos com uma casa decimal, arredondados para cima apenas na apresentação; os cálculos internos preservam a precisão completa. SG 5% completa o VT. Confira a oferta após o arredondamento de preparo.</p>
           </div>
         </section>
+      </section>
+      <section id="standard" role="tabpanel" aria-labelledby="tab-standard" hidden>
+        <h2 class="page-title">Nutrição parenteral padrão</h2>
+        <p class="caption">Numeta G13%E · bolsa de 300 mL · três câmaras ativadas · sem diluição</p>
+        <form id="std-form" autocomplete="off" novalidate class="section section-inner">
+          <div class="field-grid">
+            <label class="field">Peso atual (kg)<div class="input-box"><input id="std-weight" type="text" inputmode="decimal" required></div></label>
+            <label class="field">Dia de vida<div class="input-box"><input id="std-day" type="text" inputmode="numeric" required></div></label>
+            <label class="field full">Calcular a partir de<select id="std-mode" class="hv-select"><option value="fluid">Taxa hídrica (mL/kg/dia)</option><option value="protein">Proteína (g/kg/dia)</option></select></label>
+            <label class="field full"><span id="std-value-label">Taxa hídrica destinada ao Numeta</span><div class="input-box"><input id="std-value" type="text" inputmode="decimal" required><span id="std-unit" class="unit">mL/kg/dia</span></div></label>
+            <label class="field full">Acesso venoso<select id="std-access" class="hv-select" required><option value="">Selecione</option><option value="central">Central</option><option value="peripheral">Periférico</option></select></label>
+          </div>
+          <p class="help">Informe somente a taxa destinada ao Numeta. Outros líquidos e dieta não estão incluídos. Proteína corresponde aos aminoácidos da bolsa.</p>
+          <div id="std-errors" class="notice danger" role="alert" hidden></div>
+          <button type="submit" class="primary">Calcular NP padrão</button>
+        </form>
+        <div id="std-result" hidden aria-live="polite">
+          <h3 id="std-status"></h3>
+          <p id="std-prescription" class="section section-inner"></p>
+          <div id="std-context" class="context"></div>
+          <div class="table-wrap"><table aria-label="Prescrição de NP padrão"><thead><tr><th>Componente / quantidade</th><th>Volume (mL)</th></tr></thead><tbody id="std-prescription-rows"></tbody></table></div>
+          <div id="std-summary" class="summary"></div>
+          <div id="std-alerts"></div>
+          <details class="section offers"><summary>Conferir ofertas de nutrientes <span aria-hidden="true">⌄</span></summary><table class="standard-table" aria-label="Ofertas calculadas do Numeta"><thead><tr><th>Componente</th><th>Por kg/dia</th><th>Total diário</th></tr></thead><tbody id="std-rows"></tbody></table></details>
+          <p class="help">Cálculo com precisão interna completa; exibição com duas casas decimais. A vazão média arredondada × 24 pode diferir do volume diário. A programação deve considerar a progressão e redução da infusão.</p>
+          <p class="notice">Complementação pendente: vitaminas e oligoelementos não estão incluídos neste cálculo. Avaliar separadamente doses, compatibilidade e demais fontes de nutrientes.</p>
+          <button id="std-export" class="primary" type="button" disabled>Exportar PDF</button>
+          <p id="std-pdf-status" class="help" role="status"></p>
+          <a id="std-pdf-download" class="download-link" hidden>Baixar relatório em PDF</a>
+          <p class="help">Uso com fotoproteção da bolsa e equipo; filtro de 1,2 µm recomendado. Conferir condições clínicas e laboratoriais antes da prescrição.</p>
+        </div>
+        <p class="help">Base: composição integral da bolsa (9,4 g de aminoácidos/300 mL). <a href="https://www.medicines.org.uk/emc/product/7400/smpc" target="_blank" rel="noopener noreferrer">Bula técnica Baxter — Numeta G13%E</a>.</p>
       </section>
       <footer class="app-footer">
         <p>Versão de avaliação · conferir os resultados antes do uso assistencial.</p>

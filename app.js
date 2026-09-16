@@ -1,3 +1,4 @@
+import {initStandard} from './standard-ui.js';
 import {calculate,parseNumber,round1,formatVolume,VERSION} from './engine.js';
 import {createReport} from './pdf.js';
 import {macroReference,formatAlertNumber} from './alerts.js';
@@ -31,12 +32,12 @@ function updateRules(){
   $('timing-oligo').textContent=Number.isFinite(day)&&day<8?'Não será incluído antes do 8º dia de vida.':'A partir do 8º dia de vida';
 }
 function invalidate(){result=null;downloadResult=null;$('calculated-result').hidden=true;$('empty-result').hidden=false;$('empty-result').textContent='Calcule novamente para conferir os parâmetros atuais.';$('pdf-download').hidden=true;$('pdf-status').textContent='';if(pdfUrl){URL.revokeObjectURL(pdfUrl);pdfUrl=null;}}
-const tabNames=['parameters','results','hydration'];
+const tabNames=['parameters','results','hydration','standard'];
 function view(name){for(const tab of tabNames){$(tab).hidden=name!==tab;$('tab-'+tab).setAttribute('aria-selected',String(name===tab));$('tab-'+tab).tabIndex=name===tab?0:-1;}window.scrollTo({top:0,behavior:'instant'});}
 for(const name of tabNames)$('tab-'+name).addEventListener('click',()=>view(name));
 $('edit-parameters').addEventListener('click',()=>view('parameters'));
 document.querySelectorAll('.tabs button').forEach((button,index)=>button.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();const target=e.key==='Home'?0:e.key==='End'?tabNames.length-1:(index+(e.key==='ArrowRight'?1:-1)+tabNames.length)%tabNames.length;view(tabNames[target]);$('tab-'+tabNames[target]).focus();}}));
-$('tab-results').tabIndex=-1;$('tab-hydration').tabIndex=-1;
+for(const name of tabNames.slice(1))$('tab-'+name).tabIndex=-1;
 document.querySelectorAll('[data-omit]').forEach(c=>c.addEventListener('change',()=>{const row=c.closest('[data-dose]');row.classList.toggle('disabled',c.checked);row.querySelectorAll('.dose-controls input,.dose-controls select').forEach(x=>x.disabled=c.checked);updateRules();}));
 $('npp-form').addEventListener('input',()=>{invalidate();updateRules();});$('npp-form').addEventListener('change',()=>{invalidate();updateRules();});
 function collect(){const input={};for(const id of ['weight','day','fluid','aa','lip','vig','na','k','ca','mg','p','seDose'])input[id]=$(id).value;input.gaWeeks=$('ga').value;input.gaDays=$('ga-days').value;input.access=document.querySelector('[name="access"]:checked')?.value;input.naSalt=$('salt-na').value;input.pSalt=$('salt-p').value;input.omit={};document.querySelectorAll('[data-omit]').forEach(c=>input.omit[c.dataset.omit]=c.checked);return input;}
@@ -84,3 +85,5 @@ $('update-app').addEventListener('click',()=>{if(!confirm('Reiniciar para atuali
 const hydrationUI=initHydration(document);
 window.addEventListener('pageshow',e=>{if(e.persisted){$('npp-form').reset();invalidate();updateRules();hydrationUI.reset();}});
 updateRules();
+
+initStandard(document);

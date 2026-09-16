@@ -20,3 +20,13 @@ test('PDF rejeita o bloqueio periférico já existente',async()=>{
   const result=calculate({...base,access:'peripheral'});
   await assert.rejects(()=>createReport(result),/not exportable/);
 });
+
+test('PDF Numeta inclui ofertas e mantém autoria; bloqueios não exportam',async()=>{
+ const {calculateStandard}=await import('../standard.js');
+ const {createStandardReport}=await import('../standard-pdf.js');
+ const r=calculateStandard({weight:.8,day:1,mode:'protein',value:3.5,access:'central'});
+ const bytes=await createStandardReport(r);const doc=await PDFLib.PDFDocument.load(bytes);
+ assert.equal(doc.getPageCount(),2);assert.equal(doc.getAuthor(),'Jefferson Guilherme');
+ await assert.rejects(()=>createStandardReport({...r,blocks:['Acesso periférico']}),/not exportable/);
+ await assert.rejects(()=>createStandardReport({ok:false}),/not exportable/);
+});

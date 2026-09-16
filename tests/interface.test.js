@@ -5,6 +5,7 @@ import vm from 'node:vm';
 import {parseHTML} from 'linkedom';
 import * as engine from '../engine.js';
 import {macroReference,formatAlertNumber} from '../alerts.js';
+import {initStandard} from '../standard-ui.js';
 import {initHydration} from '../hydration-ui.js';
 
 // Executa o app real em um DOM simulado; não substitui a revisão visual em navegador.
@@ -14,12 +15,12 @@ function openApp() {
   const {document,window}=parseHTML(html);
   window.HTMLElement.prototype.scrollIntoView=function(){};
   const context={document,window:{addEventListener(){},scrollTo(){}},navigator:{},
-    console,URL,Blob,MessageChannel,...engine,macroReference,formatAlertNumber,initHydration,
+    console,URL,Blob,MessageChannel,...engine,macroReference,formatAlertNumber,initHydration,initStandard,
     createReport:async()=>new Uint8Array()};
   vm.runInNewContext(source,context);
   // O DOM simulado não seleciona implicitamente a primeira opção como o navegador.
   for(const select of document.querySelectorAll('select'))select.firstElementChild.selected=true;
-  const set=(id,value)=>{const input=document.getElementById(id);input.value=String(value);input.dispatchEvent(new window.Event('input',{bubbles:true}));};
+  const set=(id,value)=>{const input=document.getElementById(id);if(input.tagName==='SELECT'){for(const option of input.options)option.removeAttribute('selected');Array.from(input.options).find(option=>option.value===String(value)).selected=true;}else input.value=String(value);input.dispatchEvent(new window.Event('input',{bubbles:true}));};
   const access=value=>{for(const el of document.querySelectorAll('[name="access"]')){el.checked=el.value===value;if(el.checked)el.setAttribute('checked','');else el.removeAttribute('checked');}document.getElementById('npp-form').dispatchEvent(new window.Event('change',{bubbles:true}));};
   for(const [id,value] of Object.entries({weight:'0,8',day:1,ga:27,'ga-days':0,fluid:200,aa:2,lip:2,vig:5,na:0,k:0,ca:0,mg:0,p:0,seDose:6}))set(id,value);
   access('central');
@@ -128,11 +129,22 @@ test('interface HV: formulário independente preserva resultado e exportação d
   assert.equal(app.el('hv-result').hidden,true);assert.equal(app.el('hydration').hidden,true);
 });
 
-test('interface: teclado percorre as três abas, incluindo início, fim e retorno',()=>{
+test('interface: teclado percorre as quatro abas, incluindo início, fim e retorno',()=>{
   const app=openApp();
   const key=(id,value)=>{const e=new app.window.Event('keydown',{bubbles:true,cancelable:true});Object.defineProperty(e,'key',{value});app.el(id).dispatchEvent(e);};
-  key('tab-parameters','End');assert.equal(app.el('hydration').hidden,false);
-  key('tab-hydration','ArrowRight');assert.equal(app.el('parameters').hidden,false);
-  key('tab-parameters','ArrowLeft');assert.equal(app.el('hydration').hidden,false);
-  key('tab-hydration','Home');assert.equal(app.el('parameters').hidden,false);
+  key('tab-parameters','End');assert.equal(app.el('standard').hidden,false);
+  key('tab-standard','ArrowRight');assert.equal(app.el('parameters').hidden,false);
+  key('tab-parameters','ArrowLeft');assert.equal(app.el('standard').hidden,false);
+  key('tab-standard','Home');assert.equal(app.el('parameters').hidden,false);
+});
+
+test('interface: NP padrão calcula por taxa, troca para proteína e invalida saída',()=>{
+ const app=openApp();app.dispatch('tab-standard','click');
+ for(const [id,value] of Object.entries({'std-weight':'0,8','std-day':2,'std-value':100,'std-access':'central'}))app.set(id,value);
+ app.dispatch('std-form','submit');assert.equal(app.el('std-errors').hidden,true);assert.equal(app.el('std-result').hidden,false);
+ assert.match(app.el('std-prescription').textContent,/80,00 mL/);assert.equal(app.el('std-export').disabled,false);assert.match(app.el('std-summary').textContent,/Concentração de glicose13,33%/);
+ app.set('std-mode','protein');app.dispatch('std-mode','change');assert.equal(app.el('std-result').hidden,true);assert.equal(app.el('std-value').value,'');assert.equal(app.el('std-export').disabled,true);assert.equal(app.el('std-pdf-download').hidden,true);
+ app.set('std-value',3);app.dispatch('std-form','submit');assert.match(app.el('std-prescription').textContent,/76,60 mL/);
+ app.set('std-access','peripheral');app.dispatch('std-form','submit');assert.match(app.el('std-status').textContent,/bloqueada/);assert.equal(app.el('std-export').disabled,true);
+ app.set('std-weight','');app.dispatch('std-form','submit');assert.equal(app.el('std-result').hidden,true);assert.equal(app.el('std-errors').hidden,false);
 });
