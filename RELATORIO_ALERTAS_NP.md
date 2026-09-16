@@ -2,11 +2,11 @@
 
 Data: 16/09/2026. Repositório: https://github.com/jeffeped/NP_NEO.
 
-**Estado: implementado e testado na cópia local do repositório; não enviado ao GitHub.** A integração recusou a criação de uma branch de backup com HTTP 403, “Resource not accessible by integration”. Nenhum arquivo remoto foi alterado. A versão publicada observada no navegador permanece 0.1.2.
+**Estado: versão 0.1.3 enviada ao GitHub e publicada pelo GitHub Pages em 16/09/2026.** A instalação do ChatGPT Codex Connector na conta jeffeped resolveu a recusa inicial de escrita (HTTP 403). A atualização foi integrada pelo [PR #1](https://github.com/jeffeped/NP_NEO/pull/1), no commit `09193ffc7266f9db751d5c7ef5fa0525efd1476b`. O [processo de publicação](https://github.com/jeffeped/NP_NEO/actions/runs/35050235686) terminou com sucesso. A conferência manual dos alertas na versão nova permanece pendente por indisponibilidade da sessão de navegador de teste, conforme a seção 5.
 
 ## 1. Inspeção, recuperação e arquivos
 
-Base preservada: `767c8bcb214b0f8788da1afdfb40825a5d8bbc06` (0.1.2). Não havia alterações locais, instruções AGENTS.md no projeto, package.json ou suíte de testes. Antes da primeira alteração foram criados uma branch local de backup (`backup/pre-alertas-2026-09-16`), um bundle Git e a branch de trabalho `feature/alertas-np-2026-09-16`.
+Base preservada: `767c8bcb214b0f8788da1afdfb40825a5d8bbc06` (0.1.2). Não havia alterações locais, instruções AGENTS.md no projeto, package.json ou suíte de testes. Antes da primeira alteração foram criados uma branch local de backup (`backup/pre-alertas-2026-09-16`), um bundle Git e a branch de trabalho `feature/alertas-np-2026-09-16`. Antes da publicação, a mesma branch de backup foi criada também no GitHub. A árvore de arquivos enviada, `7e0b9c6e198690f63904b684179f4d801a156d3c`, é idêntica à versão testada localmente.
 
 A arquitetura estática foi preservada: módulos JavaScript no navegador, cálculo local, ausência de histórico de pacientes, PDF local, instalação PWA e cache offline. Não houve migração de framework, mudança de aparência geral ou alteração de eletrólitos, vitaminas, oligoelementos ou fatores energéticos.
 
@@ -66,9 +66,13 @@ Os valores são preenchidos dinamicamente. Exemplos:
 
 **124 testes aprovados; zero falhas.** Node.js 24.19.0. Sintaxe dos módulos e git diff --check aprovados. Não existia suíte anterior; as regressões usam saídas obtidas do commit original antes das alterações.
 
+**Arquivos publicados conferidos:** app.js, engine.js, alerts.js, styles.css, pdf.js e sw.js foram obtidos diretamente do endereço do GitHub Pages após o deploy. Todos responderam HTTP 200 e são idênticos, byte a byte, aos arquivos da versão testada. Essa comparação confirma a entrega dos arquivos 0.1.3, mas não substitui a execução manual da interface.
+
 Um PDF de três páginas, gerado pelo código atualizado com dados sintéticos, foi renderizado e inspecionado página a página: sem cortes, sobreposições ou glifos inválidos; alertas presentes e dados de autoria preservados.
 
-**Limitação de interface:** os cinco testes utilizam DOM simulado; não equivalem à validação manual em navegador. O servidor local foi iniciado, mas o navegador remoto recusou localhost com `ERR_BLOCKED_BY_CLIENT`. O app publicado foi aberto e identificado como 0.1.2. A recusa de gravação do GitHub impediu disponibilizar a versão nova para o teste manual. Portanto, a validação manual de pelo menos um cenário de cada grupo na versão 0.1.3 permanece pendente.
+**Limitação de interface:** os cinco testes utilizam DOM simulado; não equivalem à validação manual em navegador. Inicialmente, o navegador remoto recusou localhost com `ERR_BLOCKED_BY_CLIENT`. Após a publicação no GitHub Pages, o navegador que tinha a versão 0.1.2 em cache exibiu corretamente o botão “Atualização disponível · reiniciar”. Ao acionar a atualização, a sessão de controle passou a expirar sem resposta; a tentativa de abrir uma nova aba também não permitiu concluir a inspeção. Portanto, não foi possível confirmar nessa sessão a ativação do cache 0.1.3 nem executar manualmente um cenário de cada grupo. Essa limitação não foi classificada como defeito do aplicativo, pois não houve evidência suficiente para isso.
+
+**Conferência manual ainda necessária:** no endereço publicado, confirmar o rodapé 0.1.3; testar AA e lipídios em 2,0 no dia 1 e em 3,0 no dia 2; testar RN de 0,8 kg, dia 2, AA 3,6, lipídios 4,1, VIG 20 e taxa hídrica 140 com acesso central; conferir os três alertas e a exportação não bloqueada. Com peso de 1 kg, VIG 12,5 e taxa hídrica 90, a concentração é exatamente 20%; ao reduzir a taxa hídrica para 89,9, surge a cautela >20%, inclusive em acesso central. Em acesso periférico, deve permanecer o bloqueio antigo de 12,5%. Utilizar apenas dados sintéticos, completar os demais campos e verificar o volume disponível. Esses cenários já estão cobertos pelos testes automatizados.
 
 ## 6. Lacunas corrigidas e segurança numérica
 
@@ -84,12 +88,14 @@ O teto máximo de AA para RN com peso ≥1000 g não foi definido pelo usuário.
 
 Foram mantidos **peso atual** e **dia de vida** (nascimento = dia 1), já usados na interface. Não foi criada uma regra diferente baseada em peso ao nascer ou dia de início da NP. Os novos testes são verificação técnica e não validação clínica formal.
 
-## 8. Como executar e concluir a integração
+## 8. Como abrir e executar
+
+APP publicado: [NP_NEO by Prof. Jeffe](https://jeffeped.github.io/NP_NEO/). Se o aparelho ainda mostrar 0.1.2, abrir com internet e usar “Atualização disponível · reiniciar” quando aparecer. A atualização reinicia o formulário; conferir o rodapé antes de iniciar um cálculo.
 
 Na cópia atualizada do projeto, execute `python3 -m http.server 8765` (Windows: `py -m http.server 8765`) e abra http://localhost:8765. Não há etapa de build nem dependência de runtime a instalar.
 
 Para testes: Node.js ≥20; `npm ci --ignore-scripts`; `npm test`.
 
-Para aplicar o pacote de recuperação ao repositório, siga INSTRUCOES.md dentro do ZIP; ele contém o patch integral e exige uma cópia limpa da base registrada. Não substitui silenciosamente uma versão remota mais nova.
+Os pacotes de recuperação preparados antes da publicação continuam sendo registros da atualização a partir da base 0.1.2. Não é necessário aplicá-los novamente ao repositório já atualizado. Para executar a versão atual, obter a branch `main` do GitHub.
 
-Para concluir no GitHub, a integração precisa ter permissão de escrita no repositório jeffeped/NP_NEO. A recusa observada foi do GitHub; não foi rejeição do revisor automático de aprovações. Depois da integração, ainda é necessário validar manualmente os cenários na versão nova e conferir a atualização do cache offline antes de considerá-la entregue no endereço publicado.
+A integração e a publicação foram concluídas. A pendência técnica restante é a conferência manual dos cenários na versão 0.1.3 e da ativação do cache offline, detalhada na seção 5. Os testes automatizados não substituem essa conferência nem a validação clínica pelo responsável.
