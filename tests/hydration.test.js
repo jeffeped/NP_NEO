@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {calculateHydration,formatHydrationNumber,HYDRATION_COMPONENTS} from '../hydration.js';
+import {calculateHydration,formatHydrationNumber,formatHydrationVolume,HYDRATION_COMPONENTS} from '../hydration.js';
 import {CONCENTRATIONS} from '../engine.js';
 
 const base={weight:2,fluid:100,vig:5,doseUnit:'perKgDay',na:1.7,k:1.34,ca:0.5,mg:0.8,concentrations:{na:1.7,k:1.34,ca:0.5,mg:0.8}};
@@ -109,6 +109,13 @@ test('HV: capacidade numérica impede volumes irrepresentáveis',()=>{
 });
 test('HV: exibição nunca converte um volume pequeno positivo em zero',()=>{
   assert.notEqual(formatHydrationNumber(0.000001),'0');assert.equal(formatHydrationNumber(14.4),'14,4');
+});
+test('HV: volumes usam uma casa decimal com teto sem elevar décimos exatos',()=>{
+  assert.equal(formatHydrationVolume(1.20),'1,2');
+  assert.equal(formatHydrationVolume(1.21),'1,3');
+  assert.equal(formatHydrationVolume(0.1+0.2),'0,3');
+  assert.equal(formatHydrationVolume(200),'200,0');
+  assert.equal(formatHydrationVolume(0.000001),'0,1');
 });
 test('HV: dois novos módulos integram o cache offline',()=>{
   const sw=readFileSync(new URL('../sw.js',import.meta.url),'utf8');assert.match(sw,/\.\/hydration\.js/);assert.match(sw,/\.\/hydration-ui\.js/);

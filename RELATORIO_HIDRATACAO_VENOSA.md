@@ -1,4 +1,4 @@
-# NP_NEO 0.2.0 — terceira aba: hidratação venosa
+# NP_NEO 0.2.1 — terceira aba: hidratação venosa
 
 Data: 16/09/2026. Responsável pelas fórmulas: Jefferson Guilherme.
 
@@ -42,7 +42,7 @@ Não foram acrescentados tetos clínicos, doses habituais, regras de acesso veno
 - Se os eletrólitos ocuparem todo o VT ou o ultrapassarem, nenhuma composição de SG é apresentada.
 - Se a VIG exigir volume negativo de SG 5% ou SG 50%, o resultado explica a faixa matematicamente possível sem apresentá-la como recomendação clínica.
 - As comparações usam frações decimais exatas, sem tolerância que absorva ultrapassagens pequenas. Não há arredondamento intermediário do VT.
-- A exibição utiliza até quatro casas decimais, com precisão adicional quando necessária para não apresentar um volume positivo como zero. Os volumes são teóricos; SG 5% completa o VT e a oferta precisa ser conferida após arredondamento de preparo.
+- VT, vazão e volumes dos componentes são exibidos com uma casa decimal, arredondados para cima somente na apresentação. Os cálculos internos preservam a precisão completa. A formatação evita elevar indevidamente valores já exatos em décimos por ruído de ponto flutuante: 1,20 é exibido como 1,2 e 1,21 como 1,3. Os volumes são teóricos; SG 5% completa o VT e a oferta precisa ser conferida após arredondamento de preparo.
 - Qualquer alteração de entrada invalida a composição da HV, sem invalidar o resultado já calculado da NP.
 
 ## Arquivos alterados ou novos
@@ -54,16 +54,16 @@ Não foram acrescentados tetos clínicos, doses habituais, regras de acesso veno
 | index.html | Terceira aba e formulário/resultado da HV. |
 | app.js | Navegação acessível entre três abas e inicialização da HV. |
 | styles.css | Ajustes para a terceira aba e resultados. |
-| engine.js | Apenas versão 0.2.0; cálculos de NP preservados. |
-| sw.js | Cache 0.2.0 com os novos módulos. |
-| package.json e package-lock.json | Versão 0.2.0, sem novas dependências. |
+| engine.js | Apenas versão 0.2.1; cálculos de NP preservados. |
+| sw.js | Cache 0.2.1 com os novos módulos. |
+| package.json e package-lock.json | Versão 0.2.1, sem novas dependências. |
 | tests/hydration.test.js | 46 testes do motor, unidades, conservação e limites. |
 | tests/interface.test.js | Sete novos fluxos de interface e manutenção dos cinco anteriores. |
 | README.md e este relatório | Fórmulas, uso, validação e limitações. |
 
 ## Resultado dos testes
 
-**177 testes aprovados, zero falhas.** Os 124 testes anteriores continuam aprovados, incluindo as 12 regressões completas do motor de NP e os testes de PDF. Foram acrescentados 46 testes do motor de HV e sete fluxos de interface simulada. As verificações de sintaxe JavaScript e `git diff --check` também passaram.
+**178 testes aprovados, zero falhas.** Os 124 testes anteriores continuam aprovados, incluindo as 12 regressões completas do motor de NP e os testes de PDF. A HV possui 47 testes do motor e sete fluxos de interface simulada. As verificações de sintaxe JavaScript e `git diff --check` também passaram.
 
 Exemplo conferido: peso 2 kg; taxa 100 mL/kg/dia; VIG 5; doses Na 1,7, K 1,34, Ca 0,5 e Mg 0,8 mEq/kg/dia, com as equivalências iniciais. Cada sal ocupa 2 mL; VT = 200 mL; VR = 192 mL; gG = 14,4 g; SG 50% = 10,6666… mL; SG 5% = 181,3333… mL; VIG calculada = 5 mg/kg/min.
 
@@ -73,7 +73,7 @@ Nos testes de interface foi corrigida a seleção de opções no simulador de DO
 
 ## Execução e publicação
 
-Endereço do aplicativo: https://jeffeped.github.io/NP_NEO/. A terceira aba corresponde à versão 0.2.0; conferir o rodapé após a atualização.
+Endereço do aplicativo: https://jeffeped.github.io/NP_NEO/. A terceira aba corresponde à versão 0.2.1; conferir o rodapé após a atualização.
 
 Execução local: `python3 -m http.server 8765` (Windows: `py -m http.server 8765`), abrindo http://localhost:8765. Testes: Node.js 20 ou superior, `npm ci --ignore-scripts` e `npm test`.
 

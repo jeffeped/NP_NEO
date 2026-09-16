@@ -80,8 +80,9 @@ test('interface HV: terceira aba calcula com as fórmulas confirmadas e mostra s
   assert.equal(app.el('hv-composition').hidden,false);
   assert.equal(app.el('hv-rows').children.length,6);
   const summary=app.el('hv-summary').textContent;
-  assert.match(summary,/200 mL\/24 h/);assert.match(summary,/14,4 g\/24 h/);assert.match(summary,/192 mL/);
-  assert.match(summary,/10,6667 mL/);assert.match(summary,/181,3333 mL/);assert.match(summary,/5 \/ 5 mg\/kg\/min/);
+  assert.match(summary,/200,0 mL\/24 h/);assert.match(summary,/14,4 g\/24 h/);assert.match(summary,/192,0 mL/);
+  assert.match(summary,/10,7 mL/);assert.match(summary,/181,4 mL/);assert.match(summary,/8,4 mL\/h/);assert.match(summary,/5 \/ 5 mg\/kg\/min/);
+  assert.deepEqual([...app.el('hv-rows').children].map(row=>row.children[1].textContent),['2,0','2,0','2,0','2,0','181,4','10,7']);
 });
 
 test('interface HV: campos de dose, VIG e peso começam sem sugestão',()=>{
@@ -114,7 +115,7 @@ test('interface HV: mudar equivalência do rótulo exige recálculo',()=>{
   const app=openHydration();app.calculateHydration();app.set('hv-concentration-ca','0,465');
   assert.equal(app.el('hv-result').hidden,true);app.calculateHydration();
   const ca=app.document.querySelector('[data-hv-component="ca"]');
-  assert.match(ca.textContent,/0,465 mEq\/mL/);assert.match(ca.textContent,/2,1505/);
+  assert.match(ca.textContent,/0,465 mEq\/mL/);assert.match(ca.textContent,/2,2/);
 });
 
 test('interface HV: formulário independente preserva resultado e exportação da NP',()=>{

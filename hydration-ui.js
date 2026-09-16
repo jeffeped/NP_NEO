@@ -1,4 +1,4 @@
-import {calculateHydration,HYDRATION_COMPONENTS,formatHydrationNumber as f} from './hydration.js';
+import {calculateHydration,HYDRATION_COMPONENTS,formatHydrationNumber as f,formatHydrationVolume as fv} from './hydration.js';
 
 export function initHydration(document){
   const $=id=>document.getElementById('hv-'+id);
@@ -31,7 +31,7 @@ export function initHydration(document){
       $('errors').replaceChildren(list);$('errors').hidden=false;$('errors').scrollIntoView({block:'center'});return;
     }
     $('empty').hidden=true;$('result').hidden=false;
-    $('summary').replaceChildren(summary('VT = taxa hídrica × peso',`${f(result.input.fluid)} × ${f(result.input.weight)} = ${f(result.totals.totalVolume)} mL/24 h`),summary('Glicose necessária = VIG × peso × 60 × 24 ÷ 1000',`${f(result.input.vig)} × ${f(result.input.weight)} × 60 × 24 ÷ 1000 = ${f(result.totals.glucoseGrams)} g/24 h`),summary('Volume dos eletrólitos',`${f(result.totals.electrolytesVolume)} mL`),summary('VR = VT − volume dos eletrólitos',`${f(result.totals.totalVolume)} − ${f(result.totals.electrolytesVolume)} = ${f(result.totals.glucoseSolutionsVolume)} mL`),summary('Vazão em 24 horas',`${f(result.totals.infusion)} mL/h`));
+    $('summary').replaceChildren(summary('VT = taxa hídrica × peso',`${f(result.input.fluid)} × ${f(result.input.weight)} = ${fv(result.totals.totalVolume)} mL/24 h`),summary('Glicose necessária = VIG × peso × 60 × 24 ÷ 1000',`${f(result.input.vig)} × ${f(result.input.weight)} × 60 × 24 ÷ 1000 = ${f(result.totals.glucoseGrams)} g/24 h`),summary('Volume dos eletrólitos',`${fv(result.totals.electrolytesVolume)} mL`),summary('VR = VT − volume dos eletrólitos',`${fv(result.totals.totalVolume)} − ${fv(result.totals.electrolytesVolume)} = ${fv(result.totals.glucoseSolutionsVolume)} mL`),summary('Vazão em 24 horas',`${fv(result.totals.infusion)} mL/h`));
     $('blocks').replaceChildren(...result.blocks.map(message=>text('div',message,'notice danger')));
     $('composition').hidden=!result.canPrepare;
     $('rows').replaceChildren();
@@ -39,10 +39,10 @@ export function initHydration(document){
       for(const row of result.rows){
         const tr=document.createElement('tr');tr.dataset.hvComponent=row.id;
         const label=text('td',row.solution);label.append(text('span',`${f(row.amountMeq)} mEq/24 h · ${f(row.perKgDay)} mEq/kg/dia`),text('span',`Equivalência: ${f(row.concentration)} mEq/mL`));
-        tr.append(label,text('td',f(row.volume)));$('rows').append(tr);
+        tr.append(label,text('td',fv(row.volume)));$('rows').append(tr);
       }
-      for(const [id,name,volume] of [['sg5','SG 5% · completar até o VT',result.mixture.sg5],['sg50','SG 50%',result.mixture.sg50]]){const tr=document.createElement('tr');tr.dataset.hvComponent=id;tr.append(text('td',name),text('td',f(volume)));$('rows').append(tr);}
-      $('summary').append(summary('SG 50% = [gG − (VR × 0,05)] ÷ 0,45',`${f(result.mixture.sg50)} mL`),summary('SG 5% = VR − SG 50%',`${f(result.mixture.sg5)} mL`),summary('VIG informada / calculada',`${f(result.input.vig)} / ${f(result.mixture.vig)} mg/kg/min`),summary('Concentração final de glicose',`${f(result.mixture.glucosePercent)}%`));
+      for(const [id,name,volume] of [['sg5','SG 5% · completar até o VT',result.mixture.sg5],['sg50','SG 50%',result.mixture.sg50]]){const tr=document.createElement('tr');tr.dataset.hvComponent=id;tr.append(text('td',name),text('td',fv(volume)));$('rows').append(tr);}
+      $('summary').append(summary('SG 50% = [gG − (VR × 0,05)] ÷ 0,45',`${fv(result.mixture.sg50)} mL`),summary('SG 5% = VR − SG 50%',`${fv(result.mixture.sg5)} mL`),summary('VIG informada / calculada',`${f(result.input.vig)} / ${f(result.mixture.vig)} mg/kg/min`),summary('Concentração final de glicose',`${f(result.mixture.glucosePercent)}%`));
     }
     $('result').scrollIntoView({block:'start'});
   });

@@ -1,6 +1,6 @@
 # NP_NEO by Prof. Jeffe
 
-Calculadora de apoio à nutrição parenteral neonatal e hidratação venosa. Versão de avaliação 0.2.0.
+Calculadora de apoio à nutrição parenteral neonatal e hidratação venosa. Versão de avaliação 0.2.1.
 
 O médico informa os parâmetros; o app calcula volumes e gera um relatório PDF no próprio aparelho. Não há cadastro de pacientes nem histórico de casos.
 
@@ -65,7 +65,7 @@ SG 5% (mL) = VR − SG 50%
 Vazão (mL/h) = VT / 24
 ```
 
-As comparações de viabilidade usam aritmética decimal racional, sem arredondamento intermediário. Os volumes são teóricos, exibidos com até quatro casas decimais (mais precisão quando necessária para não mostrar um valor positivo como zero); SG 5% completa o VT. A oferta deve ser conferida após arredondamento de preparo.
+As comparações de viabilidade usam aritmética decimal racional, sem arredondamento intermediário. VT, vazão e volumes dos componentes são exibidos com uma casa decimal, arredondados para cima somente na apresentação; os cálculos internos preservam a precisão completa. SG 5% completa o VT. A oferta deve ser conferida após o arredondamento de preparo.
 
 Não há composição quando os eletrólitos consomem todo o VT ou quando a VIG exige SG 5% ou SG 50% negativo. A faixa possível informada é uma restrição matemática das duas soluções, não uma meta clínica. O módulo não acrescenta limites de dose, regras de acesso ou validação de compatibilidade físico-química da mistura. Formulários e resultados da NP e da HV são independentes. A exportação PDF existente continua vinculada à NP.
 

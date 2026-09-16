@@ -35,6 +35,15 @@ export function formatHydrationNumber(value){
   return (value!==0&&displayed===0?String(value):String(displayed)).replace('.',',');
 }
 
+export function formatHydrationVolume(value){
+  if(!Number.isFinite(value))return '—';
+  const scaled=value*10;
+  // Remove somente o ruído binário junto a um décimo exato antes do teto.
+  const tolerance=Number.EPSILON*Math.max(1,Math.abs(scaled))*4;
+  const displayed=Math.ceil(scaled-tolerance)/10;
+  return displayed.toFixed(1).replace('.',',');
+}
+
 export function calculateHydration(input){
   const errors=[],n={},concentrations={};
   const labels={weight:'Peso atual',fluid:'Taxa hídrica',vig:'VIG',na:'Sódio',k:'Potássio',ca:'Cálcio',mg:'Magnésio'};
@@ -64,7 +73,7 @@ export function calculateHydration(input){
   const available=sub(total,electrolytesVolume);
   // VR = VT − soma dos volumes dos eletrólitos.
   const blocks=[];
-  if(available.a<=0n)blocks.push(`Os eletrólitos ocupam ${formatHydrationNumber(num(electrolytesVolume))} mL e o VT é ${formatHydrationNumber(num(total))} mL. Não há volume disponível para as soluções glicosadas; reveja os parâmetros.`);
+  if(available.a<=0n)blocks.push(`Os eletrólitos ocupam ${formatHydrationVolume(num(electrolytesVolume))} mL e o VT é ${formatHydrationVolume(num(total))} mL. Não há volume disponível para as soluções glicosadas; reveja os parâmetros.`);
   const minimum=mul(available,sg5Concentration),maximum=mul(available,sg50Concentration);
   const vigRange=available.a>0n?{min:num(div(minimum,mul(weight,minutes))),max:num(div(maximum,mul(weight,minutes)))}:null;
   if(available.a>0n&&(sub(glucose,minimum).a<0n||sub(glucose,maximum).a>0n)){
