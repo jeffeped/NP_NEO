@@ -1,0 +1,4324 @@
+{
+  "sourceCommit": "767c8bcb214b0f8788da1afdfb40825a5d8bbc06",
+  "records": [
+    {
+      "name": "dia-1",
+      "input": {
+        "weight": 0.8,
+        "day": 1,
+        "gaWeeks": 27,
+        "gaDays": 3,
+        "fluid": 120,
+        "aa": 2,
+        "lip": 2,
+        "vig": 6,
+        "na": 2,
+        "k": 2,
+        "ca": 1,
+        "mg": 0.3,
+        "p": 0.8,
+        "seDose": 6,
+        "naSalt": "nacl",
+        "pSalt": "glycero",
+        "access": "central",
+        "omit": {}
+      },
+      "expected": {
+        "ok": true,
+        "input": {
+          "weight": 0.8,
+          "day": 1,
+          "gaWeeks": 27,
+          "gaDays": 3,
+          "fluid": 120,
+          "aa": 2,
+          "lip": 2,
+          "vig": 6,
+          "na": 2,
+          "k": 2,
+          "ca": 1,
+          "mg": 0.3,
+          "p": 0.8,
+          "seDose": 6,
+          "access": "central",
+          "naSalt": "nacl",
+          "pSalt": "glycero",
+          "omit": {}
+        },
+        "rows": [
+          {
+            "id": "aa",
+            "name": "Aminoped 10%",
+            "volume": 16,
+            "quantity": 1.6,
+            "unit": "g",
+            "perKg": 2,
+            "perUnit": "g/kg/dia",
+            "group": 0,
+            "status": ""
+          },
+          {
+            "id": "lip",
+            "name": "Lipídeos 20%",
+            "volume": 8,
+            "quantity": 1.6,
+            "unit": "g",
+            "perKg": 2,
+            "perUnit": "g/kg/dia",
+            "group": 0,
+            "status": ""
+          },
+          {
+            "id": "glucose",
+            "name": "Glicose 50%",
+            "volume": 13.8,
+            "quantity": 6.9,
+            "unit": "g",
+            "perKg": 5.989583333333333,
+            "perUnit": "mg/kg/min",
+            "group": 0,
+            "status": ""
+          },
+          {
+            "id": "nacl",
+            "name": "Cloreto de sódio 10%",
+            "volume": 0.2,
+            "quantity": 0.34,
+            "unit": "mEq",
+            "perKg": 0.425,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "acetate",
+            "name": "Acetato de sódio",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mEq",
+            "perKg": 0,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": "Não acrescentado"
+          },
+          {
+            "id": "kcl",
+            "name": "Cloreto de potássio 10%",
+            "volume": 1.2,
+            "quantity": 1.608,
+            "unit": "mEq",
+            "perKg": 2.01,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "calcium",
+            "name": "Gluconato de cálcio 10%",
+            "volume": 1.6,
+            "quantity": 0.8,
+            "unit": "mEq",
+            "perKg": 1,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "magnesium",
+            "name": "Sulfato de magnésio 10%",
+            "volume": 0.3,
+            "quantity": 0.24,
+            "unit": "mEq",
+            "perKg": 0.3,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "kphos",
+            "name": "Fosfato de potássio",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mmol",
+            "perKg": 0,
+            "perUnit": "mmol/kg/dia",
+            "group": 1,
+            "status": "Não ofertado"
+          },
+          {
+            "id": "glycero",
+            "name": "Glicerofosfato de sódio",
+            "volume": 0.6,
+            "quantity": 0.6,
+            "unit": "mmol",
+            "perKg": 0.7499999999999999,
+            "perUnit": "mmol/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "va",
+            "name": "Polivit A Ped",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mL",
+            "perKg": 0,
+            "perUnit": "mL/kg/dia",
+            "group": 2,
+            "status": "Início no 3º dia"
+          },
+          {
+            "id": "vb",
+            "name": "Polivit B Ped",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mL",
+            "perKg": 0,
+            "perUnit": "mL/kg/dia",
+            "group": 2,
+            "status": "Início no 3º dia"
+          },
+          {
+            "id": "oligo",
+            "name": "Solução de oligoelementos",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mL",
+            "perKg": 0,
+            "perUnit": "mL/kg/dia",
+            "group": 2,
+            "status": "Início no 8º dia"
+          },
+          {
+            "id": "zinc",
+            "name": "Sulfato de zinco",
+            "volume": 1.6,
+            "quantity": 320,
+            "unit": "mcg",
+            "perKg": 400,
+            "perUnit": "mcg/kg/dia",
+            "group": 2,
+            "status": ""
+          },
+          {
+            "id": "selenium",
+            "name": "Selênio",
+            "volume": 0.08,
+            "quantity": 4.8,
+            "unit": "mcg",
+            "perKg": 5.999999999999999,
+            "perUnit": "mcg/kg/dia",
+            "group": 2,
+            "status": ""
+          },
+          {
+            "id": "water",
+            "name": "Água para injeção",
+            "volume": 52.62,
+            "quantity": 52.62,
+            "unit": "mL",
+            "perKg": null,
+            "perUnit": "q.s.p.",
+            "group": 3,
+            "status": ""
+          }
+        ],
+        "volumes": {
+          "aa": 16,
+          "lip": 8,
+          "glucose": 13.8,
+          "phosphate": 0.6,
+          "sodium": 0.2,
+          "potassium": 1.2,
+          "calcium": 1.6,
+          "magnesium": 0.3,
+          "va": 0,
+          "vb": 0,
+          "oligo": 0,
+          "zinc": 1.6,
+          "selenium": 0.08,
+          "water": 52.62
+        },
+        "grams": {
+          "aa": 1.6,
+          "lip": 1.6,
+          "glucose": 6.9
+        },
+        "effective": {
+          "aa": 2,
+          "lip": 2,
+          "vig": 5.989583333333333,
+          "na": 1.925,
+          "k": 2.01,
+          "ca": 1,
+          "mg": 0.3,
+          "p": 0.7499999999999999,
+          "zn": 400,
+          "se": 5.999999999999999
+        },
+        "offers": [
+          {
+            "id": "aa",
+            "name": "Aminoácidos",
+            "requested": 2,
+            "actual": 2,
+            "unit": "g/kg/dia"
+          },
+          {
+            "id": "lip",
+            "name": "Lipídeos",
+            "requested": 2,
+            "actual": 2,
+            "unit": "g/kg/dia"
+          },
+          {
+            "id": "vig",
+            "name": "VIG",
+            "requested": 6,
+            "actual": 5.989583333333333,
+            "unit": "mg/kg/min"
+          },
+          {
+            "id": "na",
+            "name": "Sódio total",
+            "requested": 2,
+            "actual": 1.925,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "k",
+            "name": "Potássio total",
+            "requested": 2,
+            "actual": 2.01,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "ca",
+            "name": "Cálcio",
+            "requested": 1,
+            "actual": 1,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "mg",
+            "name": "Magnésio",
+            "requested": 0.3,
+            "actual": 0.3,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "p",
+            "name": "Fósforo",
+            "requested": 0.8,
+            "actual": 0.7499999999999999,
+            "unit": "mmol/kg/dia"
+          },
+          {
+            "id": "zn",
+            "name": "Zinco total",
+            "requested": 400,
+            "actual": 400,
+            "unit": "mcg/kg/dia"
+          },
+          {
+            "id": "se",
+            "name": "Selênio",
+            "requested": 6,
+            "actual": 5.999999999999999,
+            "unit": "mcg/kg/dia"
+          }
+        ],
+        "rounding": [
+          "glucose",
+          "phosphate",
+          "sodium",
+          "potassium"
+        ],
+        "adjustments": [],
+        "notices": [
+          "Vitaminas não incluídas: início no 3º dia de vida.",
+          "Solução de oligoelementos não incluída: início no 8º dia de vida."
+        ],
+        "blocks": [],
+        "requiresCentral": false,
+        "accessBlocked": false,
+        "canExport": true,
+        "totals": {
+          "totalVolume": 96,
+          "componentsVolume": 43.38,
+          "water": 52.62,
+          "infusion": 4,
+          "infusionExact": 4,
+          "fluid": 120,
+          "calories": 60.49999999999999,
+          "glucosePercent": 7.187500000000001,
+          "nonProtein": 52.5,
+          "proteinRatio": 26.25
+        }
+      }
+    },
+    {
+      "name": "dia-2",
+      "input": {
+        "weight": 0.8,
+        "day": 2,
+        "gaWeeks": 27,
+        "gaDays": 3,
+        "fluid": 120,
+        "aa": 3,
+        "lip": 3,
+        "vig": 6,
+        "na": 2,
+        "k": 2,
+        "ca": 1,
+        "mg": 0.3,
+        "p": 0.8,
+        "seDose": 6,
+        "naSalt": "nacl",
+        "pSalt": "glycero",
+        "access": "central",
+        "omit": {}
+      },
+      "expected": {
+        "ok": true,
+        "input": {
+          "weight": 0.8,
+          "day": 2,
+          "gaWeeks": 27,
+          "gaDays": 3,
+          "fluid": 120,
+          "aa": 3,
+          "lip": 3,
+          "vig": 6,
+          "na": 2,
+          "k": 2,
+          "ca": 1,
+          "mg": 0.3,
+          "p": 0.8,
+          "seDose": 6,
+          "access": "central",
+          "naSalt": "nacl",
+          "pSalt": "glycero",
+          "omit": {}
+        },
+        "rows": [
+          {
+            "id": "aa",
+            "name": "Aminoped 10%",
+            "volume": 24,
+            "quantity": 2.4000000000000004,
+            "unit": "g",
+            "perKg": 3.0000000000000004,
+            "perUnit": "g/kg/dia",
+            "group": 0,
+            "status": ""
+          },
+          {
+            "id": "lip",
+            "name": "Lipídeos 20%",
+            "volume": 12,
+            "quantity": 2.4000000000000004,
+            "unit": "g",
+            "perKg": 3.0000000000000004,
+            "perUnit": "g/kg/dia",
+            "group": 0,
+            "status": ""
+          },
+          {
+            "id": "glucose",
+            "name": "Glicose 50%",
+            "volume": 13.8,
+            "quantity": 6.9,
+            "unit": "g",
+            "perKg": 5.989583333333333,
+            "perUnit": "mg/kg/min",
+            "group": 0,
+            "status": ""
+          },
+          {
+            "id": "nacl",
+            "name": "Cloreto de sódio 10%",
+            "volume": 0.2,
+            "quantity": 0.34,
+            "unit": "mEq",
+            "perKg": 0.425,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "acetate",
+            "name": "Acetato de sódio",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mEq",
+            "perKg": 0,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": "Não acrescentado"
+          },
+          {
+            "id": "kcl",
+            "name": "Cloreto de potássio 10%",
+            "volume": 1.2,
+            "quantity": 1.608,
+            "unit": "mEq",
+            "perKg": 2.01,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "calcium",
+            "name": "Gluconato de cálcio 10%",
+            "volume": 1.6,
+            "quantity": 0.8,
+            "unit": "mEq",
+            "perKg": 1,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "magnesium",
+            "name": "Sulfato de magnésio 10%",
+            "volume": 0.3,
+            "quantity": 0.24,
+            "unit": "mEq",
+            "perKg": 0.3,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "kphos",
+            "name": "Fosfato de potássio",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mmol",
+            "perKg": 0,
+            "perUnit": "mmol/kg/dia",
+            "group": 1,
+            "status": "Não ofertado"
+          },
+          {
+            "id": "glycero",
+            "name": "Glicerofosfato de sódio",
+            "volume": 0.6,
+            "quantity": 0.6,
+            "unit": "mmol",
+            "perKg": 0.7499999999999999,
+            "perUnit": "mmol/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "va",
+            "name": "Polivit A Ped",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mL",
+            "perKg": 0,
+            "perUnit": "mL/kg/dia",
+            "group": 2,
+            "status": "Início no 3º dia"
+          },
+          {
+            "id": "vb",
+            "name": "Polivit B Ped",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mL",
+            "perKg": 0,
+            "perUnit": "mL/kg/dia",
+            "group": 2,
+            "status": "Início no 3º dia"
+          },
+          {
+            "id": "oligo",
+            "name": "Solução de oligoelementos",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mL",
+            "perKg": 0,
+            "perUnit": "mL/kg/dia",
+            "group": 2,
+            "status": "Início no 8º dia"
+          },
+          {
+            "id": "zinc",
+            "name": "Sulfato de zinco",
+            "volume": 1.6,
+            "quantity": 320,
+            "unit": "mcg",
+            "perKg": 400,
+            "perUnit": "mcg/kg/dia",
+            "group": 2,
+            "status": ""
+          },
+          {
+            "id": "selenium",
+            "name": "Selênio",
+            "volume": 0.08,
+            "quantity": 4.8,
+            "unit": "mcg",
+            "perKg": 5.999999999999999,
+            "perUnit": "mcg/kg/dia",
+            "group": 2,
+            "status": ""
+          },
+          {
+            "id": "water",
+            "name": "Água para injeção",
+            "volume": 40.62,
+            "quantity": 40.62,
+            "unit": "mL",
+            "perKg": null,
+            "perUnit": "q.s.p.",
+            "group": 3,
+            "status": ""
+          }
+        ],
+        "volumes": {
+          "aa": 24,
+          "lip": 12,
+          "glucose": 13.8,
+          "phosphate": 0.6,
+          "sodium": 0.2,
+          "potassium": 1.2,
+          "calcium": 1.6,
+          "magnesium": 0.3,
+          "va": 0,
+          "vb": 0,
+          "oligo": 0,
+          "zinc": 1.6,
+          "selenium": 0.08,
+          "water": 40.62
+        },
+        "grams": {
+          "aa": 2.4000000000000004,
+          "lip": 2.4000000000000004,
+          "glucose": 6.9
+        },
+        "effective": {
+          "aa": 3.0000000000000004,
+          "lip": 3.0000000000000004,
+          "vig": 5.989583333333333,
+          "na": 1.925,
+          "k": 2.01,
+          "ca": 1,
+          "mg": 0.3,
+          "p": 0.7499999999999999,
+          "zn": 400,
+          "se": 5.999999999999999
+        },
+        "offers": [
+          {
+            "id": "aa",
+            "name": "Aminoácidos",
+            "requested": 3,
+            "actual": 3.0000000000000004,
+            "unit": "g/kg/dia"
+          },
+          {
+            "id": "lip",
+            "name": "Lipídeos",
+            "requested": 3,
+            "actual": 3.0000000000000004,
+            "unit": "g/kg/dia"
+          },
+          {
+            "id": "vig",
+            "name": "VIG",
+            "requested": 6,
+            "actual": 5.989583333333333,
+            "unit": "mg/kg/min"
+          },
+          {
+            "id": "na",
+            "name": "Sódio total",
+            "requested": 2,
+            "actual": 1.925,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "k",
+            "name": "Potássio total",
+            "requested": 2,
+            "actual": 2.01,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "ca",
+            "name": "Cálcio",
+            "requested": 1,
+            "actual": 1,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "mg",
+            "name": "Magnésio",
+            "requested": 0.3,
+            "actual": 0.3,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "p",
+            "name": "Fósforo",
+            "requested": 0.8,
+            "actual": 0.7499999999999999,
+            "unit": "mmol/kg/dia"
+          },
+          {
+            "id": "zn",
+            "name": "Zinco total",
+            "requested": 400,
+            "actual": 400,
+            "unit": "mcg/kg/dia"
+          },
+          {
+            "id": "se",
+            "name": "Selênio",
+            "requested": 6,
+            "actual": 5.999999999999999,
+            "unit": "mcg/kg/dia"
+          }
+        ],
+        "rounding": [
+          "glucose",
+          "phosphate",
+          "sodium",
+          "potassium"
+        ],
+        "adjustments": [],
+        "notices": [
+          "Vitaminas não incluídas: início no 3º dia de vida.",
+          "Solução de oligoelementos não incluída: início no 8º dia de vida."
+        ],
+        "blocks": [],
+        "requiresCentral": false,
+        "accessBlocked": false,
+        "canExport": true,
+        "totals": {
+          "totalVolume": 96,
+          "componentsVolume": 55.38,
+          "water": 40.62,
+          "infusion": 4,
+          "infusionExact": 4,
+          "fluid": 120,
+          "calories": 73.5,
+          "glucosePercent": 7.187500000000001,
+          "nonProtein": 61.5,
+          "proteinRatio": 20.499999999999996
+        }
+      }
+    },
+    {
+      "name": "dia-3",
+      "input": {
+        "weight": 0.8,
+        "day": 3,
+        "gaWeeks": 27,
+        "gaDays": 3,
+        "fluid": 120,
+        "aa": 2,
+        "lip": 2,
+        "vig": 6,
+        "na": 2,
+        "k": 2,
+        "ca": 1,
+        "mg": 0.3,
+        "p": 0.8,
+        "seDose": 6,
+        "naSalt": "nacl",
+        "pSalt": "glycero",
+        "access": "central",
+        "omit": {}
+      },
+      "expected": {
+        "ok": true,
+        "input": {
+          "weight": 0.8,
+          "day": 3,
+          "gaWeeks": 27,
+          "gaDays": 3,
+          "fluid": 120,
+          "aa": 2,
+          "lip": 2,
+          "vig": 6,
+          "na": 2,
+          "k": 2,
+          "ca": 1,
+          "mg": 0.3,
+          "p": 0.8,
+          "seDose": 6,
+          "access": "central",
+          "naSalt": "nacl",
+          "pSalt": "glycero",
+          "omit": {}
+        },
+        "rows": [
+          {
+            "id": "aa",
+            "name": "Aminoped 10%",
+            "volume": 16,
+            "quantity": 1.6,
+            "unit": "g",
+            "perKg": 2,
+            "perUnit": "g/kg/dia",
+            "group": 0,
+            "status": ""
+          },
+          {
+            "id": "lip",
+            "name": "Lipídeos 20%",
+            "volume": 8,
+            "quantity": 1.6,
+            "unit": "g",
+            "perKg": 2,
+            "perUnit": "g/kg/dia",
+            "group": 0,
+            "status": ""
+          },
+          {
+            "id": "glucose",
+            "name": "Glicose 50%",
+            "volume": 13.8,
+            "quantity": 6.9,
+            "unit": "g",
+            "perKg": 5.989583333333333,
+            "perUnit": "mg/kg/min",
+            "group": 0,
+            "status": ""
+          },
+          {
+            "id": "nacl",
+            "name": "Cloreto de sódio 10%",
+            "volume": 0.2,
+            "quantity": 0.34,
+            "unit": "mEq",
+            "perKg": 0.425,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "acetate",
+            "name": "Acetato de sódio",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mEq",
+            "perKg": 0,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": "Não acrescentado"
+          },
+          {
+            "id": "kcl",
+            "name": "Cloreto de potássio 10%",
+            "volume": 1.2,
+            "quantity": 1.608,
+            "unit": "mEq",
+            "perKg": 2.01,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "calcium",
+            "name": "Gluconato de cálcio 10%",
+            "volume": 1.6,
+            "quantity": 0.8,
+            "unit": "mEq",
+            "perKg": 1,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "magnesium",
+            "name": "Sulfato de magnésio 10%",
+            "volume": 0.3,
+            "quantity": 0.24,
+            "unit": "mEq",
+            "perKg": 0.3,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "kphos",
+            "name": "Fosfato de potássio",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mmol",
+            "perKg": 0,
+            "perUnit": "mmol/kg/dia",
+            "group": 1,
+            "status": "Não ofertado"
+          },
+          {
+            "id": "glycero",
+            "name": "Glicerofosfato de sódio",
+            "volume": 0.6,
+            "quantity": 0.6,
+            "unit": "mmol",
+            "perKg": 0.7499999999999999,
+            "perUnit": "mmol/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "va",
+            "name": "Polivit A Ped",
+            "volume": 1.6,
+            "quantity": 1.6,
+            "unit": "mL",
+            "perKg": 2,
+            "perUnit": "mL/kg/dia",
+            "group": 2,
+            "status": ""
+          },
+          {
+            "id": "vb",
+            "name": "Polivit B Ped",
+            "volume": 1.6,
+            "quantity": 1.6,
+            "unit": "mL",
+            "perKg": 2,
+            "perUnit": "mL/kg/dia",
+            "group": 2,
+            "status": ""
+          },
+          {
+            "id": "oligo",
+            "name": "Solução de oligoelementos",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mL",
+            "perKg": 0,
+            "perUnit": "mL/kg/dia",
+            "group": 2,
+            "status": "Início no 8º dia"
+          },
+          {
+            "id": "zinc",
+            "name": "Sulfato de zinco",
+            "volume": 1.6,
+            "quantity": 320,
+            "unit": "mcg",
+            "perKg": 400,
+            "perUnit": "mcg/kg/dia",
+            "group": 2,
+            "status": ""
+          },
+          {
+            "id": "selenium",
+            "name": "Selênio",
+            "volume": 0.08,
+            "quantity": 4.8,
+            "unit": "mcg",
+            "perKg": 5.999999999999999,
+            "perUnit": "mcg/kg/dia",
+            "group": 2,
+            "status": ""
+          },
+          {
+            "id": "water",
+            "name": "Água para injeção",
+            "volume": 49.42,
+            "quantity": 49.42,
+            "unit": "mL",
+            "perKg": null,
+            "perUnit": "q.s.p.",
+            "group": 3,
+            "status": ""
+          }
+        ],
+        "volumes": {
+          "aa": 16,
+          "lip": 8,
+          "glucose": 13.8,
+          "phosphate": 0.6,
+          "sodium": 0.2,
+          "potassium": 1.2,
+          "calcium": 1.6,
+          "magnesium": 0.3,
+          "va": 1.6,
+          "vb": 1.6,
+          "oligo": 0,
+          "zinc": 1.6,
+          "selenium": 0.08,
+          "water": 49.42
+        },
+        "grams": {
+          "aa": 1.6,
+          "lip": 1.6,
+          "glucose": 6.9
+        },
+        "effective": {
+          "aa": 2,
+          "lip": 2,
+          "vig": 5.989583333333333,
+          "na": 1.925,
+          "k": 2.01,
+          "ca": 1,
+          "mg": 0.3,
+          "p": 0.7499999999999999,
+          "zn": 400,
+          "se": 5.999999999999999
+        },
+        "offers": [
+          {
+            "id": "aa",
+            "name": "Aminoácidos",
+            "requested": 2,
+            "actual": 2,
+            "unit": "g/kg/dia"
+          },
+          {
+            "id": "lip",
+            "name": "Lipídeos",
+            "requested": 2,
+            "actual": 2,
+            "unit": "g/kg/dia"
+          },
+          {
+            "id": "vig",
+            "name": "VIG",
+            "requested": 6,
+            "actual": 5.989583333333333,
+            "unit": "mg/kg/min"
+          },
+          {
+            "id": "na",
+            "name": "Sódio total",
+            "requested": 2,
+            "actual": 1.925,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "k",
+            "name": "Potássio total",
+            "requested": 2,
+            "actual": 2.01,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "ca",
+            "name": "Cálcio",
+            "requested": 1,
+            "actual": 1,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "mg",
+            "name": "Magnésio",
+            "requested": 0.3,
+            "actual": 0.3,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "p",
+            "name": "Fósforo",
+            "requested": 0.8,
+            "actual": 0.7499999999999999,
+            "unit": "mmol/kg/dia"
+          },
+          {
+            "id": "zn",
+            "name": "Zinco total",
+            "requested": 400,
+            "actual": 400,
+            "unit": "mcg/kg/dia"
+          },
+          {
+            "id": "se",
+            "name": "Selênio",
+            "requested": 6,
+            "actual": 5.999999999999999,
+            "unit": "mcg/kg/dia"
+          }
+        ],
+        "rounding": [
+          "glucose",
+          "phosphate",
+          "sodium",
+          "potassium"
+        ],
+        "adjustments": [],
+        "notices": [
+          "Solução de oligoelementos não incluída: início no 8º dia de vida."
+        ],
+        "blocks": [],
+        "requiresCentral": false,
+        "accessBlocked": false,
+        "canExport": true,
+        "totals": {
+          "totalVolume": 96,
+          "componentsVolume": 46.58,
+          "water": 49.42,
+          "infusion": 4,
+          "infusionExact": 4,
+          "fluid": 120,
+          "calories": 60.49999999999999,
+          "glucosePercent": 7.187500000000001,
+          "nonProtein": 52.5,
+          "proteinRatio": 26.25
+        }
+      }
+    },
+    {
+      "name": "dia-8",
+      "input": {
+        "weight": 0.8,
+        "day": 8,
+        "gaWeeks": 27,
+        "gaDays": 3,
+        "fluid": 120,
+        "aa": 2,
+        "lip": 2,
+        "vig": 6,
+        "na": 2,
+        "k": 2,
+        "ca": 1,
+        "mg": 0.3,
+        "p": 0.8,
+        "seDose": 6,
+        "naSalt": "nacl",
+        "pSalt": "glycero",
+        "access": "central",
+        "omit": {}
+      },
+      "expected": {
+        "ok": true,
+        "input": {
+          "weight": 0.8,
+          "day": 8,
+          "gaWeeks": 27,
+          "gaDays": 3,
+          "fluid": 120,
+          "aa": 2,
+          "lip": 2,
+          "vig": 6,
+          "na": 2,
+          "k": 2,
+          "ca": 1,
+          "mg": 0.3,
+          "p": 0.8,
+          "seDose": 6,
+          "access": "central",
+          "naSalt": "nacl",
+          "pSalt": "glycero",
+          "omit": {}
+        },
+        "rows": [
+          {
+            "id": "aa",
+            "name": "Aminoped 10%",
+            "volume": 16,
+            "quantity": 1.6,
+            "unit": "g",
+            "perKg": 2,
+            "perUnit": "g/kg/dia",
+            "group": 0,
+            "status": ""
+          },
+          {
+            "id": "lip",
+            "name": "Lipídeos 20%",
+            "volume": 8,
+            "quantity": 1.6,
+            "unit": "g",
+            "perKg": 2,
+            "perUnit": "g/kg/dia",
+            "group": 0,
+            "status": ""
+          },
+          {
+            "id": "glucose",
+            "name": "Glicose 50%",
+            "volume": 13.8,
+            "quantity": 6.9,
+            "unit": "g",
+            "perKg": 5.989583333333333,
+            "perUnit": "mg/kg/min",
+            "group": 0,
+            "status": ""
+          },
+          {
+            "id": "nacl",
+            "name": "Cloreto de sódio 10%",
+            "volume": 0.2,
+            "quantity": 0.34,
+            "unit": "mEq",
+            "perKg": 0.425,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "acetate",
+            "name": "Acetato de sódio",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mEq",
+            "perKg": 0,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": "Não acrescentado"
+          },
+          {
+            "id": "kcl",
+            "name": "Cloreto de potássio 10%",
+            "volume": 1.2,
+            "quantity": 1.608,
+            "unit": "mEq",
+            "perKg": 2.01,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "calcium",
+            "name": "Gluconato de cálcio 10%",
+            "volume": 1.6,
+            "quantity": 0.8,
+            "unit": "mEq",
+            "perKg": 1,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "magnesium",
+            "name": "Sulfato de magnésio 10%",
+            "volume": 0.3,
+            "quantity": 0.24,
+            "unit": "mEq",
+            "perKg": 0.3,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "kphos",
+            "name": "Fosfato de potássio",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mmol",
+            "perKg": 0,
+            "perUnit": "mmol/kg/dia",
+            "group": 1,
+            "status": "Não ofertado"
+          },
+          {
+            "id": "glycero",
+            "name": "Glicerofosfato de sódio",
+            "volume": 0.6,
+            "quantity": 0.6,
+            "unit": "mmol",
+            "perKg": 0.7499999999999999,
+            "perUnit": "mmol/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "va",
+            "name": "Polivit A Ped",
+            "volume": 1.6,
+            "quantity": 1.6,
+            "unit": "mL",
+            "perKg": 2,
+            "perUnit": "mL/kg/dia",
+            "group": 2,
+            "status": ""
+          },
+          {
+            "id": "vb",
+            "name": "Polivit B Ped",
+            "volume": 1.6,
+            "quantity": 1.6,
+            "unit": "mL",
+            "perKg": 2,
+            "perUnit": "mL/kg/dia",
+            "group": 2,
+            "status": ""
+          },
+          {
+            "id": "oligo",
+            "name": "Solução de oligoelementos",
+            "volume": 0.2,
+            "quantity": 0.2,
+            "unit": "mL",
+            "perKg": 0.25,
+            "perUnit": "mL/kg/dia",
+            "group": 2,
+            "status": ""
+          },
+          {
+            "id": "zinc",
+            "name": "Sulfato de zinco",
+            "volume": 1.1,
+            "quantity": 220.00000000000003,
+            "unit": "mcg",
+            "perKg": 275,
+            "perUnit": "mcg/kg/dia",
+            "group": 2,
+            "status": ""
+          },
+          {
+            "id": "selenium",
+            "name": "Selênio",
+            "volume": 0.08,
+            "quantity": 4.8,
+            "unit": "mcg",
+            "perKg": 5.999999999999999,
+            "perUnit": "mcg/kg/dia",
+            "group": 2,
+            "status": ""
+          },
+          {
+            "id": "water",
+            "name": "Água para injeção",
+            "volume": 49.72,
+            "quantity": 49.72,
+            "unit": "mL",
+            "perKg": null,
+            "perUnit": "q.s.p.",
+            "group": 3,
+            "status": ""
+          }
+        ],
+        "volumes": {
+          "aa": 16,
+          "lip": 8,
+          "glucose": 13.8,
+          "phosphate": 0.6,
+          "sodium": 0.2,
+          "potassium": 1.2,
+          "calcium": 1.6,
+          "magnesium": 0.3,
+          "va": 1.6,
+          "vb": 1.6,
+          "oligo": 0.2,
+          "zinc": 1.1,
+          "selenium": 0.08,
+          "water": 49.72
+        },
+        "grams": {
+          "aa": 1.6,
+          "lip": 1.6,
+          "glucose": 6.9
+        },
+        "effective": {
+          "aa": 2,
+          "lip": 2,
+          "vig": 5.989583333333333,
+          "na": 1.925,
+          "k": 2.01,
+          "ca": 1,
+          "mg": 0.3,
+          "p": 0.7499999999999999,
+          "zn": 400,
+          "se": 5.999999999999999
+        },
+        "offers": [
+          {
+            "id": "aa",
+            "name": "Aminoácidos",
+            "requested": 2,
+            "actual": 2,
+            "unit": "g/kg/dia"
+          },
+          {
+            "id": "lip",
+            "name": "Lipídeos",
+            "requested": 2,
+            "actual": 2,
+            "unit": "g/kg/dia"
+          },
+          {
+            "id": "vig",
+            "name": "VIG",
+            "requested": 6,
+            "actual": 5.989583333333333,
+            "unit": "mg/kg/min"
+          },
+          {
+            "id": "na",
+            "name": "Sódio total",
+            "requested": 2,
+            "actual": 1.925,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "k",
+            "name": "Potássio total",
+            "requested": 2,
+            "actual": 2.01,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "ca",
+            "name": "Cálcio",
+            "requested": 1,
+            "actual": 1,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "mg",
+            "name": "Magnésio",
+            "requested": 0.3,
+            "actual": 0.3,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "p",
+            "name": "Fósforo",
+            "requested": 0.8,
+            "actual": 0.7499999999999999,
+            "unit": "mmol/kg/dia"
+          },
+          {
+            "id": "zn",
+            "name": "Zinco total",
+            "requested": 400,
+            "actual": 400,
+            "unit": "mcg/kg/dia"
+          },
+          {
+            "id": "se",
+            "name": "Selênio",
+            "requested": 6,
+            "actual": 5.999999999999999,
+            "unit": "mcg/kg/dia"
+          }
+        ],
+        "rounding": [
+          "glucose",
+          "phosphate",
+          "sodium",
+          "potassium",
+          "oligo"
+        ],
+        "adjustments": [],
+        "notices": [],
+        "blocks": [],
+        "requiresCentral": false,
+        "accessBlocked": false,
+        "canExport": true,
+        "totals": {
+          "totalVolume": 96,
+          "componentsVolume": 46.28,
+          "water": 49.72,
+          "infusion": 4,
+          "infusionExact": 4,
+          "fluid": 120,
+          "calories": 60.49999999999999,
+          "glucosePercent": 7.187500000000001,
+          "nonProtein": 52.5,
+          "proteinRatio": 26.25
+        }
+      }
+    },
+    {
+      "name": "peso-1500g",
+      "input": {
+        "weight": 1.5,
+        "day": 8,
+        "gaWeeks": 27,
+        "gaDays": 3,
+        "fluid": 120,
+        "aa": 2,
+        "lip": 2,
+        "vig": 6,
+        "na": 2,
+        "k": 2,
+        "ca": 1,
+        "mg": 0.3,
+        "p": 0.8,
+        "seDose": 6,
+        "naSalt": "nacl",
+        "pSalt": "glycero",
+        "access": "central",
+        "omit": {}
+      },
+      "expected": {
+        "ok": true,
+        "input": {
+          "weight": 1.5,
+          "day": 8,
+          "gaWeeks": 27,
+          "gaDays": 3,
+          "fluid": 120,
+          "aa": 2,
+          "lip": 2,
+          "vig": 6,
+          "na": 2,
+          "k": 2,
+          "ca": 1,
+          "mg": 0.3,
+          "p": 0.8,
+          "seDose": 2,
+          "access": "central",
+          "naSalt": "nacl",
+          "pSalt": "glycero",
+          "omit": {}
+        },
+        "rows": [
+          {
+            "id": "aa",
+            "name": "Aminoped 10%",
+            "volume": 30,
+            "quantity": 3,
+            "unit": "g",
+            "perKg": 2,
+            "perUnit": "g/kg/dia",
+            "group": 0,
+            "status": ""
+          },
+          {
+            "id": "lip",
+            "name": "Lipídeos 20%",
+            "volume": 15,
+            "quantity": 3,
+            "unit": "g",
+            "perKg": 2,
+            "perUnit": "g/kg/dia",
+            "group": 0,
+            "status": ""
+          },
+          {
+            "id": "glucose",
+            "name": "Glicose 50%",
+            "volume": 25.9,
+            "quantity": 12.95,
+            "unit": "g",
+            "perKg": 5.99537037037037,
+            "perUnit": "mg/kg/min",
+            "group": 0,
+            "status": ""
+          },
+          {
+            "id": "nacl",
+            "name": "Cloreto de sódio 10%",
+            "volume": 0.4,
+            "quantity": 0.68,
+            "unit": "mEq",
+            "perKg": 0.45333333333333337,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "acetate",
+            "name": "Acetato de sódio",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mEq",
+            "perKg": 0,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": "Não acrescentado"
+          },
+          {
+            "id": "kcl",
+            "name": "Cloreto de potássio 10%",
+            "volume": 2.2,
+            "quantity": 2.9480000000000004,
+            "unit": "mEq",
+            "perKg": 1.9653333333333336,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "calcium",
+            "name": "Gluconato de cálcio 10%",
+            "volume": 3,
+            "quantity": 1.5,
+            "unit": "mEq",
+            "perKg": 1,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "magnesium",
+            "name": "Sulfato de magnésio 10%",
+            "volume": 0.6,
+            "quantity": 0.48,
+            "unit": "mEq",
+            "perKg": 0.32,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "kphos",
+            "name": "Fosfato de potássio",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mmol",
+            "perKg": 0,
+            "perUnit": "mmol/kg/dia",
+            "group": 1,
+            "status": "Não ofertado"
+          },
+          {
+            "id": "glycero",
+            "name": "Glicerofosfato de sódio",
+            "volume": 1.2,
+            "quantity": 1.2,
+            "unit": "mmol",
+            "perKg": 0.7999999999999999,
+            "perUnit": "mmol/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "va",
+            "name": "Polivit A Ped",
+            "volume": 3,
+            "quantity": 3,
+            "unit": "mL",
+            "perKg": 2,
+            "perUnit": "mL/kg/dia",
+            "group": 2,
+            "status": ""
+          },
+          {
+            "id": "vb",
+            "name": "Polivit B Ped",
+            "volume": 3,
+            "quantity": 3,
+            "unit": "mL",
+            "perKg": 2,
+            "perUnit": "mL/kg/dia",
+            "group": 2,
+            "status": ""
+          },
+          {
+            "id": "oligo",
+            "name": "Solução de oligoelementos",
+            "volume": 0.3,
+            "quantity": 0.3,
+            "unit": "mL",
+            "perKg": 0.19999999999999998,
+            "perUnit": "mL/kg/dia",
+            "group": 2,
+            "status": ""
+          },
+          {
+            "id": "zinc",
+            "name": "Sulfato de zinco",
+            "volume": 0.75,
+            "quantity": 150,
+            "unit": "mcg",
+            "perKg": 100,
+            "perUnit": "mcg/kg/dia",
+            "group": 2,
+            "status": ""
+          },
+          {
+            "id": "selenium",
+            "name": "Selênio",
+            "volume": 0.05,
+            "quantity": 3,
+            "unit": "mcg",
+            "perKg": 2,
+            "perUnit": "mcg/kg/dia",
+            "group": 2,
+            "status": ""
+          },
+          {
+            "id": "water",
+            "name": "Água para injeção",
+            "volume": 94.6,
+            "quantity": 94.6,
+            "unit": "mL",
+            "perKg": null,
+            "perUnit": "q.s.p.",
+            "group": 3,
+            "status": ""
+          }
+        ],
+        "volumes": {
+          "aa": 30,
+          "lip": 15,
+          "glucose": 25.9,
+          "phosphate": 1.2,
+          "sodium": 0.4,
+          "potassium": 2.2,
+          "calcium": 3,
+          "magnesium": 0.6,
+          "va": 3,
+          "vb": 3,
+          "oligo": 0.3,
+          "zinc": 0.75,
+          "selenium": 0.05,
+          "water": 94.6
+        },
+        "grams": {
+          "aa": 3,
+          "lip": 3,
+          "glucose": 12.95
+        },
+        "effective": {
+          "aa": 2,
+          "lip": 2,
+          "vig": 5.99537037037037,
+          "na": 2.0533333333333332,
+          "k": 1.9653333333333336,
+          "ca": 1,
+          "mg": 0.32,
+          "p": 0.7999999999999999,
+          "zn": 200,
+          "se": 2
+        },
+        "offers": [
+          {
+            "id": "aa",
+            "name": "Aminoácidos",
+            "requested": 2,
+            "actual": 2,
+            "unit": "g/kg/dia"
+          },
+          {
+            "id": "lip",
+            "name": "Lipídeos",
+            "requested": 2,
+            "actual": 2,
+            "unit": "g/kg/dia"
+          },
+          {
+            "id": "vig",
+            "name": "VIG",
+            "requested": 6,
+            "actual": 5.99537037037037,
+            "unit": "mg/kg/min"
+          },
+          {
+            "id": "na",
+            "name": "Sódio total",
+            "requested": 2,
+            "actual": 2.0533333333333332,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "k",
+            "name": "Potássio total",
+            "requested": 2,
+            "actual": 1.9653333333333336,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "ca",
+            "name": "Cálcio",
+            "requested": 1,
+            "actual": 1,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "mg",
+            "name": "Magnésio",
+            "requested": 0.3,
+            "actual": 0.32,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "p",
+            "name": "Fósforo",
+            "requested": 0.8,
+            "actual": 0.7999999999999999,
+            "unit": "mmol/kg/dia"
+          },
+          {
+            "id": "zn",
+            "name": "Zinco total",
+            "requested": 200,
+            "actual": 200,
+            "unit": "mcg/kg/dia"
+          },
+          {
+            "id": "se",
+            "name": "Selênio",
+            "requested": 2,
+            "actual": 2,
+            "unit": "mcg/kg/dia"
+          }
+        ],
+        "rounding": [
+          "glucose",
+          "sodium",
+          "potassium",
+          "magnesium"
+        ],
+        "adjustments": [],
+        "notices": [],
+        "blocks": [],
+        "requiresCentral": false,
+        "accessBlocked": false,
+        "canExport": true,
+        "totals": {
+          "totalVolume": 180,
+          "componentsVolume": 85.4,
+          "water": 94.6,
+          "infusion": 7.5,
+          "infusionExact": 7.5,
+          "fluid": 120,
+          "calories": 60.53333333333333,
+          "glucosePercent": 7.194444444444444,
+          "nonProtein": 52.53333333333333,
+          "proteinRatio": 26.266666666666666
+        }
+      }
+    },
+    {
+      "name": "fosfato-potassio",
+      "input": {
+        "weight": 0.8,
+        "day": 1,
+        "gaWeeks": 27,
+        "gaDays": 3,
+        "fluid": 120,
+        "aa": 2,
+        "lip": 2,
+        "vig": 6,
+        "na": 2,
+        "k": 0.1,
+        "ca": 1,
+        "mg": 0.3,
+        "p": 0.8,
+        "seDose": 6,
+        "naSalt": "nacl",
+        "pSalt": "kphos",
+        "access": "central",
+        "omit": {}
+      },
+      "expected": {
+        "ok": true,
+        "input": {
+          "weight": 0.8,
+          "day": 1,
+          "gaWeeks": 27,
+          "gaDays": 3,
+          "fluid": 120,
+          "aa": 2,
+          "lip": 2,
+          "vig": 6,
+          "na": 2,
+          "k": 0.1,
+          "ca": 1,
+          "mg": 0.3,
+          "p": 0.8,
+          "seDose": 6,
+          "access": "central",
+          "naSalt": "nacl",
+          "pSalt": "kphos",
+          "omit": {}
+        },
+        "rows": [
+          {
+            "id": "aa",
+            "name": "Aminoped 10%",
+            "volume": 16,
+            "quantity": 1.6,
+            "unit": "g",
+            "perKg": 2,
+            "perUnit": "g/kg/dia",
+            "group": 0,
+            "status": ""
+          },
+          {
+            "id": "lip",
+            "name": "Lipídeos 20%",
+            "volume": 8,
+            "quantity": 1.6,
+            "unit": "g",
+            "perKg": 2,
+            "perUnit": "g/kg/dia",
+            "group": 0,
+            "status": ""
+          },
+          {
+            "id": "glucose",
+            "name": "Glicose 50%",
+            "volume": 13.8,
+            "quantity": 6.9,
+            "unit": "g",
+            "perKg": 5.989583333333333,
+            "perUnit": "mg/kg/min",
+            "group": 0,
+            "status": ""
+          },
+          {
+            "id": "nacl",
+            "name": "Cloreto de sódio 10%",
+            "volume": 0.9,
+            "quantity": 1.53,
+            "unit": "mEq",
+            "perKg": 1.9124999999999999,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "acetate",
+            "name": "Acetato de sódio",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mEq",
+            "perKg": 0,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": "Não acrescentado"
+          },
+          {
+            "id": "kcl",
+            "name": "Cloreto de potássio 10%",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mEq",
+            "perKg": 0,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": "Não acrescentado"
+          },
+          {
+            "id": "calcium",
+            "name": "Gluconato de cálcio 10%",
+            "volume": 1.6,
+            "quantity": 0.8,
+            "unit": "mEq",
+            "perKg": 1,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "magnesium",
+            "name": "Sulfato de magnésio 10%",
+            "volume": 0.3,
+            "quantity": 0.24,
+            "unit": "mEq",
+            "perKg": 0.3,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "kphos",
+            "name": "Fosfato de potássio",
+            "volume": 0.6,
+            "quantity": 0.66,
+            "unit": "mmol",
+            "perKg": 0.825,
+            "perUnit": "mmol/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "glycero",
+            "name": "Glicerofosfato de sódio",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mmol",
+            "perKg": 0,
+            "perUnit": "mmol/kg/dia",
+            "group": 1,
+            "status": "Não ofertado"
+          },
+          {
+            "id": "va",
+            "name": "Polivit A Ped",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mL",
+            "perKg": 0,
+            "perUnit": "mL/kg/dia",
+            "group": 2,
+            "status": "Início no 3º dia"
+          },
+          {
+            "id": "vb",
+            "name": "Polivit B Ped",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mL",
+            "perKg": 0,
+            "perUnit": "mL/kg/dia",
+            "group": 2,
+            "status": "Início no 3º dia"
+          },
+          {
+            "id": "oligo",
+            "name": "Solução de oligoelementos",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mL",
+            "perKg": 0,
+            "perUnit": "mL/kg/dia",
+            "group": 2,
+            "status": "Início no 8º dia"
+          },
+          {
+            "id": "zinc",
+            "name": "Sulfato de zinco",
+            "volume": 1.6,
+            "quantity": 320,
+            "unit": "mcg",
+            "perKg": 400,
+            "perUnit": "mcg/kg/dia",
+            "group": 2,
+            "status": ""
+          },
+          {
+            "id": "selenium",
+            "name": "Selênio",
+            "volume": 0.08,
+            "quantity": 4.8,
+            "unit": "mcg",
+            "perKg": 5.999999999999999,
+            "perUnit": "mcg/kg/dia",
+            "group": 2,
+            "status": ""
+          },
+          {
+            "id": "water",
+            "name": "Água para injeção",
+            "volume": 53.12,
+            "quantity": 53.12,
+            "unit": "mL",
+            "perKg": null,
+            "perUnit": "q.s.p.",
+            "group": 3,
+            "status": ""
+          }
+        ],
+        "volumes": {
+          "aa": 16,
+          "lip": 8,
+          "glucose": 13.8,
+          "phosphate": 0.6,
+          "sodium": 0.9,
+          "potassium": 0,
+          "calcium": 1.6,
+          "magnesium": 0.3,
+          "va": 0,
+          "vb": 0,
+          "oligo": 0,
+          "zinc": 1.6,
+          "selenium": 0.08,
+          "water": 53.12
+        },
+        "grams": {
+          "aa": 1.6,
+          "lip": 1.6,
+          "glucose": 6.9
+        },
+        "effective": {
+          "aa": 2,
+          "lip": 2,
+          "vig": 5.989583333333333,
+          "na": 1.9124999999999999,
+          "k": 1.4999999999999998,
+          "ca": 1,
+          "mg": 0.3,
+          "p": 0.825,
+          "zn": 400,
+          "se": 5.999999999999999
+        },
+        "offers": [
+          {
+            "id": "aa",
+            "name": "Aminoácidos",
+            "requested": 2,
+            "actual": 2,
+            "unit": "g/kg/dia"
+          },
+          {
+            "id": "lip",
+            "name": "Lipídeos",
+            "requested": 2,
+            "actual": 2,
+            "unit": "g/kg/dia"
+          },
+          {
+            "id": "vig",
+            "name": "VIG",
+            "requested": 6,
+            "actual": 5.989583333333333,
+            "unit": "mg/kg/min"
+          },
+          {
+            "id": "na",
+            "name": "Sódio total",
+            "requested": 2,
+            "actual": 1.9124999999999999,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "k",
+            "name": "Potássio total",
+            "requested": 0.1,
+            "actual": 1.4999999999999998,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "ca",
+            "name": "Cálcio",
+            "requested": 1,
+            "actual": 1,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "mg",
+            "name": "Magnésio",
+            "requested": 0.3,
+            "actual": 0.3,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "p",
+            "name": "Fósforo",
+            "requested": 0.8,
+            "actual": 0.825,
+            "unit": "mmol/kg/dia"
+          },
+          {
+            "id": "zn",
+            "name": "Zinco total",
+            "requested": 400,
+            "actual": 400,
+            "unit": "mcg/kg/dia"
+          },
+          {
+            "id": "se",
+            "name": "Selênio",
+            "requested": 6,
+            "actual": 5.999999999999999,
+            "unit": "mcg/kg/dia"
+          }
+        ],
+        "rounding": [
+          "glucose",
+          "phosphate",
+          "sodium"
+        ],
+        "adjustments": [
+          {
+            "id": "k",
+            "name": "Potássio",
+            "requested": 0.1,
+            "actual": 1.4999999999999998,
+            "unit": "mEq/kg/dia",
+            "source": "fosfato de potássio"
+          }
+        ],
+        "notices": [
+          "Vitaminas não incluídas: início no 3º dia de vida.",
+          "Solução de oligoelementos não incluída: início no 8º dia de vida."
+        ],
+        "blocks": [],
+        "requiresCentral": false,
+        "accessBlocked": false,
+        "canExport": true,
+        "totals": {
+          "totalVolume": 96,
+          "componentsVolume": 42.88,
+          "water": 53.12,
+          "infusion": 4,
+          "infusionExact": 4,
+          "fluid": 120,
+          "calories": 60.49999999999999,
+          "glucosePercent": 7.187500000000001,
+          "nonProtein": 52.5,
+          "proteinRatio": 26.25
+        }
+      }
+    },
+    {
+      "name": "acetato",
+      "input": {
+        "weight": 0.8,
+        "day": 1,
+        "gaWeeks": 27,
+        "gaDays": 3,
+        "fluid": 120,
+        "aa": 2,
+        "lip": 2,
+        "vig": 6,
+        "na": 2,
+        "k": 2,
+        "ca": 1,
+        "mg": 0.3,
+        "p": 0.8,
+        "seDose": 6,
+        "naSalt": "acetate",
+        "pSalt": "glycero",
+        "access": "central",
+        "omit": {}
+      },
+      "expected": {
+        "ok": true,
+        "input": {
+          "weight": 0.8,
+          "day": 1,
+          "gaWeeks": 27,
+          "gaDays": 3,
+          "fluid": 120,
+          "aa": 2,
+          "lip": 2,
+          "vig": 6,
+          "na": 2,
+          "k": 2,
+          "ca": 1,
+          "mg": 0.3,
+          "p": 0.8,
+          "seDose": 6,
+          "access": "central",
+          "naSalt": "acetate",
+          "pSalt": "glycero",
+          "omit": {}
+        },
+        "rows": [
+          {
+            "id": "aa",
+            "name": "Aminoped 10%",
+            "volume": 16,
+            "quantity": 1.6,
+            "unit": "g",
+            "perKg": 2,
+            "perUnit": "g/kg/dia",
+            "group": 0,
+            "status": ""
+          },
+          {
+            "id": "lip",
+            "name": "Lipídeos 20%",
+            "volume": 8,
+            "quantity": 1.6,
+            "unit": "g",
+            "perKg": 2,
+            "perUnit": "g/kg/dia",
+            "group": 0,
+            "status": ""
+          },
+          {
+            "id": "glucose",
+            "name": "Glicose 50%",
+            "volume": 13.8,
+            "quantity": 6.9,
+            "unit": "g",
+            "perKg": 5.989583333333333,
+            "perUnit": "mg/kg/min",
+            "group": 0,
+            "status": ""
+          },
+          {
+            "id": "nacl",
+            "name": "Cloreto de sódio 10%",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mEq",
+            "perKg": 0,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": "Não acrescentado"
+          },
+          {
+            "id": "acetate",
+            "name": "Acetato de sódio",
+            "volume": 0.2,
+            "quantity": 0.4,
+            "unit": "mEq",
+            "perKg": 0.5,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "kcl",
+            "name": "Cloreto de potássio 10%",
+            "volume": 1.2,
+            "quantity": 1.608,
+            "unit": "mEq",
+            "perKg": 2.01,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "calcium",
+            "name": "Gluconato de cálcio 10%",
+            "volume": 1.6,
+            "quantity": 0.8,
+            "unit": "mEq",
+            "perKg": 1,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "magnesium",
+            "name": "Sulfato de magnésio 10%",
+            "volume": 0.3,
+            "quantity": 0.24,
+            "unit": "mEq",
+            "perKg": 0.3,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "kphos",
+            "name": "Fosfato de potássio",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mmol",
+            "perKg": 0,
+            "perUnit": "mmol/kg/dia",
+            "group": 1,
+            "status": "Não ofertado"
+          },
+          {
+            "id": "glycero",
+            "name": "Glicerofosfato de sódio",
+            "volume": 0.6,
+            "quantity": 0.6,
+            "unit": "mmol",
+            "perKg": 0.7499999999999999,
+            "perUnit": "mmol/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "va",
+            "name": "Polivit A Ped",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mL",
+            "perKg": 0,
+            "perUnit": "mL/kg/dia",
+            "group": 2,
+            "status": "Início no 3º dia"
+          },
+          {
+            "id": "vb",
+            "name": "Polivit B Ped",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mL",
+            "perKg": 0,
+            "perUnit": "mL/kg/dia",
+            "group": 2,
+            "status": "Início no 3º dia"
+          },
+          {
+            "id": "oligo",
+            "name": "Solução de oligoelementos",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mL",
+            "perKg": 0,
+            "perUnit": "mL/kg/dia",
+            "group": 2,
+            "status": "Início no 8º dia"
+          },
+          {
+            "id": "zinc",
+            "name": "Sulfato de zinco",
+            "volume": 1.6,
+            "quantity": 320,
+            "unit": "mcg",
+            "perKg": 400,
+            "perUnit": "mcg/kg/dia",
+            "group": 2,
+            "status": ""
+          },
+          {
+            "id": "selenium",
+            "name": "Selênio",
+            "volume": 0.08,
+            "quantity": 4.8,
+            "unit": "mcg",
+            "perKg": 5.999999999999999,
+            "perUnit": "mcg/kg/dia",
+            "group": 2,
+            "status": ""
+          },
+          {
+            "id": "water",
+            "name": "Água para injeção",
+            "volume": 52.62,
+            "quantity": 52.62,
+            "unit": "mL",
+            "perKg": null,
+            "perUnit": "q.s.p.",
+            "group": 3,
+            "status": ""
+          }
+        ],
+        "volumes": {
+          "aa": 16,
+          "lip": 8,
+          "glucose": 13.8,
+          "phosphate": 0.6,
+          "sodium": 0.2,
+          "potassium": 1.2,
+          "calcium": 1.6,
+          "magnesium": 0.3,
+          "va": 0,
+          "vb": 0,
+          "oligo": 0,
+          "zinc": 1.6,
+          "selenium": 0.08,
+          "water": 52.62
+        },
+        "grams": {
+          "aa": 1.6,
+          "lip": 1.6,
+          "glucose": 6.9
+        },
+        "effective": {
+          "aa": 2,
+          "lip": 2,
+          "vig": 5.989583333333333,
+          "na": 2,
+          "k": 2.01,
+          "ca": 1,
+          "mg": 0.3,
+          "p": 0.7499999999999999,
+          "zn": 400,
+          "se": 5.999999999999999
+        },
+        "offers": [
+          {
+            "id": "aa",
+            "name": "Aminoácidos",
+            "requested": 2,
+            "actual": 2,
+            "unit": "g/kg/dia"
+          },
+          {
+            "id": "lip",
+            "name": "Lipídeos",
+            "requested": 2,
+            "actual": 2,
+            "unit": "g/kg/dia"
+          },
+          {
+            "id": "vig",
+            "name": "VIG",
+            "requested": 6,
+            "actual": 5.989583333333333,
+            "unit": "mg/kg/min"
+          },
+          {
+            "id": "na",
+            "name": "Sódio total",
+            "requested": 2,
+            "actual": 2,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "k",
+            "name": "Potássio total",
+            "requested": 2,
+            "actual": 2.01,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "ca",
+            "name": "Cálcio",
+            "requested": 1,
+            "actual": 1,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "mg",
+            "name": "Magnésio",
+            "requested": 0.3,
+            "actual": 0.3,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "p",
+            "name": "Fósforo",
+            "requested": 0.8,
+            "actual": 0.7499999999999999,
+            "unit": "mmol/kg/dia"
+          },
+          {
+            "id": "zn",
+            "name": "Zinco total",
+            "requested": 400,
+            "actual": 400,
+            "unit": "mcg/kg/dia"
+          },
+          {
+            "id": "se",
+            "name": "Selênio",
+            "requested": 6,
+            "actual": 5.999999999999999,
+            "unit": "mcg/kg/dia"
+          }
+        ],
+        "rounding": [
+          "glucose",
+          "phosphate",
+          "potassium"
+        ],
+        "adjustments": [],
+        "notices": [
+          "Vitaminas não incluídas: início no 3º dia de vida.",
+          "Solução de oligoelementos não incluída: início no 8º dia de vida."
+        ],
+        "blocks": [],
+        "requiresCentral": false,
+        "accessBlocked": false,
+        "canExport": true,
+        "totals": {
+          "totalVolume": 96,
+          "componentsVolume": 43.38,
+          "water": 52.62,
+          "infusion": 4,
+          "infusionExact": 4,
+          "fluid": 120,
+          "calories": 60.49999999999999,
+          "glucosePercent": 7.187500000000001,
+          "nonProtein": 52.5,
+          "proteinRatio": 26.25
+        }
+      }
+    },
+    {
+      "name": "contribuicao-sodio",
+      "input": {
+        "weight": 0.8,
+        "day": 1,
+        "gaWeeks": 27,
+        "gaDays": 3,
+        "fluid": 120,
+        "aa": 2,
+        "lip": 2,
+        "vig": 6,
+        "na": 0.1,
+        "k": 2,
+        "ca": 1,
+        "mg": 0.3,
+        "p": 0.8,
+        "seDose": 6,
+        "naSalt": "nacl",
+        "pSalt": "glycero",
+        "access": "central",
+        "omit": {}
+      },
+      "expected": {
+        "ok": true,
+        "input": {
+          "weight": 0.8,
+          "day": 1,
+          "gaWeeks": 27,
+          "gaDays": 3,
+          "fluid": 120,
+          "aa": 2,
+          "lip": 2,
+          "vig": 6,
+          "na": 0.1,
+          "k": 2,
+          "ca": 1,
+          "mg": 0.3,
+          "p": 0.8,
+          "seDose": 6,
+          "access": "central",
+          "naSalt": "nacl",
+          "pSalt": "glycero",
+          "omit": {}
+        },
+        "rows": [
+          {
+            "id": "aa",
+            "name": "Aminoped 10%",
+            "volume": 16,
+            "quantity": 1.6,
+            "unit": "g",
+            "perKg": 2,
+            "perUnit": "g/kg/dia",
+            "group": 0,
+            "status": ""
+          },
+          {
+            "id": "lip",
+            "name": "Lipídeos 20%",
+            "volume": 8,
+            "quantity": 1.6,
+            "unit": "g",
+            "perKg": 2,
+            "perUnit": "g/kg/dia",
+            "group": 0,
+            "status": ""
+          },
+          {
+            "id": "glucose",
+            "name": "Glicose 50%",
+            "volume": 13.8,
+            "quantity": 6.9,
+            "unit": "g",
+            "perKg": 5.989583333333333,
+            "perUnit": "mg/kg/min",
+            "group": 0,
+            "status": ""
+          },
+          {
+            "id": "nacl",
+            "name": "Cloreto de sódio 10%",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mEq",
+            "perKg": 0,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": "Não acrescentado"
+          },
+          {
+            "id": "acetate",
+            "name": "Acetato de sódio",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mEq",
+            "perKg": 0,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": "Não acrescentado"
+          },
+          {
+            "id": "kcl",
+            "name": "Cloreto de potássio 10%",
+            "volume": 1.2,
+            "quantity": 1.608,
+            "unit": "mEq",
+            "perKg": 2.01,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "calcium",
+            "name": "Gluconato de cálcio 10%",
+            "volume": 1.6,
+            "quantity": 0.8,
+            "unit": "mEq",
+            "perKg": 1,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "magnesium",
+            "name": "Sulfato de magnésio 10%",
+            "volume": 0.3,
+            "quantity": 0.24,
+            "unit": "mEq",
+            "perKg": 0.3,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "kphos",
+            "name": "Fosfato de potássio",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mmol",
+            "perKg": 0,
+            "perUnit": "mmol/kg/dia",
+            "group": 1,
+            "status": "Não ofertado"
+          },
+          {
+            "id": "glycero",
+            "name": "Glicerofosfato de sódio",
+            "volume": 0.6,
+            "quantity": 0.6,
+            "unit": "mmol",
+            "perKg": 0.7499999999999999,
+            "perUnit": "mmol/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "va",
+            "name": "Polivit A Ped",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mL",
+            "perKg": 0,
+            "perUnit": "mL/kg/dia",
+            "group": 2,
+            "status": "Início no 3º dia"
+          },
+          {
+            "id": "vb",
+            "name": "Polivit B Ped",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mL",
+            "perKg": 0,
+            "perUnit": "mL/kg/dia",
+            "group": 2,
+            "status": "Início no 3º dia"
+          },
+          {
+            "id": "oligo",
+            "name": "Solução de oligoelementos",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mL",
+            "perKg": 0,
+            "perUnit": "mL/kg/dia",
+            "group": 2,
+            "status": "Início no 8º dia"
+          },
+          {
+            "id": "zinc",
+            "name": "Sulfato de zinco",
+            "volume": 1.6,
+            "quantity": 320,
+            "unit": "mcg",
+            "perKg": 400,
+            "perUnit": "mcg/kg/dia",
+            "group": 2,
+            "status": ""
+          },
+          {
+            "id": "selenium",
+            "name": "Selênio",
+            "volume": 0.08,
+            "quantity": 4.8,
+            "unit": "mcg",
+            "perKg": 5.999999999999999,
+            "perUnit": "mcg/kg/dia",
+            "group": 2,
+            "status": ""
+          },
+          {
+            "id": "water",
+            "name": "Água para injeção",
+            "volume": 52.82,
+            "quantity": 52.82,
+            "unit": "mL",
+            "perKg": null,
+            "perUnit": "q.s.p.",
+            "group": 3,
+            "status": ""
+          }
+        ],
+        "volumes": {
+          "aa": 16,
+          "lip": 8,
+          "glucose": 13.8,
+          "phosphate": 0.6,
+          "sodium": 0,
+          "potassium": 1.2,
+          "calcium": 1.6,
+          "magnesium": 0.3,
+          "va": 0,
+          "vb": 0,
+          "oligo": 0,
+          "zinc": 1.6,
+          "selenium": 0.08,
+          "water": 52.82
+        },
+        "grams": {
+          "aa": 1.6,
+          "lip": 1.6,
+          "glucose": 6.9
+        },
+        "effective": {
+          "aa": 2,
+          "lip": 2,
+          "vig": 5.989583333333333,
+          "na": 1.4999999999999998,
+          "k": 2.01,
+          "ca": 1,
+          "mg": 0.3,
+          "p": 0.7499999999999999,
+          "zn": 400,
+          "se": 5.999999999999999
+        },
+        "offers": [
+          {
+            "id": "aa",
+            "name": "Aminoácidos",
+            "requested": 2,
+            "actual": 2,
+            "unit": "g/kg/dia"
+          },
+          {
+            "id": "lip",
+            "name": "Lipídeos",
+            "requested": 2,
+            "actual": 2,
+            "unit": "g/kg/dia"
+          },
+          {
+            "id": "vig",
+            "name": "VIG",
+            "requested": 6,
+            "actual": 5.989583333333333,
+            "unit": "mg/kg/min"
+          },
+          {
+            "id": "na",
+            "name": "Sódio total",
+            "requested": 0.1,
+            "actual": 1.4999999999999998,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "k",
+            "name": "Potássio total",
+            "requested": 2,
+            "actual": 2.01,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "ca",
+            "name": "Cálcio",
+            "requested": 1,
+            "actual": 1,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "mg",
+            "name": "Magnésio",
+            "requested": 0.3,
+            "actual": 0.3,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "p",
+            "name": "Fósforo",
+            "requested": 0.8,
+            "actual": 0.7499999999999999,
+            "unit": "mmol/kg/dia"
+          },
+          {
+            "id": "zn",
+            "name": "Zinco total",
+            "requested": 400,
+            "actual": 400,
+            "unit": "mcg/kg/dia"
+          },
+          {
+            "id": "se",
+            "name": "Selênio",
+            "requested": 6,
+            "actual": 5.999999999999999,
+            "unit": "mcg/kg/dia"
+          }
+        ],
+        "rounding": [
+          "glucose",
+          "phosphate",
+          "potassium"
+        ],
+        "adjustments": [
+          {
+            "id": "na",
+            "name": "Sódio",
+            "requested": 0.1,
+            "actual": 1.4999999999999998,
+            "unit": "mEq/kg/dia",
+            "source": "glicerofosfato de sódio"
+          }
+        ],
+        "notices": [
+          "Vitaminas não incluídas: início no 3º dia de vida.",
+          "Solução de oligoelementos não incluída: início no 8º dia de vida."
+        ],
+        "blocks": [],
+        "requiresCentral": false,
+        "accessBlocked": false,
+        "canExport": true,
+        "totals": {
+          "totalVolume": 96,
+          "componentsVolume": 43.18,
+          "water": 52.82,
+          "infusion": 4,
+          "infusionExact": 4,
+          "fluid": 120,
+          "calories": 60.49999999999999,
+          "glucosePercent": 7.187500000000001,
+          "nonProtein": 52.5,
+          "proteinRatio": 26.25
+        }
+      }
+    },
+    {
+      "name": "omissoes",
+      "input": {
+        "weight": 0.8,
+        "day": 1,
+        "gaWeeks": 27,
+        "gaDays": 3,
+        "fluid": 120,
+        "aa": 2,
+        "lip": 2,
+        "vig": 6,
+        "na": 2,
+        "k": 2,
+        "ca": 1,
+        "mg": 0.3,
+        "p": 0.8,
+        "seDose": 6,
+        "naSalt": "nacl",
+        "pSalt": "glycero",
+        "access": "central",
+        "omit": {
+          "aa": true,
+          "lip": true,
+          "vig": true,
+          "na": true,
+          "k": true,
+          "ca": true,
+          "mg": true,
+          "p": true,
+          "va": true,
+          "vb": true,
+          "oligo": true,
+          "zn": true,
+          "se": true
+        }
+      },
+      "expected": {
+        "ok": true,
+        "input": {
+          "weight": 0.8,
+          "day": 1,
+          "gaWeeks": 27,
+          "gaDays": 3,
+          "fluid": 120,
+          "aa": 0,
+          "lip": 0,
+          "vig": 0,
+          "na": 0,
+          "k": 0,
+          "ca": 0,
+          "mg": 0,
+          "p": 0,
+          "seDose": 0,
+          "access": "central",
+          "naSalt": "nacl",
+          "pSalt": "glycero",
+          "omit": {
+            "aa": true,
+            "lip": true,
+            "vig": true,
+            "na": true,
+            "k": true,
+            "ca": true,
+            "mg": true,
+            "p": true,
+            "va": true,
+            "vb": true,
+            "oligo": true,
+            "zn": true,
+            "se": true
+          }
+        },
+        "rows": [
+          {
+            "id": "aa",
+            "name": "Aminoped 10%",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "g",
+            "perKg": 0,
+            "perUnit": "g/kg/dia",
+            "group": 0,
+            "status": "Não ofertado"
+          },
+          {
+            "id": "lip",
+            "name": "Lipídeos 20%",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "g",
+            "perKg": 0,
+            "perUnit": "g/kg/dia",
+            "group": 0,
+            "status": "Não ofertado"
+          },
+          {
+            "id": "glucose",
+            "name": "Glicose 50%",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "g",
+            "perKg": 0,
+            "perUnit": "mg/kg/min",
+            "group": 0,
+            "status": "Não ofertado"
+          },
+          {
+            "id": "nacl",
+            "name": "Cloreto de sódio 10%",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mEq",
+            "perKg": 0,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": "Não acrescentado"
+          },
+          {
+            "id": "acetate",
+            "name": "Acetato de sódio",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mEq",
+            "perKg": 0,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": "Não acrescentado"
+          },
+          {
+            "id": "kcl",
+            "name": "Cloreto de potássio 10%",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mEq",
+            "perKg": 0,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": "Não acrescentado"
+          },
+          {
+            "id": "calcium",
+            "name": "Gluconato de cálcio 10%",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mEq",
+            "perKg": 0,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": "Não ofertado"
+          },
+          {
+            "id": "magnesium",
+            "name": "Sulfato de magnésio 10%",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mEq",
+            "perKg": 0,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": "Não ofertado"
+          },
+          {
+            "id": "kphos",
+            "name": "Fosfato de potássio",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mmol",
+            "perKg": 0,
+            "perUnit": "mmol/kg/dia",
+            "group": 1,
+            "status": "Não ofertado"
+          },
+          {
+            "id": "glycero",
+            "name": "Glicerofosfato de sódio",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mmol",
+            "perKg": 0,
+            "perUnit": "mmol/kg/dia",
+            "group": 1,
+            "status": "Não ofertado"
+          },
+          {
+            "id": "va",
+            "name": "Polivit A Ped",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mL",
+            "perKg": 0,
+            "perUnit": "mL/kg/dia",
+            "group": 2,
+            "status": "Não ofertado"
+          },
+          {
+            "id": "vb",
+            "name": "Polivit B Ped",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mL",
+            "perKg": 0,
+            "perUnit": "mL/kg/dia",
+            "group": 2,
+            "status": "Não ofertado"
+          },
+          {
+            "id": "oligo",
+            "name": "Solução de oligoelementos",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mL",
+            "perKg": 0,
+            "perUnit": "mL/kg/dia",
+            "group": 2,
+            "status": "Não ofertado"
+          },
+          {
+            "id": "zinc",
+            "name": "Sulfato de zinco",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mcg",
+            "perKg": 0,
+            "perUnit": "mcg/kg/dia",
+            "group": 2,
+            "status": "Não acrescentado"
+          },
+          {
+            "id": "selenium",
+            "name": "Selênio",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mcg",
+            "perKg": 0,
+            "perUnit": "mcg/kg/dia",
+            "group": 2,
+            "status": "Não ofertado"
+          },
+          {
+            "id": "water",
+            "name": "Água para injeção",
+            "volume": 96,
+            "quantity": 96,
+            "unit": "mL",
+            "perKg": null,
+            "perUnit": "q.s.p.",
+            "group": 3,
+            "status": ""
+          }
+        ],
+        "volumes": {
+          "aa": 0,
+          "lip": 0,
+          "glucose": 0,
+          "phosphate": 0,
+          "sodium": 0,
+          "potassium": 0,
+          "calcium": 0,
+          "magnesium": 0,
+          "va": 0,
+          "vb": 0,
+          "oligo": 0,
+          "zinc": 0,
+          "selenium": 0,
+          "water": 96
+        },
+        "grams": {
+          "aa": 0,
+          "lip": 0,
+          "glucose": 0
+        },
+        "effective": {
+          "aa": 0,
+          "lip": 0,
+          "vig": 0,
+          "na": 0,
+          "k": 0,
+          "ca": 0,
+          "mg": 0,
+          "p": 0,
+          "zn": 0,
+          "se": 0
+        },
+        "offers": [
+          {
+            "id": "aa",
+            "name": "Aminoácidos",
+            "requested": 0,
+            "actual": 0,
+            "unit": "g/kg/dia"
+          },
+          {
+            "id": "lip",
+            "name": "Lipídeos",
+            "requested": 0,
+            "actual": 0,
+            "unit": "g/kg/dia"
+          },
+          {
+            "id": "vig",
+            "name": "VIG",
+            "requested": 0,
+            "actual": 0,
+            "unit": "mg/kg/min"
+          },
+          {
+            "id": "na",
+            "name": "Sódio total",
+            "requested": 0,
+            "actual": 0,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "k",
+            "name": "Potássio total",
+            "requested": 0,
+            "actual": 0,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "ca",
+            "name": "Cálcio",
+            "requested": 0,
+            "actual": 0,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "mg",
+            "name": "Magnésio",
+            "requested": 0,
+            "actual": 0,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "p",
+            "name": "Fósforo",
+            "requested": 0,
+            "actual": 0,
+            "unit": "mmol/kg/dia"
+          },
+          {
+            "id": "zn",
+            "name": "Zinco total",
+            "requested": 0,
+            "actual": 0,
+            "unit": "mcg/kg/dia"
+          },
+          {
+            "id": "se",
+            "name": "Selênio",
+            "requested": 0,
+            "actual": 0,
+            "unit": "mcg/kg/dia"
+          }
+        ],
+        "rounding": [],
+        "adjustments": [],
+        "notices": [],
+        "blocks": [],
+        "requiresCentral": false,
+        "accessBlocked": false,
+        "canExport": true,
+        "totals": {
+          "totalVolume": 96,
+          "componentsVolume": 0,
+          "water": 96,
+          "infusion": 4,
+          "infusionExact": 4,
+          "fluid": 120,
+          "calories": 0,
+          "glucosePercent": 0,
+          "nonProtein": 0,
+          "proteinRatio": null
+        }
+      }
+    },
+    {
+      "name": "periferico-125",
+      "input": {
+        "weight": 1,
+        "day": 1,
+        "gaWeeks": 27,
+        "gaDays": 3,
+        "fluid": 100,
+        "aa": 2,
+        "lip": 2,
+        "vig": 8.680555555555555,
+        "na": 2,
+        "k": 2,
+        "ca": 1,
+        "mg": 0.3,
+        "p": 0.8,
+        "seDose": 6,
+        "naSalt": "nacl",
+        "pSalt": "glycero",
+        "access": "peripheral",
+        "omit": {}
+      },
+      "expected": {
+        "ok": true,
+        "input": {
+          "weight": 1,
+          "day": 1,
+          "gaWeeks": 27,
+          "gaDays": 3,
+          "fluid": 100,
+          "aa": 2,
+          "lip": 2,
+          "vig": 8.680555555555555,
+          "na": 2,
+          "k": 2,
+          "ca": 1,
+          "mg": 0.3,
+          "p": 0.8,
+          "seDose": 6,
+          "access": "peripheral",
+          "naSalt": "nacl",
+          "pSalt": "glycero",
+          "omit": {}
+        },
+        "rows": [
+          {
+            "id": "aa",
+            "name": "Aminoped 10%",
+            "volume": 20,
+            "quantity": 2,
+            "unit": "g",
+            "perKg": 2,
+            "perUnit": "g/kg/dia",
+            "group": 0,
+            "status": ""
+          },
+          {
+            "id": "lip",
+            "name": "Lipídeos 20%",
+            "volume": 10,
+            "quantity": 2,
+            "unit": "g",
+            "perKg": 2,
+            "perUnit": "g/kg/dia",
+            "group": 0,
+            "status": ""
+          },
+          {
+            "id": "glucose",
+            "name": "Glicose 50%",
+            "volume": 25,
+            "quantity": 12.5,
+            "unit": "g",
+            "perKg": 8.680555555555555,
+            "perUnit": "mg/kg/min",
+            "group": 0,
+            "status": ""
+          },
+          {
+            "id": "nacl",
+            "name": "Cloreto de sódio 10%",
+            "volume": 0.2,
+            "quantity": 0.34,
+            "unit": "mEq",
+            "perKg": 0.34,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "acetate",
+            "name": "Acetato de sódio",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mEq",
+            "perKg": 0,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": "Não acrescentado"
+          },
+          {
+            "id": "kcl",
+            "name": "Cloreto de potássio 10%",
+            "volume": 1.5,
+            "quantity": 2.0100000000000002,
+            "unit": "mEq",
+            "perKg": 2.0100000000000002,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "calcium",
+            "name": "Gluconato de cálcio 10%",
+            "volume": 2,
+            "quantity": 1,
+            "unit": "mEq",
+            "perKg": 1,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "magnesium",
+            "name": "Sulfato de magnésio 10%",
+            "volume": 0.4,
+            "quantity": 0.32000000000000006,
+            "unit": "mEq",
+            "perKg": 0.32000000000000006,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "kphos",
+            "name": "Fosfato de potássio",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mmol",
+            "perKg": 0,
+            "perUnit": "mmol/kg/dia",
+            "group": 1,
+            "status": "Não ofertado"
+          },
+          {
+            "id": "glycero",
+            "name": "Glicerofosfato de sódio",
+            "volume": 0.8,
+            "quantity": 0.8,
+            "unit": "mmol",
+            "perKg": 0.8,
+            "perUnit": "mmol/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "va",
+            "name": "Polivit A Ped",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mL",
+            "perKg": 0,
+            "perUnit": "mL/kg/dia",
+            "group": 2,
+            "status": "Início no 3º dia"
+          },
+          {
+            "id": "vb",
+            "name": "Polivit B Ped",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mL",
+            "perKg": 0,
+            "perUnit": "mL/kg/dia",
+            "group": 2,
+            "status": "Início no 3º dia"
+          },
+          {
+            "id": "oligo",
+            "name": "Solução de oligoelementos",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mL",
+            "perKg": 0,
+            "perUnit": "mL/kg/dia",
+            "group": 2,
+            "status": "Início no 8º dia"
+          },
+          {
+            "id": "zinc",
+            "name": "Sulfato de zinco",
+            "volume": 2,
+            "quantity": 400,
+            "unit": "mcg",
+            "perKg": 400,
+            "perUnit": "mcg/kg/dia",
+            "group": 2,
+            "status": ""
+          },
+          {
+            "id": "selenium",
+            "name": "Selênio",
+            "volume": 0.1,
+            "quantity": 6,
+            "unit": "mcg",
+            "perKg": 6,
+            "perUnit": "mcg/kg/dia",
+            "group": 2,
+            "status": ""
+          },
+          {
+            "id": "water",
+            "name": "Água para injeção",
+            "volume": 38,
+            "quantity": 38,
+            "unit": "mL",
+            "perKg": null,
+            "perUnit": "q.s.p.",
+            "group": 3,
+            "status": ""
+          }
+        ],
+        "volumes": {
+          "aa": 20,
+          "lip": 10,
+          "glucose": 25,
+          "phosphate": 0.8,
+          "sodium": 0.2,
+          "potassium": 1.5,
+          "calcium": 2,
+          "magnesium": 0.4,
+          "va": 0,
+          "vb": 0,
+          "oligo": 0,
+          "zinc": 2,
+          "selenium": 0.1,
+          "water": 38
+        },
+        "grams": {
+          "aa": 2,
+          "lip": 2,
+          "glucose": 12.5
+        },
+        "effective": {
+          "aa": 2,
+          "lip": 2,
+          "vig": 8.680555555555555,
+          "na": 1.9400000000000002,
+          "k": 2.0100000000000002,
+          "ca": 1,
+          "mg": 0.32000000000000006,
+          "p": 0.8,
+          "zn": 400,
+          "se": 6
+        },
+        "offers": [
+          {
+            "id": "aa",
+            "name": "Aminoácidos",
+            "requested": 2,
+            "actual": 2,
+            "unit": "g/kg/dia"
+          },
+          {
+            "id": "lip",
+            "name": "Lipídeos",
+            "requested": 2,
+            "actual": 2,
+            "unit": "g/kg/dia"
+          },
+          {
+            "id": "vig",
+            "name": "VIG",
+            "requested": 8.680555555555555,
+            "actual": 8.680555555555555,
+            "unit": "mg/kg/min"
+          },
+          {
+            "id": "na",
+            "name": "Sódio total",
+            "requested": 2,
+            "actual": 1.9400000000000002,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "k",
+            "name": "Potássio total",
+            "requested": 2,
+            "actual": 2.0100000000000002,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "ca",
+            "name": "Cálcio",
+            "requested": 1,
+            "actual": 1,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "mg",
+            "name": "Magnésio",
+            "requested": 0.3,
+            "actual": 0.32000000000000006,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "p",
+            "name": "Fósforo",
+            "requested": 0.8,
+            "actual": 0.8,
+            "unit": "mmol/kg/dia"
+          },
+          {
+            "id": "zn",
+            "name": "Zinco total",
+            "requested": 400,
+            "actual": 400,
+            "unit": "mcg/kg/dia"
+          },
+          {
+            "id": "se",
+            "name": "Selênio",
+            "requested": 6,
+            "actual": 6,
+            "unit": "mcg/kg/dia"
+          }
+        ],
+        "rounding": [
+          "sodium",
+          "potassium",
+          "magnesium"
+        ],
+        "adjustments": [],
+        "notices": [
+          "Vitaminas não incluídas: início no 3º dia de vida.",
+          "Solução de oligoelementos não incluída: início no 8º dia de vida."
+        ],
+        "blocks": [],
+        "requiresCentral": false,
+        "accessBlocked": false,
+        "canExport": true,
+        "totals": {
+          "totalVolume": 100,
+          "componentsVolume": 62,
+          "water": 38,
+          "infusion": 4.2,
+          "infusionExact": 4.166666666666667,
+          "fluid": 100,
+          "calories": 76,
+          "glucosePercent": 12.5,
+          "nonProtein": 68,
+          "proteinRatio": 34
+        }
+      }
+    },
+    {
+      "name": "volume-insuficiente",
+      "input": {
+        "weight": 0.8,
+        "day": 1,
+        "gaWeeks": 27,
+        "gaDays": 3,
+        "fluid": 20,
+        "aa": 2,
+        "lip": 2,
+        "vig": 6,
+        "na": 2,
+        "k": 2,
+        "ca": 1,
+        "mg": 0.3,
+        "p": 0.8,
+        "seDose": 6,
+        "naSalt": "nacl",
+        "pSalt": "glycero",
+        "access": "central",
+        "omit": {}
+      },
+      "expected": {
+        "ok": true,
+        "input": {
+          "weight": 0.8,
+          "day": 1,
+          "gaWeeks": 27,
+          "gaDays": 3,
+          "fluid": 20,
+          "aa": 2,
+          "lip": 2,
+          "vig": 6,
+          "na": 2,
+          "k": 2,
+          "ca": 1,
+          "mg": 0.3,
+          "p": 0.8,
+          "seDose": 6,
+          "access": "central",
+          "naSalt": "nacl",
+          "pSalt": "glycero",
+          "omit": {}
+        },
+        "rows": [
+          {
+            "id": "aa",
+            "name": "Aminoped 10%",
+            "volume": 16,
+            "quantity": 1.6,
+            "unit": "g",
+            "perKg": 2,
+            "perUnit": "g/kg/dia",
+            "group": 0,
+            "status": ""
+          },
+          {
+            "id": "lip",
+            "name": "Lipídeos 20%",
+            "volume": 8,
+            "quantity": 1.6,
+            "unit": "g",
+            "perKg": 2,
+            "perUnit": "g/kg/dia",
+            "group": 0,
+            "status": ""
+          },
+          {
+            "id": "glucose",
+            "name": "Glicose 50%",
+            "volume": 13.8,
+            "quantity": 6.9,
+            "unit": "g",
+            "perKg": 5.989583333333333,
+            "perUnit": "mg/kg/min",
+            "group": 0,
+            "status": ""
+          },
+          {
+            "id": "nacl",
+            "name": "Cloreto de sódio 10%",
+            "volume": 0.2,
+            "quantity": 0.34,
+            "unit": "mEq",
+            "perKg": 0.425,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "acetate",
+            "name": "Acetato de sódio",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mEq",
+            "perKg": 0,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": "Não acrescentado"
+          },
+          {
+            "id": "kcl",
+            "name": "Cloreto de potássio 10%",
+            "volume": 1.2,
+            "quantity": 1.608,
+            "unit": "mEq",
+            "perKg": 2.01,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "calcium",
+            "name": "Gluconato de cálcio 10%",
+            "volume": 1.6,
+            "quantity": 0.8,
+            "unit": "mEq",
+            "perKg": 1,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "magnesium",
+            "name": "Sulfato de magnésio 10%",
+            "volume": 0.3,
+            "quantity": 0.24,
+            "unit": "mEq",
+            "perKg": 0.3,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "kphos",
+            "name": "Fosfato de potássio",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mmol",
+            "perKg": 0,
+            "perUnit": "mmol/kg/dia",
+            "group": 1,
+            "status": "Não ofertado"
+          },
+          {
+            "id": "glycero",
+            "name": "Glicerofosfato de sódio",
+            "volume": 0.6,
+            "quantity": 0.6,
+            "unit": "mmol",
+            "perKg": 0.7499999999999999,
+            "perUnit": "mmol/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "va",
+            "name": "Polivit A Ped",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mL",
+            "perKg": 0,
+            "perUnit": "mL/kg/dia",
+            "group": 2,
+            "status": "Início no 3º dia"
+          },
+          {
+            "id": "vb",
+            "name": "Polivit B Ped",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mL",
+            "perKg": 0,
+            "perUnit": "mL/kg/dia",
+            "group": 2,
+            "status": "Início no 3º dia"
+          },
+          {
+            "id": "oligo",
+            "name": "Solução de oligoelementos",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mL",
+            "perKg": 0,
+            "perUnit": "mL/kg/dia",
+            "group": 2,
+            "status": "Início no 8º dia"
+          },
+          {
+            "id": "zinc",
+            "name": "Sulfato de zinco",
+            "volume": 1.6,
+            "quantity": 320,
+            "unit": "mcg",
+            "perKg": 400,
+            "perUnit": "mcg/kg/dia",
+            "group": 2,
+            "status": ""
+          },
+          {
+            "id": "selenium",
+            "name": "Selênio",
+            "volume": 0.08,
+            "quantity": 4.8,
+            "unit": "mcg",
+            "perKg": 5.999999999999999,
+            "perUnit": "mcg/kg/dia",
+            "group": 2,
+            "status": ""
+          },
+          {
+            "id": "water",
+            "name": "Água para injeção",
+            "volume": null,
+            "quantity": null,
+            "unit": "mL",
+            "perKg": null,
+            "perUnit": "q.s.p.",
+            "group": 3,
+            "status": ""
+          }
+        ],
+        "volumes": {
+          "aa": 16,
+          "lip": 8,
+          "glucose": 13.8,
+          "phosphate": 0.6,
+          "sodium": 0.2,
+          "potassium": 1.2,
+          "calcium": 1.6,
+          "magnesium": 0.3,
+          "va": 0,
+          "vb": 0,
+          "oligo": 0,
+          "zinc": 1.6,
+          "selenium": 0.08,
+          "water": null
+        },
+        "grams": {
+          "aa": 1.6,
+          "lip": 1.6,
+          "glucose": 6.9
+        },
+        "effective": {
+          "aa": 2,
+          "lip": 2,
+          "vig": 5.989583333333333,
+          "na": 1.925,
+          "k": 2.01,
+          "ca": 1,
+          "mg": 0.3,
+          "p": 0.7499999999999999,
+          "zn": 400,
+          "se": 5.999999999999999
+        },
+        "offers": [
+          {
+            "id": "aa",
+            "name": "Aminoácidos",
+            "requested": 2,
+            "actual": 2,
+            "unit": "g/kg/dia"
+          },
+          {
+            "id": "lip",
+            "name": "Lipídeos",
+            "requested": 2,
+            "actual": 2,
+            "unit": "g/kg/dia"
+          },
+          {
+            "id": "vig",
+            "name": "VIG",
+            "requested": 6,
+            "actual": 5.989583333333333,
+            "unit": "mg/kg/min"
+          },
+          {
+            "id": "na",
+            "name": "Sódio total",
+            "requested": 2,
+            "actual": 1.925,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "k",
+            "name": "Potássio total",
+            "requested": 2,
+            "actual": 2.01,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "ca",
+            "name": "Cálcio",
+            "requested": 1,
+            "actual": 1,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "mg",
+            "name": "Magnésio",
+            "requested": 0.3,
+            "actual": 0.3,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "p",
+            "name": "Fósforo",
+            "requested": 0.8,
+            "actual": 0.7499999999999999,
+            "unit": "mmol/kg/dia"
+          },
+          {
+            "id": "zn",
+            "name": "Zinco total",
+            "requested": 400,
+            "actual": 400,
+            "unit": "mcg/kg/dia"
+          },
+          {
+            "id": "se",
+            "name": "Selênio",
+            "requested": 6,
+            "actual": 5.999999999999999,
+            "unit": "mcg/kg/dia"
+          }
+        ],
+        "rounding": [
+          "glucose",
+          "phosphate",
+          "sodium",
+          "potassium"
+        ],
+        "adjustments": [],
+        "notices": [
+          "Vitaminas não incluídas: início no 3º dia de vida.",
+          "Solução de oligoelementos não incluída: início no 8º dia de vida."
+        ],
+        "blocks": [
+          "Os componentes somam 43,38 mL e ultrapassam o volume total de 16,0 mL. Revise os parâmetros; não há volume disponível para água q.s.p."
+        ],
+        "requiresCentral": true,
+        "accessBlocked": false,
+        "canExport": false,
+        "totals": {
+          "totalVolume": 16,
+          "componentsVolume": 43.38,
+          "water": null,
+          "infusion": 0.7,
+          "infusionExact": 0.6666666666666666,
+          "fluid": 20,
+          "calories": 60.49999999999999,
+          "glucosePercent": 43.125,
+          "nonProtein": 52.5,
+          "proteinRatio": 26.25
+        }
+      }
+    },
+    {
+      "name": "volume-traco-zero",
+      "input": {
+        "weight": 0.001,
+        "day": 1,
+        "gaWeeks": 27,
+        "gaDays": 3,
+        "fluid": 120,
+        "aa": 2,
+        "lip": 2,
+        "vig": 6,
+        "na": 2,
+        "k": 2,
+        "ca": 1,
+        "mg": 0.3,
+        "p": 0.8,
+        "seDose": 6,
+        "naSalt": "nacl",
+        "pSalt": "glycero",
+        "access": "central",
+        "omit": {}
+      },
+      "expected": {
+        "ok": true,
+        "input": {
+          "weight": 0.001,
+          "day": 1,
+          "gaWeeks": 27,
+          "gaDays": 3,
+          "fluid": 120,
+          "aa": 2,
+          "lip": 2,
+          "vig": 6,
+          "na": 2,
+          "k": 2,
+          "ca": 1,
+          "mg": 0.3,
+          "p": 0.8,
+          "seDose": 6,
+          "access": "central",
+          "naSalt": "nacl",
+          "pSalt": "glycero",
+          "omit": {}
+        },
+        "rows": [
+          {
+            "id": "aa",
+            "name": "Aminoped 10%",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "g",
+            "perKg": 0,
+            "perUnit": "g/kg/dia",
+            "group": 0,
+            "status": ""
+          },
+          {
+            "id": "lip",
+            "name": "Lipídeos 20%",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "g",
+            "perKg": 0,
+            "perUnit": "g/kg/dia",
+            "group": 0,
+            "status": ""
+          },
+          {
+            "id": "glucose",
+            "name": "Glicose 50%",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "g",
+            "perKg": 0,
+            "perUnit": "mg/kg/min",
+            "group": 0,
+            "status": ""
+          },
+          {
+            "id": "nacl",
+            "name": "Cloreto de sódio 10%",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mEq",
+            "perKg": 0,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": "Não acrescentado"
+          },
+          {
+            "id": "acetate",
+            "name": "Acetato de sódio",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mEq",
+            "perKg": 0,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": "Não acrescentado"
+          },
+          {
+            "id": "kcl",
+            "name": "Cloreto de potássio 10%",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mEq",
+            "perKg": 0,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": "Não acrescentado"
+          },
+          {
+            "id": "calcium",
+            "name": "Gluconato de cálcio 10%",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mEq",
+            "perKg": 0,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "magnesium",
+            "name": "Sulfato de magnésio 10%",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mEq",
+            "perKg": 0,
+            "perUnit": "mEq/kg/dia",
+            "group": 1,
+            "status": ""
+          },
+          {
+            "id": "kphos",
+            "name": "Fosfato de potássio",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mmol",
+            "perKg": 0,
+            "perUnit": "mmol/kg/dia",
+            "group": 1,
+            "status": "Não ofertado"
+          },
+          {
+            "id": "glycero",
+            "name": "Glicerofosfato de sódio",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mmol",
+            "perKg": 0,
+            "perUnit": "mmol/kg/dia",
+            "group": 1,
+            "status": "Não ofertado"
+          },
+          {
+            "id": "va",
+            "name": "Polivit A Ped",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mL",
+            "perKg": 0,
+            "perUnit": "mL/kg/dia",
+            "group": 2,
+            "status": "Início no 3º dia"
+          },
+          {
+            "id": "vb",
+            "name": "Polivit B Ped",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mL",
+            "perKg": 0,
+            "perUnit": "mL/kg/dia",
+            "group": 2,
+            "status": "Início no 3º dia"
+          },
+          {
+            "id": "oligo",
+            "name": "Solução de oligoelementos",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mL",
+            "perKg": 0,
+            "perUnit": "mL/kg/dia",
+            "group": 2,
+            "status": "Início no 8º dia"
+          },
+          {
+            "id": "zinc",
+            "name": "Sulfato de zinco",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mcg",
+            "perKg": 0,
+            "perUnit": "mcg/kg/dia",
+            "group": 2,
+            "status": ""
+          },
+          {
+            "id": "selenium",
+            "name": "Selênio",
+            "volume": 0,
+            "quantity": 0,
+            "unit": "mcg",
+            "perKg": 0,
+            "perUnit": "mcg/kg/dia",
+            "group": 2,
+            "status": ""
+          },
+          {
+            "id": "water",
+            "name": "Água para injeção",
+            "volume": 0.1,
+            "quantity": 0.1,
+            "unit": "mL",
+            "perKg": null,
+            "perUnit": "q.s.p.",
+            "group": 3,
+            "status": ""
+          }
+        ],
+        "volumes": {
+          "aa": 0,
+          "lip": 0,
+          "glucose": 0,
+          "phosphate": 0,
+          "sodium": 0,
+          "potassium": 0,
+          "calcium": 0,
+          "magnesium": 0,
+          "va": 0,
+          "vb": 0,
+          "oligo": 0,
+          "zinc": 0,
+          "selenium": 0,
+          "water": 0.1
+        },
+        "grams": {
+          "aa": 0,
+          "lip": 0,
+          "glucose": 0
+        },
+        "effective": {
+          "aa": 0,
+          "lip": 0,
+          "vig": 0,
+          "na": 0,
+          "k": 0,
+          "ca": 0,
+          "mg": 0,
+          "p": 0,
+          "zn": 0,
+          "se": 0
+        },
+        "offers": [
+          {
+            "id": "aa",
+            "name": "Aminoácidos",
+            "requested": 2,
+            "actual": 0,
+            "unit": "g/kg/dia"
+          },
+          {
+            "id": "lip",
+            "name": "Lipídeos",
+            "requested": 2,
+            "actual": 0,
+            "unit": "g/kg/dia"
+          },
+          {
+            "id": "vig",
+            "name": "VIG",
+            "requested": 6,
+            "actual": 0,
+            "unit": "mg/kg/min"
+          },
+          {
+            "id": "na",
+            "name": "Sódio total",
+            "requested": 2,
+            "actual": 0,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "k",
+            "name": "Potássio total",
+            "requested": 2,
+            "actual": 0,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "ca",
+            "name": "Cálcio",
+            "requested": 1,
+            "actual": 0,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "mg",
+            "name": "Magnésio",
+            "requested": 0.3,
+            "actual": 0,
+            "unit": "mEq/kg/dia"
+          },
+          {
+            "id": "p",
+            "name": "Fósforo",
+            "requested": 0.8,
+            "actual": 0,
+            "unit": "mmol/kg/dia"
+          },
+          {
+            "id": "zn",
+            "name": "Zinco total",
+            "requested": 400,
+            "actual": 0,
+            "unit": "mcg/kg/dia"
+          },
+          {
+            "id": "se",
+            "name": "Selênio",
+            "requested": 6,
+            "actual": 0,
+            "unit": "mcg/kg/dia"
+          }
+        ],
+        "rounding": [
+          "aa",
+          "lip",
+          "glucose",
+          "phosphate",
+          "sodium",
+          "potassium",
+          "calcium",
+          "magnesium",
+          "zinc",
+          "selenium"
+        ],
+        "adjustments": [],
+        "notices": [
+          "Vitaminas não incluídas: início no 3º dia de vida.",
+          "Solução de oligoelementos não incluída: início no 8º dia de vida."
+        ],
+        "blocks": [
+          "Aminoped 10%: o volume calculado é menor que 0,05 mL e arredonda para zero. Revise a dose ou a apresentação antes de exportar.",
+          "Lipídeos 20%: o volume calculado é menor que 0,05 mL e arredonda para zero. Revise a dose ou a apresentação antes de exportar.",
+          "Glicose 50%: o volume calculado é menor que 0,05 mL e arredonda para zero. Revise a dose ou a apresentação antes de exportar.",
+          "Sal de fósforo: o volume calculado é menor que 0,05 mL e arredonda para zero. Revise a dose ou a apresentação antes de exportar.",
+          "Sal de sódio: o volume calculado é menor que 0,05 mL e arredonda para zero. Revise a dose ou a apresentação antes de exportar.",
+          "Cloreto de potássio 10%: o volume calculado é menor que 0,05 mL e arredonda para zero. Revise a dose ou a apresentação antes de exportar.",
+          "Gluconato de cálcio 10%: o volume calculado é menor que 0,05 mL e arredonda para zero. Revise a dose ou a apresentação antes de exportar.",
+          "Sulfato de magnésio 10%: o volume calculado é menor que 0,05 mL e arredonda para zero. Revise a dose ou a apresentação antes de exportar.",
+          "Sulfato de zinco: o volume calculado é menor que 0,005 mL e arredonda para zero. Revise a dose ou a apresentação antes de exportar.",
+          "Selênio: o volume calculado é menor que 0,005 mL e arredonda para zero. Revise a dose ou a apresentação antes de exportar."
+        ],
+        "requiresCentral": false,
+        "accessBlocked": false,
+        "canExport": false,
+        "totals": {
+          "totalVolume": 0.1,
+          "componentsVolume": 0,
+          "water": 0.1,
+          "infusion": 0,
+          "infusionExact": 0.004166666666666667,
+          "fluid": 100,
+          "calories": 0,
+          "glucosePercent": 0,
+          "nonProtein": 0,
+          "proteinRatio": null
+        }
+      }
+    }
+  ]
+}

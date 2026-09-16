@@ -50,6 +50,7 @@ export async function createReport(result){
   if(Math.abs(t.infusion-t.infusionExact)>1e-9)paragraph(`Vazão matemática: ${t.infusionExact.toFixed(4).replace('.',',')} mL/h; exibida: ${fmt(t.infusion)} mL/h. Confira a diferença entre vazão arredondada por 24 horas e volume total.`);
   for(const a of result.adjustments)paragraph(`Ajuste conferido pelo usuário: ${a.name}, solicitado ${fmt(a.requested)} ${a.unit}, resultante ${fmt(a.actual)} ${a.unit}, por contribuição de ${a.source}. Complemento não acrescentado.`,9,ink);
   for(const notice of result.notices)paragraph(notice);
+  if(result.alerts?.length){newPage('Orientações e alertas de nutrição parenteral');paragraph('VIG — velocidade de infusão de glicose, em mg/kg/min. Alertas clínicos não bloqueantes: conferir dose solicitada, oferta efetiva, peso e dia de vida.',9,ink);for(const alert of result.alerts)paragraph(alert.message.replaceAll('≥','>='),9,ink);}
   paragraph('Versão de avaliação. Este relatório apresenta cálculos e não substitui a revisão clínica da composição.',8);
   const pages=doc.getPages();for(let i=0;i<pages.length;i++){page=pages[i];center('ESA – Escola Superior de Ciências da Saúde',42,8);center('Av. Carvalho Leal, 1777 - Cachoeirinha, Manaus - AM, 69065-001',30,8);right(`${i+1}/${pages.length}`,R,30,8,regular,muted);}
   return doc.save();
