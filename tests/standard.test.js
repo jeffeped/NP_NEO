@@ -25,7 +25,7 @@ test('Numeta: invalid inputs cannot produce a prescription',()=>{
 test('Numeta: os quatro indicadores aparecem mesmo quando fixos',async()=>{
  const {standardSummary}=await import('../standard.js');
  const a=new Map(standardSummary(calc({value:60}))),b=new Map(standardSummary(calc({value:100})));
- assert.equal(a.get('Concentração de glicose'),'13,33%');assert.equal(a.get('Proteína / calorias não proteicas'),'1 : 25,00');
+ assert.equal(a.get('Concentração de glicose'),'13,3%');assert.equal(a.get('Proteína / calorias não proteicas'),'1 : 25,0');
  assert.equal(a.get('Concentração de glicose'),b.get('Concentração de glicose'));
  assert.notEqual(a.get('Taxa hídrica'),b.get('Taxa hídrica'));assert.notEqual(a.get('Taxa calórica'),b.get('Taxa calórica'));
 });

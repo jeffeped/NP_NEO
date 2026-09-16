@@ -1,5 +1,5 @@
 import {VERSION} from './engine.js';
-import {standardSummary,formatStandard,NUMETA_SOURCE} from './standard.js';
+import {standardSummary,formatStandard,formatStandardVolume,NUMETA_SOURCE} from './standard.js';
 export async function createStandardReport(result){
   if(!result?.ok||!Array.isArray(result.blocks)||result.blocks.length)throw new Error('Result is not exportable');
   const {PDFDocument,StandardFonts,rgb}=globalThis.PDFLib;
@@ -22,9 +22,9 @@ export async function createStandardReport(result){
   paragraph(`Peso: ${f(result.weight)} kg | Dia de vida: ${result.day} | Acesso central | Cálculo por ${result.mode==='protein'?'proteína':'taxa hídrica'}`);
   paragraph('Três câmaras ativadas, bolsa de 300 mL, sem diluição.');
   page.drawRectangle({x:42,y:y-8,width:511,height:24,color:shade});text('Componente',49,y,10,bold);right('Volume (mL)',546,y,10,bold);y-=29;
-  row('Numeta G13%E',f(result.volume));y-=8;
+  row('Numeta G13%E',formatStandardVolume(result.volume));y-=8;
   for(const [name,value] of standardSummary(result))row(name,value);
-  paragraph('Relação proteína/caloria: 1 g de aminoácidos para 25 kcal não proteicas. Valores calculados com precisão completa; apresentação com duas casas decimais.');
+  paragraph('Relação proteína/caloria: 1 g de aminoácidos para 25 kcal não proteicas. Valores calculados com precisão completa; apresentação com uma casa decimal; volume e vazão arredondados para cima.');
   paragraph('Vazão média arredondada x 24 h pode diferir do volume. Conferir a programação e a progressão/redução da infusão.');
   paragraph('Complementação pendente: vitaminas e oligoelementos não incluídos. Outros aportes e diluições não fazem parte deste cálculo.');
   newPage('Ofertas de nutrientes e conferência');

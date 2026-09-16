@@ -1,4 +1,4 @@
-import {calculateStandard,standardSummary,formatStandard} from './standard.js';
+import {calculateStandard,standardSummary,formatStandard,formatStandardVolume} from './standard.js';
 import {createStandardReport} from './standard-pdf.js';
 export function initStandard(document){
   const $=id=>document.getElementById(id);
@@ -15,12 +15,12 @@ export function initStandard(document){
     result=r;$('std-export').disabled=Boolean(r.blocks.length);
     $('std-result').hidden=false;
     $('std-status').textContent=r.blocks.length?'Cálculo para revisão — prescrição bloqueada':'Prescrição calculada de Numeta · 24 horas';
-    $('std-prescription').textContent=r.blocks.length?'Revise os impedimentos abaixo.':`Numeta G13%E, três câmaras ativadas, sem diluição: ${fmt(r.volume)} mL em 24 horas, por acesso central. Vazão média calculada: ${fmt(r.rate)} mL/h.`;
+    $('std-prescription').textContent=r.blocks.length?'Revise os impedimentos abaixo.':`Numeta G13%E, três câmaras ativadas, sem diluição: ${formatStandardVolume(r.volume)} mL em 24 horas, por acesso central. Vazão média calculada: ${formatStandardVolume(r.rate)} mL/h.`;
     const element=(tag,text)=>{const el=document.createElement(tag);el.textContent=text;return el;};
     $('std-context').replaceChildren(...[`Peso: ${fmt(r.weight)} kg`,`Dia de vida: ${r.day}`,`Acesso: ${$('std-access').value==='central'?'central':'periférico'}`].map(x=>element('span',x)));
     const prescriptionRow=document.createElement('tr');
     const component=element('td','Numeta G13%E');component.append(element('span','Três câmaras ativadas · sem diluição'));
-    prescriptionRow.append(component,element('td',fmt(r.volume)));$('std-prescription-rows').replaceChildren(prescriptionRow);
+    prescriptionRow.append(component,element('td',formatStandardVolume(r.volume)));$('std-prescription-rows').replaceChildren(prescriptionRow);
     const summaries=standardSummary(r);
     $('std-summary').replaceChildren(...summaries.map(([name,value])=>{const row=document.createElement('div');row.className='summary-row';row.append(element('span',name),element('strong',value));return row;}));
     $('std-alerts').replaceChildren();

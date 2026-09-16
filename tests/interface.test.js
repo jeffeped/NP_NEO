@@ -142,9 +142,9 @@ test('interface: NP padrão calcula por taxa, troca para proteína e invalida sa
  const app=openApp();app.dispatch('tab-standard','click');
  for(const [id,value] of Object.entries({'std-weight':'0,8','std-day':2,'std-value':100,'std-access':'central'}))app.set(id,value);
  app.dispatch('std-form','submit');assert.equal(app.el('std-errors').hidden,true);assert.equal(app.el('std-result').hidden,false);
- assert.match(app.el('std-prescription').textContent,/80,00 mL/);assert.equal(app.el('std-export').disabled,false);assert.match(app.el('std-summary').textContent,/Concentração de glicose13,33%/);
+ assert.match(app.el('std-prescription').textContent,/80,0 mL/);assert.equal(app.el('std-export').disabled,false);assert.match(app.el('std-summary').textContent,/Concentração de glicose13,3%/);
  app.set('std-mode','protein');app.dispatch('std-mode','change');assert.equal(app.el('std-result').hidden,true);assert.equal(app.el('std-value').value,'');assert.equal(app.el('std-export').disabled,true);assert.equal(app.el('std-pdf-download').hidden,true);
- app.set('std-value',3);app.dispatch('std-form','submit');assert.match(app.el('std-prescription').textContent,/76,60 mL/);
+ app.set('std-value',3);app.dispatch('std-form','submit');assert.match(app.el('std-prescription').textContent,/76,6 mL/);
  app.set('std-access','peripheral');app.dispatch('std-form','submit');assert.match(app.el('std-status').textContent,/bloqueada/);assert.equal(app.el('std-export').disabled,true);
  app.set('std-weight','');app.dispatch('std-form','submit');assert.equal(app.el('std-result').hidden,true);assert.equal(app.el('std-errors').hidden,false);
 });

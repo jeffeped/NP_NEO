@@ -1,6 +1,6 @@
 # NP_NEO by Prof. Jeffe
 
-Calculadora de apoio à nutrição parenteral neonatal e hidratação venosa. Versão de avaliação 0.3.0.
+Calculadora de apoio à nutrição parenteral neonatal e hidratação venosa. Versão de avaliação 0.3.1.
 
 O médico informa os parâmetros; o app calcula volumes e gera um relatório PDF no próprio aparelho. Não há cadastro de pacientes nem histórico de casos.
 
@@ -71,15 +71,15 @@ Não há composição quando os eletrólitos consomem todo o VT ou quando a VIG 
 
 Verificação local: 177 testes aprovados, incluindo os 124 anteriores, 46 testes novos do motor de HV e 7 novos fluxos de interface simulada. Consulte `RELATORIO_HIDRATACAO_VENOSA.md` para o registro da entrega.
 
-### NP padrão (0.3.0)
+### NP padrão (0.3.1)
 
 A quarta aba usa Numeta G13%E, três câmaras ativadas (300 mL), sem diluição.
 Entradas: peso, dia de vida, acesso e taxa destinada ao Numeta (mL/kg/dia)
 ou proteína (g/kg/dia). No segundo modo, taxa = proteína × 300 / 9,4.
 As ofertas são calculadas a partir dos valores por bolsa inteira; não se usa
 3,1 g/100 mL arredondado para inverter a dose. Volume = taxa × peso;
-vazão média = volume / 24. Resultados têm precisão interna completa e duas
-casas na exibição. Não se aplica o arredondamento para cima exclusivo da HV.
+vazão média = volume / 24. Resultados têm precisão interna completa e uma
+casa decimal na exibição. Volume e vazão são arredondados para cima, como na HV.
 
 A apresentação acompanha a NP individualizada: composição, contexto,
 resumo e detalhamento de ofertas. A exportação PDF inclui composição, indicadores fixos e variáveis, ofertas

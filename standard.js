@@ -1,3 +1,4 @@
+import {formatHydrationVolume} from './hydration.js';
 import {parseNumber} from './engine.js';
 // Baxter SmPC, 19 May 2026, sections 2 and 4.2; accessed 2026-09-16.
 export const NUMETA_SOURCE='https://www.medicines.org.uk/emc/product/7400/smpc';
@@ -33,8 +34,9 @@ export function calculateStandard(input){
   return {ok:true,weight,day,mode:input.mode,fluid,volume,rate,protein,vig,rows,blocks,alerts};
 }
 
-export const formatStandard=n=>new Intl.NumberFormat('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n);
+export const formatStandard=n=>new Intl.NumberFormat('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1}).format(n);
+export const formatStandardVolume=formatHydrationVolume;
 export function standardSummary(r){
   const f=formatStandard;
-  return [['Volume total',f(r.volume)+' mL'],['Vazão média em 24 horas',f(r.rate)+' mL/h'],['Taxa hídrica',f(r.fluid)+' mL/kg/dia'],['Taxa calórica',f(r.fluid*273/300)+' kcal/kg/dia'],['Proteína (aminoácidos)',f(r.protein)+' g/kg/dia'],['VIG',f(r.vig)+' mg/kg/min'],['Concentração de glicose',f(40/3)+'%'],['Proteína / calorias não proteicas','1 : '+f(235/9.4)]];
+  return [['Volume total',formatStandardVolume(r.volume)+' mL'],['Vazão média em 24 horas',formatStandardVolume(r.rate)+' mL/h'],['Taxa hídrica',f(r.fluid)+' mL/kg/dia'],['Taxa calórica',f(r.fluid*273/300)+' kcal/kg/dia'],['Proteína (aminoácidos)',f(r.protein)+' g/kg/dia'],['VIG',f(r.vig)+' mg/kg/min'],['Concentração de glicose',f(40/3)+'%'],['Proteína / calorias não proteicas','1 : '+f(235/9.4)]];
 }
