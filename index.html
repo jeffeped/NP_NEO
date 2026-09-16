@@ -24,6 +24,7 @@
       <div class="tabs" role="tablist" aria-label="Calculadora">
         <button id="tab-parameters" role="tab" aria-controls="parameters" aria-selected="true" type="button">Parâmetros</button>
         <button id="tab-results" role="tab" aria-controls="results" aria-selected="false" type="button">Resultado</button>
+        <button id="tab-hydration" role="tab" aria-controls="hydration" aria-selected="false" type="button">Hidratação venosa</button>
       </div>
     </header>
     <main>
@@ -64,6 +65,53 @@
           <a id="pdf-download" class="download-link" hidden>Baixar relatório em PDF</a>
           <button id="edit-parameters" class="secondary" type="button">Revisar parâmetros</button>
         </div>
+      </section>
+      <section id="hydration" role="tabpanel" aria-labelledby="tab-hydration" hidden>
+        <h2 class="page-title">Hidratação venosa</h2>
+        <p class="caption">Cálculo para 24 horas · parâmetros escolhidos pelo médico</p>
+        <form id="hv-form" autocomplete="off" novalidate>
+          <section class="section"><div class="section-inner">
+            <h2><span class="number">01</span> Volume e glicose</h2>
+            <div class="field-grid">
+              <label class="field">Peso atual<div class="input-box"><input id="hv-weight" inputmode="decimal" type="text" placeholder="0,000" required aria-label="HV: peso atual em kg"><span class="unit">kg</span></div></label>
+              <label class="field">Taxa hídrica<div class="input-box"><input id="hv-fluid" inputmode="decimal" type="text" placeholder="Informe a taxa" required aria-label="HV: taxa hídrica"><span class="unit">mL/kg/dia</span></div></label>
+              <label class="field full">VIG desejada<div class="input-box"><input id="hv-vig" inputmode="decimal" type="text" placeholder="Informe a VIG" required aria-label="HV: VIG desejada"><span class="unit">mg/kg/min</span></div></label>
+            </div>
+            <p class="help">VIG — velocidade de infusão de glicose.</p>
+            <p class="help">VT (mL/24 h) = taxa hídrica × peso (kg).<br>Glicose (g/24 h) = VIG × peso (kg) × 60 × 24 ÷ 1000.</p>
+          </div></section>
+          <section class="section"><div class="section-inner">
+            <h2><span class="number">02</span> Eletrólitos prescritos</h2>
+            <label class="field" for="hv-doseUnit">Unidade das quatro doses</label>
+            <select id="hv-doseUnit" class="hv-select" required aria-describedby="hv-unit-note">
+              <option value="">Selecione a unidade</option>
+              <option value="perKgDay">mEq/kg/dia</option>
+              <option value="totalDay">mEq totais em 24 horas</option>
+            </select>
+            <p id="hv-unit-note" class="help" role="status">Informe zero quando não houver oferta do eletrólito. Não são sugeridas doses automaticamente.</p>
+            <div id="hv-electrolytes"></div>
+          </div></section>
+          <details class="section" id="hv-presentations" open>
+            <summary><h2><span class="number">03</span> Equivalências das apresentações</h2><span aria-hidden="true">⌄</span></summary>
+            <div class="section-inner">
+              <p class="help">Valores iniciais do cadastro atual do APP. Confira e ajuste os mEq/mL conforme o rótulo da apresentação utilizada; a indicação “10%” isoladamente não informa os mEq do íon.</p>
+              <div id="hv-concentrations" class="field-grid"></div>
+              <p class="help">SG 5%: 0,05 g de glicose/mL. SG 50%: 0,5 g de glicose/mL.<br>VR = VT − soma dos volumes dos eletrólitos.<br>SG 50% (mL) = [gG − (VR × 0,05)] ÷ 0,45.<br>SG 5% (mL) = VR − SG 50%.</p>
+            </div>
+          </details>
+          <div id="hv-errors" class="notice danger" role="alert" hidden></div>
+          <button class="primary" type="submit">Calcular hidratação venosa <span aria-hidden="true">→</span></button>
+        </form>
+        <p id="hv-empty" class="help">Preencha os parâmetros e calcule para conferir os volumes.</p>
+        <section id="hv-result" class="hv-result" aria-live="polite" hidden>
+          <h2 class="page-title">Resultado da hidratação venosa</h2>
+          <div id="hv-summary" class="summary"></div>
+          <div id="hv-blocks" role="alert"></div>
+          <div id="hv-composition">
+            <div class="table-wrap"><table aria-label="Composição calculada da hidratação venosa"><thead><tr><th>Componente / quantidade</th><th>Volume (mL)</th></tr></thead><tbody id="hv-rows"></tbody></table></div>
+            <p class="help">O volume dos eletrólitos está incluído no VT. A glicose calculada inclui SG 5% e SG 50%. Volumes teóricos exibidos com até quatro casas decimais; SG 5% completa o VT. Confira a oferta após qualquer arredondamento de preparo.</p>
+          </div>
+        </section>
       </section>
       <footer class="app-footer">
         <p>Versão de avaliação · conferir os resultados antes do uso assistencial.</p>

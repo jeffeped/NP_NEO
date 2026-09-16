@@ -1,6 +1,7 @@
 import {calculate,parseNumber,round1,formatVolume,VERSION} from './engine.js';
 import {createReport} from './pdf.js';
 import {macroReference,formatAlertNumber} from './alerts.js';
+import {initHydration} from './hydration-ui.js';
 const $=id=>document.getElementById(id);
 const f=n=>Number.isFinite(n)?round1(n).toFixed(1).replace('.',','):'—';
 const weightFormat=n=>new Intl.NumberFormat('pt-BR',{maximumFractionDigits:3}).format(n);
@@ -30,9 +31,12 @@ function updateRules(){
   $('timing-oligo').textContent=Number.isFinite(day)&&day<8?'Não será incluído antes do 8º dia de vida.':'A partir do 8º dia de vida';
 }
 function invalidate(){result=null;downloadResult=null;$('calculated-result').hidden=true;$('empty-result').hidden=false;$('empty-result').textContent='Calcule novamente para conferir os parâmetros atuais.';$('pdf-download').hidden=true;$('pdf-status').textContent='';if(pdfUrl){URL.revokeObjectURL(pdfUrl);pdfUrl=null;}}
-function view(name){$('parameters').hidden=name!=='parameters';$('results').hidden=name!=='results';$('tab-parameters').setAttribute('aria-selected',String(name==='parameters'));$('tab-results').setAttribute('aria-selected',String(name==='results'));window.scrollTo({top:0,behavior:'instant'});}
-$('tab-parameters').addEventListener('click',()=>view('parameters'));$('tab-results').addEventListener('click',()=>view('results'));$('edit-parameters').addEventListener('click',()=>view('parameters'));
-document.querySelectorAll('.tabs button').forEach(button=>button.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();const target=(e.key==='Home'||e.key==='ArrowLeft')?'parameters':'results';view(target);$('tab-'+target).focus();}}));
+const tabNames=['parameters','results','hydration'];
+function view(name){for(const tab of tabNames){$(tab).hidden=name!==tab;$('tab-'+tab).setAttribute('aria-selected',String(name===tab));$('tab-'+tab).tabIndex=name===tab?0:-1;}window.scrollTo({top:0,behavior:'instant'});}
+for(const name of tabNames)$('tab-'+name).addEventListener('click',()=>view(name));
+$('edit-parameters').addEventListener('click',()=>view('parameters'));
+document.querySelectorAll('.tabs button').forEach((button,index)=>button.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();const target=e.key==='Home'?0:e.key==='End'?tabNames.length-1:(index+(e.key==='ArrowRight'?1:-1)+tabNames.length)%tabNames.length;view(tabNames[target]);$('tab-'+tabNames[target]).focus();}}));
+$('tab-results').tabIndex=-1;$('tab-hydration').tabIndex=-1;
 document.querySelectorAll('[data-omit]').forEach(c=>c.addEventListener('change',()=>{const row=c.closest('[data-dose]');row.classList.toggle('disabled',c.checked);row.querySelectorAll('.dose-controls input,.dose-controls select').forEach(x=>x.disabled=c.checked);updateRules();}));
 $('npp-form').addEventListener('input',()=>{invalidate();updateRules();});$('npp-form').addEventListener('change',()=>{invalidate();updateRules();});
 function collect(){const input={};for(const id of ['weight','day','fluid','aa','lip','vig','na','k','ca','mg','p','seDose'])input[id]=$(id).value;input.gaWeeks=$('ga').value;input.gaDays=$('ga-days').value;input.access=document.querySelector('[name="access"]:checked')?.value;input.naSalt=$('salt-na').value;input.pSalt=$('salt-p').value;input.omit={};document.querySelectorAll('[data-omit]').forEach(c=>input.omit[c.dataset.omit]=c.checked);return input;}
@@ -77,5 +81,6 @@ async function checkOffline(){const controller=navigator.serviceWorker.controlle
 if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(reg=>{serviceRegistration=reg;if(reg.waiting)$('update-app').hidden=false;reg.addEventListener('updatefound',()=>{const worker=reg.installing;worker?.addEventListener('statechange',()=>{if(worker.state==='installed'&&navigator.serviceWorker.controller)$('update-app').hidden=false;});});return navigator.serviceWorker.ready;}).then(checkOffline).catch(()=>{$('offline-status').textContent='Não foi possível preparar o modo offline. Reabra o link com internet.';});navigator.serviceWorker.addEventListener('controllerchange',checkOffline);}else{$('offline-status').textContent='Este navegador não oferece instalação offline.';}
 window.addEventListener('online',checkOffline);window.addEventListener('offline',checkOffline);
 $('update-app').addEventListener('click',()=>{if(!confirm('Reiniciar para atualizar? Os parâmetros atuais serão descartados.'))return;navigator.serviceWorker.addEventListener('controllerchange',()=>location.reload(),{once:true});serviceRegistration?.waiting?.postMessage({type:'ACTIVATE_UPDATE'});});
-window.addEventListener('pageshow',e=>{if(e.persisted){$('npp-form').reset();invalidate();updateRules();}});
+const hydrationUI=initHydration(document);
+window.addEventListener('pageshow',e=>{if(e.persisted){$('npp-form').reset();invalidate();updateRules();hydrationUI.reset();}});
 updateRules();

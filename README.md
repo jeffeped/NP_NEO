@@ -1,6 +1,6 @@
 # NP_NEO by Prof. Jeffe
 
-Calculadora de apoio à nutrição parenteral neonatal. Versão de avaliação 0.1.3.
+Calculadora de apoio à nutrição parenteral neonatal e hidratação venosa. Versão de avaliação 0.2.0.
 
 O médico informa os parâmetros; o app calcula volumes e gera um relatório PDF no próprio aparelho. Não há cadastro de pacientes nem histórico de casos.
 
@@ -46,3 +46,27 @@ O app já utiliza **peso atual em kg** e **dia de vida**, com nascimento = dia 1
 
 Após atualizar a versão hospedada, use “Atualização disponível · reiniciar” no app para trocar o cache offline. Os parâmetros do formulário são descartados ao reiniciar.
 Consulte `RELATORIO_ALERTAS_NP.md` para alterações, verificação e limitações.
+
+## Hidratação venosa — terceira aba
+
+O médico informa peso em kg, taxa hídrica em mL/kg/dia, VIG em mg/kg/min e as doses de Na, K, Ca e Mg. Não há doses ou VIG preenchidas automaticamente. A unidade dos eletrólitos deve ser escolhida: mEq/kg/dia ou mEq totais em 24 horas; ao trocá-la, as doses são apagadas para evitar reinterpretar os mesmos números em outra unidade.
+
+Soluções: NaCl 10%, KCl 10%, gluconato de cálcio 10%, sulfato de magnésio 10%, SG 5% e SG 50%. As equivalências iniciais de eletrólitos vêm do cadastro existente (respectivamente 1,7; 1,34; 0,5; 0,8 mEq/mL), ficam visíveis e podem ser ajustadas conforme o rótulo. Não são tratadas como universais para todo fabricante; mudar uma equivalência na HV não modifica a NP.
+
+Fórmulas confirmadas pelo responsável:
+
+```text
+VT (mL/24 h) = taxa hídrica (mL/kg/dia) × peso (kg)
+gG (g/24 h) = VIG (mg/kg/min) × peso (kg) × 60 × 24 / 1000
+Volume de cada eletrólito (mL) = mEq totais em 24 h / equivalência (mEq/mL)
+VR (mL) = VT − soma dos volumes dos eletrólitos
+SG 50% (mL) = [gG − (VR × 0,05)] / 0,45
+SG 5% (mL) = VR − SG 50%
+Vazão (mL/h) = VT / 24
+```
+
+As comparações de viabilidade usam aritmética decimal racional, sem arredondamento intermediário. Os volumes são teóricos, exibidos com até quatro casas decimais (mais precisão quando necessária para não mostrar um valor positivo como zero); SG 5% completa o VT. A oferta deve ser conferida após arredondamento de preparo.
+
+Não há composição quando os eletrólitos consomem todo o VT ou quando a VIG exige SG 5% ou SG 50% negativo. A faixa possível informada é uma restrição matemática das duas soluções, não uma meta clínica. O módulo não acrescenta limites de dose, regras de acesso ou validação de compatibilidade físico-química da mistura. Formulários e resultados da NP e da HV são independentes. A exportação PDF existente continua vinculada à NP.
+
+Verificação local: 177 testes aprovados, incluindo os 124 anteriores, 46 testes novos do motor de HV e 7 novos fluxos de interface simulada. Consulte `RELATORIO_HIDRATACAO_VENOSA.md` para o registro da entrega.
