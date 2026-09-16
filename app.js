@@ -1,5 +1,6 @@
 import {calculate,parseNumber,round1,formatVolume,VERSION} from './engine.js';
 import {createReport} from './pdf.js';
+import {macroReference,formatAlertNumber} from './alerts.js';
 const $=id=>document.getElementById(id);
 const f=n=>Number.isFinite(n)?round1(n).toFixed(1).replace('.',','):'—';
 const weightFormat=n=>new Intl.NumberFormat('pt-BR',{maximumFractionDigits:3}).format(n);
@@ -9,11 +10,18 @@ const salts=[{id:'na',name:'Sódio',unit:'mEq/kg/dia',options:[['nacl','Cloreto 
 const omitHTML=(id,name)=>`<label class="omit"><input id="omit-${id}" type="checkbox" data-omit="${id}" aria-label="Não ofertar ${name}">Não ofertar</label>`;
 function doseHTML(d){return `<div class="dose" data-dose="${d.id}"><div class="dose-top"><label class="dose-name" for="${d.id}">${d.name}</label>${omitHTML(d.id,d.name)}</div><div class="dose-controls">${d.options?`<select id="salt-${d.id}" aria-label="Sal de ${d.name}">${d.options.map(([v,s])=>`<option value="${v}">${s}</option>`).join('')}</select>`:d.salt?`<p class="help">${d.salt}</p>`:''}<div class="input-box"><input id="${d.id}" type="text" inputmode="decimal" placeholder="0,0" aria-label="Dose de ${d.name}"><span class="unit">${d.unit}</span></div></div></div>`;}
 $('macros').innerHTML=macros.map(doseHTML).join('');$('electrolytes').innerHTML=salts.map(doseHTML).join('');
+for(const id of ['aa','lip','vig']){const help=document.createElement('p');help.className='help';help.id='reference-'+id;$(id).closest('.dose-controls').append(help);$(id).setAttribute('aria-describedby',help.id);}
+$('reference-vig').textContent='VIG — velocidade de infusão de glicose, em mg/kg/min. Concentração final >20%: cautela, inclusive em acesso central.';
 const micros=[{id:'va',name:'Polivit A Ped',rule:'2 mL/kg · máximo 5 mL',time:'A partir do 3º dia de vida'},{id:'vb',name:'Polivit B Ped',rule:'2 mL/kg · máximo 5 mL',time:'A partir do 3º dia de vida'},{id:'oligo',name:'Solução de oligoelementos',rule:'0,2 mL/kg/dia',time:'A partir do 8º dia de vida'},{id:'zn',name:'Sulfato de zinco',rule:'Dose conforme o peso atual',time:'Desconta o zinco já ofertado pelos oligoelementos'},{id:'se',name:'Selênio',rule:'Dose conforme o peso atual',time:'Desde o 1º dia de vida'}];
 $('micros').innerHTML=micros.map(d=>`<div class="dose" data-dose="${d.id}"><div class="dose-top"><span class="dose-name">${d.name}</span>${omitHTML(d.id,d.name)}</div><div class="dose-controls"><span class="auto" id="rule-${d.id}">${d.rule}</span><p class="help" id="timing-${d.id}">${d.time}</p>${d.id==='se'?'<div class="input-box"><input id="seDose" inputmode="decimal" type="text" placeholder="5,0 a 7,0" aria-label="Dose de selênio"><span class="unit">mcg/kg/dia</span></div>':''}</div></div>`).join('');
 $('app-version').textContent=VERSION;
 function updateRules(){
   const w=parseNumber($('weight').value),day=parseNumber($('day').value);
+  for(const id of ['aa','lip']){
+    if(!Number.isFinite(w)||w<=0||!Number.isInteger(day)||day<1){$('reference-'+id).textContent='Informe peso e dia de vida para exibir a referência de dose.';continue;}
+    const ref=macroReference(id,w,day);
+    $('reference-'+id).textContent=`Referência ${ref.phase}: ${formatAlertNumber(ref.dose)} g/kg/dia. `+(ref.ceiling===null?'Progressão habitual: 3,0 g/kg/dia; teto máximo não definido para peso ≥1000 g.':`Teto: ${formatAlertNumber(ref.ceiling)} g/kg/dia${id==='aa'?' somente para peso <1000 g':''}; não é uma meta de oferta.`);
+  }
   $('rule-zn').textContent=Number.isFinite(w)?`${w<1.5?'400':'200'} mcg/kg/dia de zinco total`:'Dose conforme o peso atual';
   $('rule-se').textContent=Number.isFinite(w)?(w<1.5?'Escolha de 5 a 7 mcg/kg/dia':'2 mcg/kg/dia'):'Dose conforme o peso atual';
   $('seDose').disabled=$('omit-se').checked||w>=1.5;
@@ -40,6 +48,7 @@ function render(r){
   );
   $('result-alerts').replaceChildren();
   if(r.notices.length){const note=textElement('div',r.notices.join(' '),'notice');$('result-alerts').append(note);}
+  for(const alert of r.alerts){const note=textElement('div',alert.message,'notice clinical-alert '+(alert.level==='info'?'info':alert.level==='high'?'danger':'caution'));note.dataset.alertId=alert.id;note.dataset.level=alert.level;$('result-alerts').append(note);}
   for(const block of r.blocks.filter(b=>!b.startsWith('Concentração de glicose')))$('result-alerts').append(textElement('div',block,'notice danger'));
   $('access-alert').hidden=!r.requiresCentral;
   if(r.requiresCentral)$('access-alert').textContent=r.accessBlocked?'Concentração de glicose acima de 12,5%. É obrigatório acesso central. Revise o acesso ou os parâmetros.':'Concentração de glicose acima de 12,5%: acesso central obrigatório. Acesso central selecionado.';
