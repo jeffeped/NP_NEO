@@ -1,6 +1,6 @@
 # NP_NEO by Prof. Jeffe
 
-Calculadora de apoio à nutrição parenteral neonatal e hidratação venosa. Versão de avaliação 0.3.1.
+Calculadora de apoio à nutrição parenteral neonatal e hidratação venosa. Versão de avaliação 0.3.2.
 
 O médico informa os parâmetros; o app calcula volumes e gera um relatório PDF no próprio aparelho. Não há cadastro de pacientes nem histórico de casos.
 
@@ -37,6 +37,7 @@ Os testes comparam todas as saídas anteriores do motor com amostras congeladas 
 - Glicose final >20%: cautela também no acesso central, sem novo bloqueio.
 - Aminoácidos: referência de 2,0 g/kg/dia no dia 1; 3,0 após o dia 1; teto de 3,5 somente para peso atual <1 kg.
 - Lipídios: referência de 2,0 g/kg/dia no dia 1; 3,0 a partir do dia 2; teto de 4,0.
+- Relação Ca:P sempre molar (mmol de Ca ÷ mmol de P). No dia 1, alvo 0,8–1,0:1, com atenção fora da faixa. Após o dia 1, faixa preferencial 0,8–1,2:1, orientação entre 1,2 e 1,3:1 e atenção abaixo de 0,8 ou acima de 1,3:1.
 - Orientação, atenção e ultrapassagem do teto são níveis informativos, sem acrescentar impedimentos à exportação.
 - Doses solicitadas e efetivas são conferidas. Arredondar volumes de preparo pode elevar a oferta efetiva acima do teto, mesmo se a solicitação estiver no limite.
 - Os bloqueios anteriores, incluindo glicose >12,5% em acesso periférico e volume inviável, permanecem.
