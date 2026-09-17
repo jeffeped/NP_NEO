@@ -71,6 +71,24 @@ test('3,5 g/kg/dia exatos em 900 g não disparam teto por erro de ponto flutuant
   const r=run({weight:0.9,aa:3.5});assert.equal(r.volumes.aa,31.5);
   assert.notEqual(alertFor(r,'aa').level,'high');
 });
+for(const [day,ca,p,id,level] of [
+  [1,1.4,1,'CAP_EARLY_LOW','caution'],  // 0,7:1
+  [1,2,1,null,null],                    // 1,0:1
+  [1,2.2,1,'CAP_EARLY_HIGH','caution'],// 1,1:1
+  [2,1.4,1,'CAP_LATE_LOW','caution'],   // 0,7:1
+  [2,2.4,1,null,null],                  // 1,2:1
+  [2,2.6,1,'CAP_LATE_INFO','info'],     // 1,3:1
+  [2,2.8,1,'CAP_LATE_HIGH','caution']  // 1,4:1
+]) test(`relação molar Ca:P · dia ${day} · ${(ca/2/p).toFixed(1)}:1`,()=>{
+  const r=run({weight:1,day,ca,p});
+  const a=r.alerts.find(item=>item.nutrient==='ca-p');
+  assert.equal(a?.id??null,id);assert.equal(a?.level??null,level);
+  if(a){assert.equal(a.blocking,false);assert.equal(r.canExport,true);assert.match(a.message,/relação molar Ca:P/);}
+});
+test('relação Ca:P não é criada quando cálcio ou fósforo não é ofertado',()=>{
+  assert.equal(run({ca:0,p:1}).alerts.some(a=>a.nutrient==='ca-p'),false);
+  assert.equal(run({ca:2,p:0}).alerts.some(a=>a.nutrient==='ca-p'),false);
+});
 test('vírgula decimal, kg e omissões são preservados',()=>{
   const r=run({weight:'0,8',aa:'2,0',lip:'2,0',vig:'5,0'});
   assert.equal(r.input.weight,0.8);assert.equal(r.volumes.aa,16);assert.equal(r.volumes.lip,8);

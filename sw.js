@@ -1,4 +1,4 @@
-const CACHE='npp-neo-static-0.3.1';
+const CACHE='npp-neo-static-0.3.2';
 const FILES=['./','./index.html','./styles.css','./app.js','./engine.js','./alerts.js','./standard.js','./standard-ui.js','./standard-pdf.js','./hydration.js','./hydration-ui.js','./pdf.js','./manifest.webmanifest','./vendor/pdf-lib.min.js','./assets/uea-logo.png','./assets/icon-192.png','./assets/icon-512.png','./assets/icon-maskable.png'];
 const URLS=new Set(FILES.map(p=>new URL(p,self.registration.scope).href));
 self.addEventListener('install',event=>event.waitUntil((async()=>{
