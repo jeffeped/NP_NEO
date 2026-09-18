@@ -38,7 +38,7 @@ export async function createReport(result){
     text(row.name,L+6,y,8.8);right(row.id==='water'?'q.s.p.':`${fmt(row.quantity)} ${row.unit}`,354,y,8.1);right(row.perKg===null?'':`${fmt(row.perKg)} ${row.perUnit}`,488,y,7.8);right(formatVolume(row.volume,row.id),R-6,y,9,bold);horizontal(y-7);y-=21;
   }
   y-=8;
-  const summaries=[['Volume total',fmt(t.totalVolume)+' mL'],['Vazão em 24 horas',fmt(t.infusion)+' mL/h'],['Taxa hídrica',fmt(t.fluid)+' mL/kg/dia'],['Taxa calórica',fmt(t.calories)+' kcal/kg/dia'],['Concentração final de glicose',fmt(t.glucosePercent)+'%'],['Osmolaridade estimada',osm(t.osmolarity)+' mOsm/L'],['Proteína / calorias não proteicas',t.proteinRatio===null?'Não calculável (AA = 0)':'1 : '+fmt(t.proteinRatio)]];
+  const summaries=[['Volume total',fmt(t.totalVolume)+' mL'],['Vazão em 24 horas',fmt(t.infusion)+' mL/h'],['Taxa hídrica',fmt(t.fluid)+' mL/kg/dia'],['Taxa calórica',fmt(t.calories)+' kcal/kg/dia'],['Concentração final de glicose',fmt(t.glucosePercent)+'%'],['Osmolaridade estimada',osm(t.osmolarity)+' mOsm/L'],['Proteína / calorias não proteicas',t.proteinRatio===null?'Não calculável (AA = 0)':'1 : '+fmt(t.proteinRatio)],['Relação Ca/P (mmol/mmol)',result.effective.p>0?fmt((result.effective.ca/2)/result.effective.p)+' : 1':'Não calculável (P = 0)']];
   for(const [name,value] of summaries){if(y<95)newPage('Indicadores da NPP');text(name,L+6,y,9,bold);right(value,R-6,y,9,bold);y-=17;}
   if(result.requiresCentral){if(y<91)newPage('Conferência do acesso');text('ACESSO CENTRAL OBRIGATÓRIO: glicose acima de 12,5%.',L+6,y,9,bold,green);y-=15;}
   newPage('Conferência dos parâmetros');

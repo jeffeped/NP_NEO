@@ -1,5 +1,5 @@
 import {nutritionAlerts} from './alerts.js';
-export const VERSION = '0.3.3';
+export const VERSION = '0.3.4';
 export const CONCENTRATIONS = Object.freeze({aa:0.1,lip:0.2,glucose:0.5,nacl:1.7,acetate:2,kcl:1.34,calcium:0.5,magnesium:0.8,kphosP:1.1,kphosK:2,glyceroP:1,glyceroNa:2,oligoZn:500,zinc:200,selenium:60});
 export const ENERGY = Object.freeze({aa:4,lip:9,glucose:4});
 export const round1 = n => Math.round((n + Number.EPSILON * Math.max(1, Math.abs(n))) * 10) / 10;

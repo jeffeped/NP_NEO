@@ -38,5 +38,5 @@ export const formatStandard=n=>new Intl.NumberFormat('pt-BR',{minimumFractionDig
 export const formatStandardVolume=formatHydrationVolume;
 export function standardSummary(r){
   const f=formatStandard;
-  return [['Volume total',formatStandardVolume(r.volume)+' mL'],['Vazão média em 24 horas',formatStandardVolume(r.rate)+' mL/h'],['Taxa hídrica',f(r.fluid)+' mL/kg/dia'],['Taxa calórica',f(r.fluid*273/300)+' kcal/kg/dia'],['Proteína (aminoácidos)',f(r.protein)+' g/kg/dia'],['VIG',f(r.vig)+' mg/kg/min'],['Concentração de glicose',f(40/3)+'%'],['Proteína / calorias não proteicas','1 : '+f(235/9.4)]];
+  return [['Volume total',formatStandardVolume(r.volume)+' mL'],['Vazão média em 24 horas',formatStandardVolume(r.rate)+' mL/h'],['Taxa hídrica',f(r.fluid)+' mL/kg/dia'],['Taxa calórica',f(r.fluid*273/300)+' kcal/kg/dia'],['Proteína (aminoácidos)',f(r.protein)+' g/kg/dia'],['VIG',f(r.vig)+' mg/kg/min'],['Concentração de glicose',f(40/3)+'%'],['Proteína / calorias não proteicas','1 : '+f(235/9.4)],['Relação Ca/P (mmol/mmol)',f((r.rows.find(x=>x.label==='Cálcio').total/2)/r.rows.find(x=>x.label==='Fósforo').total)+' : 1']];
 }
