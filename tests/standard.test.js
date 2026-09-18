@@ -29,3 +29,12 @@ test('Numeta: os quatro indicadores aparecem mesmo quando fixos',async()=>{
  assert.equal(a.get('Concentração de glicose'),b.get('Concentração de glicose'));
  assert.notEqual(a.get('Taxa hídrica'),b.get('Taxa hídrica'));assert.notEqual(a.get('Taxa calórica'),b.get('Taxa calórica'));
 });
+
+test('Numeta: Ca/P molar vem após P/cal e permanece 1,0 : 1 nos dois modos',async()=>{
+ const {standardSummary}=await import('../standard.js');
+ for(const input of [{value:60},{mode:'protein',value:3,weight:0.8}]){
+  const rows=standardSummary(calc(input));
+  const i=rows.findIndex(([name])=>name==='Proteína / calorias não proteicas');
+  assert.deepEqual(rows[i+1],['Relação Ca/P (mmol/mmol)','1,0 : 1']);
+ }
+});

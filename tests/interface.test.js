@@ -151,3 +151,22 @@ test('interface: NP padrão calcula por taxa, troca para proteína e invalida sa
  app.set('std-access','peripheral');app.dispatch('std-form','submit');assert.match(app.el('std-status').textContent,/bloqueada/);assert.equal(app.el('std-export').disabled,true);
  app.set('std-weight','');app.dispatch('std-form','submit');assert.equal(app.el('std-result').hidden,true);assert.equal(app.el('std-errors').hidden,false);
 });
+
+test('prescrição: Ca/P molar após P/cal usa ofertas efetivas, incluindo arredondamento e ausência de P',()=>{
+  const app=openApp();
+  app.set('ca',2);app.set('p',1);
+  for(const salt of ['glycero','kphos']){
+    app.set('salt-p',salt);app.calculate();
+    const rows=Array.from(app.el('result-summary').children);
+    const index=rows.findIndex(x=>x.firstChild.textContent==='Proteína / calorias não proteicas');
+    assert.equal(rows[index+1].firstChild.textContent,'Relação Ca/P (mmol/mmol)');
+    assert.equal(rows[index+1].lastChild.textContent,'1,0 : 1');
+  }
+  app.set('ca',1);app.set('p',0.14);app.calculate();
+  // Peso 0,8 kg: Ca = 0,4 mmol; fosfato de potássio = 0,11 mmol após arredondar o volume.
+  assert.equal(app.el('result-summary').lastChild.lastChild.textContent,'3,6 : 1');
+  app.set('ca',0);app.calculate();
+  assert.equal(app.el('result-summary').lastChild.lastChild.textContent,'0,0 : 1');
+  app.set('p',0);app.calculate();
+  assert.equal(app.el('result-summary').lastChild.lastChild.textContent,'Não calculável (P = 0)');
+});
