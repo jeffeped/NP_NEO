@@ -1,6 +1,8 @@
 # NP_NEO by Prof. Jeffe
 
-Calculadora de apoio à nutrição parenteral neonatal e hidratação venosa. Versão de avaliação 0.3.4.
+Calculadora de apoio à nutrição parenteral neonatal e hidratação venosa. Versão de avaliação 0.3.5.
+
+As mudanças de cada versão estão documentadas em [CHANGELOG.md](CHANGELOG.md), além do histórico auditável de commits do repositório.
 
 O médico informa os parâmetros; o app calcula volumes e gera um relatório PDF no próprio aparelho. Não há cadastro de pacientes nem histórico de casos.
 
@@ -93,6 +95,10 @@ Fonte da composição e limites: Baxter, SmPC Numeta G13%E, atualizado em
 19/05/2026, seções 2 e 4.2; consulta em 16/09/2026:
 https://www.medicines.org.uk/emc/product/7400/smpc
 A composição deverá ser confrontada com a apresentação local antes da liberação.
+
+### Zinco e selênio por idade gestacional (0.3.5)
+
+Na NP individualizada, prematuros recebem referência de zinco de 400–500 mcg/kg/dia e selênio de 7 mcg/kg/dia. Recém-nascidos a termo recebem zinco de 250 mcg/kg/dia e selênio selecionável entre 2–3 mcg/kg/dia. A classificação usa a idade gestacional ao nascer, sem empregar peso de 1.500 g como substituto de prematuridade. Aplicam-se os máximos de 5 mg/dia de zinco e 100 mcg/dia de selênio, conforme Domellöf et al., Clinical Nutrition 2018;37:2354–2359.
 
 ### Relação Ca/P na prescrição (0.3.4)
 

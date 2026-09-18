@@ -15,20 +15,23 @@ function doseHTML(d){return `<div class="dose" data-dose="${d.id}"><div class="d
 $('macros').innerHTML=macros.map(doseHTML).join('');$('electrolytes').innerHTML=salts.map(doseHTML).join('');
 for(const id of ['aa','lip','vig']){const help=document.createElement('p');help.className='help';help.id='reference-'+id;$(id).closest('.dose-controls').append(help);$(id).setAttribute('aria-describedby',help.id);}
 $('reference-vig').textContent='VIG — velocidade de infusão de glicose, em mg/kg/min. Concentração final >20%: cautela, inclusive em acesso central.';
-const micros=[{id:'va',name:'Polivit A Ped',rule:'2 mL/kg · máximo 5 mL',time:'A partir do 3º dia de vida'},{id:'vb',name:'Polivit B Ped',rule:'2 mL/kg · máximo 5 mL',time:'A partir do 3º dia de vida'},{id:'oligo',name:'Solução de oligoelementos',rule:'0,2 mL/kg/dia',time:'A partir do 8º dia de vida'},{id:'zn',name:'Sulfato de zinco',rule:'Dose conforme o peso atual',time:'Desconta o zinco já ofertado pelos oligoelementos'},{id:'se',name:'Selênio',rule:'Dose conforme o peso atual',time:'Desde o 1º dia de vida'}];
-$('micros').innerHTML=micros.map(d=>`<div class="dose" data-dose="${d.id}"><div class="dose-top"><span class="dose-name">${d.name}</span>${omitHTML(d.id,d.name)}</div><div class="dose-controls"><span class="auto" id="rule-${d.id}">${d.rule}</span><p class="help" id="timing-${d.id}">${d.time}</p>${d.id==='se'?'<div class="input-box"><input id="seDose" inputmode="decimal" type="text" placeholder="5,0 a 7,0" aria-label="Dose de selênio"><span class="unit">mcg/kg/dia</span></div>':''}</div></div>`).join('');
+const micros=[{id:'va',name:'Polivit A Ped',rule:'2 mL/kg · máximo 5 mL',time:'A partir do 3º dia de vida'},{id:'vb',name:'Polivit B Ped',rule:'2 mL/kg · máximo 5 mL',time:'A partir do 3º dia de vida'},{id:'oligo',name:'Solução de oligoelementos',rule:'0,2 mL/kg/dia',time:'A partir do 8º dia de vida'},{id:'zn',name:'Sulfato de zinco',rule:'Dose conforme a idade gestacional',time:'Desconta o zinco já ofertado pelos oligoelementos'},{id:'se',name:'Selênio',rule:'Dose conforme a idade gestacional',time:'Desde o 1º dia de vida'}];
+$('micros').innerHTML=micros.map(d=>`<div class="dose" data-dose="${d.id}"><div class="dose-top"><span class="dose-name">${d.name}</span>${omitHTML(d.id,d.name)}</div><div class="dose-controls"><span class="auto" id="rule-${d.id}">${d.rule}</span><p class="help" id="timing-${d.id}">${d.time}</p>${['zn','se'].includes(d.id)?`<div class="input-box"><input id="${d.id}Dose" inputmode="decimal" type="text" value="${d.id==='zn'?'400':'2'}" aria-label="Dose de ${d.id==='zn'?'zinco':'selênio'}"><span class="unit">mcg/kg/dia</span></div>`:''}</div></div>`).join('');
 $('app-version').textContent=VERSION;
 function updateRules(){
-  const w=parseNumber($('weight').value),day=parseNumber($('day').value);
+  const w=parseNumber($('weight').value),day=parseNumber($('day').value),ga=parseNumber($('ga').value);
   for(const id of ['aa','lip']){
     if(!Number.isFinite(w)||w<=0||!Number.isInteger(day)||day<1){$('reference-'+id).textContent='Informe peso e dia de vida para exibir a referência de dose.';continue;}
     const ref=macroReference(id,w,day);
     $('reference-'+id).textContent=`Referência ${ref.phase}: ${formatAlertNumber(ref.dose)} g/kg/dia. `+(ref.ceiling===null?'Progressão habitual: 3,0 g/kg/dia; teto máximo não definido para peso ≥1000 g.':`Teto: ${formatAlertNumber(ref.ceiling)} g/kg/dia${id==='aa'?' somente para peso <1000 g':''}; não é uma meta de oferta.`);
   }
-  $('rule-zn').textContent=Number.isFinite(w)?`${w<1.5?'400':'200'} mcg/kg/dia de zinco total`:'Dose conforme o peso atual';
-  $('rule-se').textContent=Number.isFinite(w)?(w<1.5?'Escolha de 5 a 7 mcg/kg/dia':'2 mcg/kg/dia'):'Dose conforme o peso atual';
-  $('seDose').disabled=$('omit-se').checked||w>=1.5;
-  $('seDose').placeholder=w>=1.5?'2,0 (automático)':'5,0 a 7,0';
+  const preterm=Number.isFinite(ga)&&ga<37;
+  $('rule-zn').textContent=Number.isFinite(ga)?(preterm?'Prematuro: escolha de 400 a 500 mcg/kg/dia':'Termo: 250 mcg/kg/dia'):'Dose conforme a idade gestacional';
+  $('rule-se').textContent=Number.isFinite(ga)?(preterm?'Prematuro: 7 mcg/kg/dia':'Termo: escolha de 2 a 3 mcg/kg/dia'):'Dose conforme a idade gestacional';
+  $('znDose').disabled=$('omit-zn').checked||!preterm;
+  $('seDose').disabled=$('omit-se').checked||preterm;
+  $('znDose').placeholder=preterm?'400 a 500':'250 (automático)';
+  $('seDose').placeholder=preterm?'7 (automático)':'2 a 3';
   for(const id of ['va','vb'])$('timing-'+id).textContent=Number.isFinite(day)&&day<3?'Não será incluído antes do 3º dia de vida.':'A partir do 3º dia de vida';
   $('timing-oligo').textContent=Number.isFinite(day)&&day<8?'Não será incluído antes do 8º dia de vida.':'A partir do 8º dia de vida';
 }
@@ -41,7 +44,7 @@ document.querySelectorAll('.tabs button').forEach((button,index)=>button.addEven
 for(const name of tabNames.slice(1))$('tab-'+name).tabIndex=-1;
 document.querySelectorAll('[data-omit]').forEach(c=>c.addEventListener('change',()=>{const row=c.closest('[data-dose]');row.classList.toggle('disabled',c.checked);row.querySelectorAll('.dose-controls input,.dose-controls select').forEach(x=>x.disabled=c.checked);updateRules();}));
 $('npp-form').addEventListener('input',()=>{invalidate();updateRules();});$('npp-form').addEventListener('change',()=>{invalidate();updateRules();});
-function collect(){const input={};for(const id of ['weight','day','fluid','aa','lip','vig','na','k','ca','mg','p','seDose'])input[id]=$(id).value;input.gaWeeks=$('ga').value;input.gaDays=$('ga-days').value;input.access=document.querySelector('[name="access"]:checked')?.value;input.naSalt=$('salt-na').value;input.pSalt=$('salt-p').value;input.omit={};document.querySelectorAll('[data-omit]').forEach(c=>input.omit[c.dataset.omit]=c.checked);return input;}
+function collect(){const input={};for(const id of ['weight','day','fluid','aa','lip','vig','na','k','ca','mg','p','znDose','seDose'])input[id]=$(id).value;input.gaWeeks=$('ga').value;input.gaDays=$('ga-days').value;input.access=document.querySelector('[name="access"]:checked')?.value;input.naSalt=$('salt-na').value;input.pSalt=$('salt-p').value;input.omit={};document.querySelectorAll('[data-omit]').forEach(c=>input.omit[c.dataset.omit]=c.checked);return input;}
 function textElement(tag,text,cls){const e=document.createElement(tag);e.textContent=text;if(cls)e.className=cls;return e;}
 function summaryRow(label,value,highlight=false){const row=document.createElement('div');row.className='summary-row'+(highlight?' highlight':'');row.append(textElement('span',label),textElement('strong',value));return row;}
 function render(r){

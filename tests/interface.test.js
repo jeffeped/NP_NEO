@@ -37,6 +37,21 @@ test('interface: dia 1 na referência, orientação e exportação disponível',
   assert.match(app.el('result-summary').textContent,/Osmolaridade estimada\d+ mOsm\/L/);
   assert.match(app.el('result-alerts').textContent,/não corresponde à osmolalidade laboratorial medida/);
 });
+test('interface: zinco e selênio seguem prematuridade, não peso de 1.500 g',()=>{
+  const app=openApp();
+  app.el('omit-zn').checked=false;app.el('omit-se').checked=false;
+  app.dispatch('omit-zn','change');app.dispatch('omit-se','change');
+  app.set('weight','1,8');app.set('ga',36);app.set('ga-days',6);app.set('znDose',500);
+  assert.match(app.el('rule-zn').textContent,/400 a 500/);
+  assert.match(app.el('rule-se').textContent,/7 mcg/);
+  assert.equal(app.el('znDose').disabled,false);assert.equal(app.el('seDose').disabled,true);
+  app.calculate();
+  assert.match(app.el('result-alerts').textContent,/Zinco total/);
+  app.set('ga',37);app.set('ga-days',0);
+  assert.match(app.el('rule-zn').textContent,/250 mcg/);
+  assert.match(app.el('rule-se').textContent,/2 a 3/);
+  assert.equal(app.el('znDose').disabled,true);assert.equal(app.el('seDose').disabled,false);
+});
 test('interface: acima da referência inicial gera cautela sem bloquear',()=>{
   const app=openApp();app.set('aa',3);app.set('lip',3);app.calculate();
   assert.deepEqual(app.alerts().map(a=>a.level),['caution','caution']);

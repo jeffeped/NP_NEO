@@ -4,10 +4,38 @@ import {readFileSync} from 'node:fs';
 import {calculate,parseNumber,VERSION} from '../engine.js';
 import {nutritionAlerts} from '../alerts.js';
 
-const base={weight:0.8,day:1,gaWeeks:27,gaDays:0,fluid:200,aa:2,lip:2,vig:5,na:0,k:0,ca:0,mg:0,p:0,seDose:6,naSalt:'nacl',pSalt:'glycero',access:'central',omit:{va:true,vb:true,oligo:true,zn:true,se:true}};
+const base={weight:0.8,day:1,gaWeeks:27,gaDays:0,fluid:200,aa:2,lip:2,vig:5,na:0,k:0,ca:0,mg:0,p:0,znDose:400,seDose:2,naSalt:'nacl',pSalt:'glycero',access:'central',omit:{va:true,vb:true,oligo:true,zn:true,se:true}};
 const run=changes=>{const r=calculate({...base,...changes});assert.equal(r.ok,true);return r;};
 const alertFor=(r,id)=>r.alerts.find(a=>a.nutrient===id);
 const above20=r=>!!alertFor(r,'glucose');
+
+test('oligoelementos: prematuro 36+6 usa zinco 400–500 e selênio 7',()=>{
+  const omit={...base.omit,zn:false,se:false};
+  for(const znDose of [400,500]){
+    const r=run({weight:1.8,gaWeeks:36,gaDays:6,znDose,omit});
+    assert.equal(r.offers.find(o=>o.id==='zn').requested,znDose);
+    assert.equal(r.offers.find(o=>o.id==='se').requested,7);
+  }
+  assert.equal(calculate({...base,gaWeeks:36,gaDays:6,znDose:399,omit}).ok,false);
+  assert.equal(calculate({...base,gaWeeks:36,gaDays:6,znDose:501,omit}).ok,false);
+});
+test('oligoelementos: termo 37+0 usa zinco 250 e selênio 2–3',()=>{
+  const omit={...base.omit,zn:false,se:false};
+  for(const seDose of [2,3]){
+    const r=run({weight:3,gaWeeks:37,gaDays:0,znDose:500,seDose,omit});
+    assert.equal(r.offers.find(o=>o.id==='zn').requested,250);
+    assert.equal(r.offers.find(o=>o.id==='se').requested,seDose);
+  }
+  assert.equal(calculate({...base,weight:3,gaWeeks:37,seDose:1.9,omit}).ok,false);
+  assert.equal(calculate({...base,weight:3,gaWeeks:37,seDose:3.1,omit}).ok,false);
+});
+test('oligoelementos: tetos absolutos limitam zinco a 5 mg e selênio a 100 mcg',()=>{
+  const omit={...base.omit,zn:false,se:false};
+  const r=run({weight:40,gaWeeks:37,gaDays:0,seDose:3,omit});
+  assert.equal(r.rows.find(row=>row.id==='zinc').quantity,5000);
+  assert.ok(r.rows.find(row=>row.id==='selenium').quantity<=100);
+  assert.ok(r.notices.some(n=>n.includes('5 mg/dia')));
+});
 
 for(const access of ['peripheral','central']) {
   for(const [fluid,expected,name] of [[90.1,false,'abaixo'],[90,false,'exatamente'],[89.9,true,'imediatamente acima na precisão do preparo']]) {
@@ -132,8 +160,8 @@ test('alertas não removem bloqueio por volume inviável',()=>{
   assert.ok(r.blocks.some(b=>b.includes('ultrapassam o volume total')));
 });
 
-const baseline=JSON.parse(readFileSync(new URL('./fixtures/baseline-0.1.2.json',import.meta.url)));
-for(const {name,input,expected} of baseline.records)test(`regressão 0.1.2: ${name}`,()=>{
+const baseline=JSON.parse(readFileSync(new URL('./fixtures/baseline-0.3.5.json',import.meta.url)));
+for(const {name,input,expected} of baseline.records)test(`regressão 0.3.5: ${name}`,()=>{
   const actual=calculate(input);delete actual.alerts;delete actual.version;delete actual.totals.osmolarity;
   assert.deepEqual(actual,expected); // Todas as saídas antigas, não só um total.
 });

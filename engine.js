@@ -1,5 +1,5 @@
 import {nutritionAlerts} from './alerts.js';
-export const VERSION = '0.3.4';
+export const VERSION = '0.3.5';
 export const CONCENTRATIONS = Object.freeze({aa:0.1,lip:0.2,glucose:0.5,nacl:1.7,acetate:2,kcl:1.34,calcium:0.5,magnesium:0.8,kphosP:1.1,kphosK:2,glyceroP:1,glyceroNa:2,oligoZn:500,zinc:200,selenium:60});
 export const ENERGY = Object.freeze({aa:4,lip:9,glucose:4});
 export const round1 = n => Math.round((n + Number.EPSILON * Math.max(1, Math.abs(n))) * 10) / 10;
@@ -14,7 +14,7 @@ const doseFields = ['aa','lip','vig','na','k','ca','mg','p'];
 export function calculate(input) {
   const errors=[];
   const n={};
-  const labels={weight:'Peso atual',day:'Dia de vida',gaWeeks:'Idade gestacional',gaDays:'Dias adicionais de gestação',fluid:'Taxa hídrica',aa:'Aminoácidos',lip:'Lipídeos',vig:'VIG',na:'Sódio',k:'Potássio',ca:'Cálcio',mg:'Magnésio',p:'Fósforo',seDose:'Selênio'};
+  const labels={weight:'Peso atual',day:'Dia de vida',gaWeeks:'Idade gestacional',gaDays:'Dias adicionais de gestação',fluid:'Taxa hídrica',aa:'Aminoácidos',lip:'Lipídeos',vig:'VIG',na:'Sódio',k:'Potássio',ca:'Cálcio',mg:'Magnésio',p:'Fósforo',znDose:'Zinco',seDose:'Selênio'};
   const omit={...input.omit};
   for (const field of ['weight','day','gaWeeks','gaDays','fluid',...doseFields]) {
     n[field]=(doseFields.includes(field)&&omit[field])?0:parseNumber(input[field]);
@@ -26,8 +26,11 @@ export function calculate(input) {
   if(!['central','peripheral'].includes(input.access)) errors.push({field:'access',message:'Selecione o acesso venoso.'});
   if(!['nacl','acetate'].includes(input.naSalt)) errors.push({field:'naSalt',message:'Selecione o sal de sódio.'});
   if(!['kphos','glycero'].includes(input.pSalt)) errors.push({field:'pSalt',message:'Selecione o sal de fósforo.'});
-  n.seDose=omit.se?0:(n.weight>=1.5?2:parseNumber(input.seDose));
-  if(!omit.se&&n.weight<1.5&&(!Number.isFinite(n.seDose)||n.seDose<5||n.seDose>7)) errors.push({field:'seDose',message:'Para peso menor que 1.500 g, informe selênio entre 5 e 7 mcg/kg/dia.'});
+  const preterm=Number.isFinite(n.gaWeeks)&&n.gaWeeks<37;
+  n.znDose=omit.zn?0:(preterm?parseNumber(input.znDose):250);
+  n.seDose=omit.se?0:(preterm?7:parseNumber(input.seDose));
+  if(!omit.zn&&preterm&&(!Number.isFinite(n.znDose)||n.znDose<400||n.znDose>500)) errors.push({field:'znDose',message:'Para prematuros, informe zinco entre 400 e 500 mcg/kg/dia.'});
+  if(!omit.se&&!preterm&&(!Number.isFinite(n.seDose)||n.seDose<2||n.seDose>3)) errors.push({field:'seDose',message:'Para recém-nascidos a termo, informe selênio entre 2 e 3 mcg/kg/dia.'});
   if(errors.length) return {ok:false,errors};
   const w=n.weight,c=CONCENTRATIONS;
   const blocks=[],notices=[],adjustments=[],rounding=[];
@@ -58,10 +61,16 @@ export function calculate(input) {
   volume('vb',!omit.vb&&eligibleVitamins?Math.min(2*w,5):0,'Polivit B Ped');
   const eligibleOligo=n.day>=8;
   volume('oligo',!omit.oligo&&eligibleOligo?.2*w:0,'Solução de oligoelementos');
-  const zincTarget=omit.zn?0:(w<1.5?400:200);
+  const zincRequested=omit.zn?0:n.znDose;
+  const zincTotal=Math.min(zincRequested*w,5000);
+  const zincTarget=w>0?zincTotal/w:0;
   const donorZn=volumes.oligo*c.oligoZn;
   volume('zinc',omit.zn?0:Math.max(0,zincTarget*w-donorZn)/c.zinc,'Sulfato de zinco');
-  volume('selenium',n.seDose*w/c.selenium,'Selênio');
+  if(volumes.zinc*c.zinc+donorZn>5000)volumes.zinc=Math.max(0,Math.floor(((5000-donorZn)/c.zinc)*100)/100);
+  const seleniumTotal=Math.min(n.seDose*w,100);
+  const seleniumTarget=w>0?seleniumTotal/w:0;
+  volume('selenium',seleniumTotal/c.selenium,'Selênio');
+  if(volumes.selenium*c.selenium>100)volumes.selenium=Math.floor((100/c.selenium)*100)/100;
   const effective={
     aa:volumes.aa*c.aa/w,lip:volumes.lip*c.lip/w,vig:volumes.glucose*500/(w*1440),
     na:(volumes.sodium*(input.naSalt==='nacl'?c.nacl:c.acetate)+donorNa)/w,
@@ -77,6 +86,8 @@ export function calculate(input) {
   }
   if(!eligibleVitamins&&(!omit.va||!omit.vb)) notices.push('Vitaminas não incluídas: início no 3º dia de vida.');
   if(!eligibleOligo&&!omit.oligo) notices.push('Solução de oligoelementos não incluída: início no 8º dia de vida.');
+  if(!omit.zn&&zincRequested*w>5000) notices.push('Zinco limitado ao máximo de 5 mg/dia.');
+  if(!omit.se&&n.seDose*w>100) notices.push('Selênio limitado ao máximo de 100 mcg/dia.');
   const totalCents=Math.round(round1(n.fluid*w)*100);
   const componentsCents=Object.values(volumes).reduce((s,v)=>s+Math.round(v*100),0);
   if(!Number.isSafeInteger(totalCents)||!Number.isSafeInteger(componentsCents))return {ok:false,errors:[{field:'weight',message:'Os valores ultrapassam a capacidade numérica do cálculo. Revise os parâmetros.'}]};
@@ -118,7 +129,7 @@ export function calculate(input) {
   row('water','Água para injeção',volumes.water,volumes.water,'mL',null,'q.s.p.',3);
   const offers=[
     ['aa','Aminoácidos',n.aa,effective.aa,'g/kg/dia'],['lip','Lipídeos',n.lip,effective.lip,'g/kg/dia'],['vig','VIG',n.vig,effective.vig,'mg/kg/min'],
-    ['na','Sódio total',n.na,effective.na,'mEq/kg/dia'],['k','Potássio total',n.k,effective.k,'mEq/kg/dia'],['ca','Cálcio',n.ca,effective.ca,'mEq/kg/dia'],['mg','Magnésio',n.mg,effective.mg,'mEq/kg/dia'],['p','Fósforo',n.p,effective.p,'mmol/kg/dia'],['zn','Zinco total',zincTarget,effective.zn,'mcg/kg/dia'],['se','Selênio',n.seDose,effective.se,'mcg/kg/dia']
+    ['na','Sódio total',n.na,effective.na,'mEq/kg/dia'],['k','Potássio total',n.k,effective.k,'mEq/kg/dia'],['ca','Cálcio',n.ca,effective.ca,'mEq/kg/dia'],['mg','Magnésio',n.mg,effective.mg,'mEq/kg/dia'],['p','Fósforo',n.p,effective.p,'mmol/kg/dia'],['zn','Zinco total',zincTarget,effective.zn,'mcg/kg/dia'],['se','Selênio',seleniumTarget,effective.se,'mcg/kg/dia']
   ].map(([id,name,requested,actual,unit])=>({id,name,requested,actual,unit}));
   const alerts=nutritionAlerts({...n,access:input.access},{volumes,effective,totalVolume,glucosePercent,osmolarity});
   return {ok:true,input:{...n,access:input.access,naSalt:input.naSalt,pSalt:input.pSalt,omit},rows,volumes,grams,effective,offers,rounding,adjustments,notices,alerts,blocks,requiresCentral,accessBlocked,canExport:blocks.length===0,
