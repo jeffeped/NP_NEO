@@ -1,6 +1,6 @@
 # NP_NEO by Prof. Jeffe
 
-Calculadora de apoio à nutrição parenteral neonatal e hidratação venosa. Versão de avaliação 0.3.3.
+Calculadora de apoio à nutrição parenteral neonatal e hidratação venosa. Versão de avaliação 0.3.4.
 
 O médico informa os parâmetros; o app calcula volumes e gera um relatório PDF no próprio aparelho. Não há cadastro de pacientes nem histórico de casos.
 
@@ -93,3 +93,7 @@ Fonte da composição e limites: Baxter, SmPC Numeta G13%E, atualizado em
 19/05/2026, seções 2 e 4.2; consulta em 16/09/2026:
 https://www.medicines.org.uk/emc/product/7400/smpc
 A composição deverá ser confrontada com a apresentação local antes da liberação.
+
+### Relação Ca/P na prescrição (0.3.4)
+
+A tela e o PDF mostram a relação molar Ca/P (mmol/mmol) logo abaixo de proteína/calorias não proteicas, tanto na NP individualizada quanto na padrão. A individualizada usa as ofertas efetivas após arredondamento dos volumes: (Ca em mEq ÷ 2) ÷ P em mmol. Sem fósforo, informa “Não calculável (P = 0)”. Exibição com uma casa decimal.
