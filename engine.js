@@ -1,5 +1,5 @@
 import {nutritionAlerts} from './alerts.js';
-export const VERSION = '0.3.2';
+export const VERSION = '0.3.3';
 export const CONCENTRATIONS = Object.freeze({aa:0.1,lip:0.2,glucose:0.5,nacl:1.7,acetate:2,kcl:1.34,calcium:0.5,magnesium:0.8,kphosP:1.1,kphosK:2,glyceroP:1,glyceroNa:2,oligoZn:500,zinc:200,selenium:60});
 export const ENERGY = Object.freeze({aa:4,lip:9,glucose:4});
 export const round1 = n => Math.round((n + Number.EPSILON * Math.max(1, Math.abs(n))) * 10) / 10;
@@ -89,6 +89,16 @@ export function calculate(input) {
   const calories=nonProtein+grams.aa*ENERGY.aa;
   const totalVolume=totalCents/100;
   const glucosePercent=totalVolume>0?grams.glucose/totalVolume*100:0;
+  // Pereira-da-Silva et al. (JPEN, 2004; PMID 14763792).
+  // A equação usa concentrações na solução final: AA e glicose em g/L,
+  // sódio total em mEq/L e fósforo elementar em mg/L.
+  const phosphorusAtomicMass=30.973761998;
+  const osmolarity=totalVolume>0?Math.max(0,
+    (grams.aa*1000/totalVolume)*8+
+    (grams.glucose*1000/totalVolume)*7+
+    (effective.na*w*1000/totalVolume)*2+
+    (effective.p*w*phosphorusAtomicMass*1000/totalVolume)*0.2-50
+  ):null;
   const requiresCentral=Math.round(volumes.glucose*100)*4>totalCents;
   const accessBlocked=requiresCentral&&input.access==='peripheral';
   if(accessBlocked) blocks.push('Concentração de glicose acima de 12,5%. É obrigatório acesso central. Revise o acesso ou os parâmetros.');
@@ -110,7 +120,7 @@ export function calculate(input) {
     ['aa','Aminoácidos',n.aa,effective.aa,'g/kg/dia'],['lip','Lipídeos',n.lip,effective.lip,'g/kg/dia'],['vig','VIG',n.vig,effective.vig,'mg/kg/min'],
     ['na','Sódio total',n.na,effective.na,'mEq/kg/dia'],['k','Potássio total',n.k,effective.k,'mEq/kg/dia'],['ca','Cálcio',n.ca,effective.ca,'mEq/kg/dia'],['mg','Magnésio',n.mg,effective.mg,'mEq/kg/dia'],['p','Fósforo',n.p,effective.p,'mmol/kg/dia'],['zn','Zinco total',zincTarget,effective.zn,'mcg/kg/dia'],['se','Selênio',n.seDose,effective.se,'mcg/kg/dia']
   ].map(([id,name,requested,actual,unit])=>({id,name,requested,actual,unit}));
-  const alerts=nutritionAlerts({...n,access:input.access},{volumes,effective,totalVolume,glucosePercent});
+  const alerts=nutritionAlerts({...n,access:input.access},{volumes,effective,totalVolume,glucosePercent,osmolarity});
   return {ok:true,input:{...n,access:input.access,naSalt:input.naSalt,pSalt:input.pSalt,omit},rows,volumes,grams,effective,offers,rounding,adjustments,notices,alerts,blocks,requiresCentral,accessBlocked,canExport:blocks.length===0,
-    totals:{totalVolume,componentsVolume:componentsCents/100,water:volumes.water,infusion:round1(totalVolume/24),infusionExact:totalVolume/24,fluid:totalVolume/w,calories:calories/w,glucosePercent,nonProtein:nonProtein/w,proteinRatio:grams.aa>0?nonProtein/grams.aa:null},version:VERSION};
+    totals:{totalVolume,componentsVolume:componentsCents/100,water:volumes.water,infusion:round1(totalVolume/24),infusionExact:totalVolume/24,fluid:totalVolume/w,calories:calories/w,glucosePercent,osmolarity,nonProtein:nonProtein/w,proteinRatio:grams.aa>0?nonProtein/grams.aa:null},version:VERSION};
 }

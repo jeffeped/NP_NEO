@@ -1,6 +1,7 @@
 import {round1,formatVolume} from './engine.js';
 const fmt=n=>Number.isFinite(n)?round1(n).toFixed(1).replace('.',','):'—';
 const compact=n=>new Intl.NumberFormat('pt-BR',{maximumFractionDigits:3}).format(n);
+const osm=n=>Number.isFinite(n)?String(Math.round(n)):'—';
 export async function createReport(result){
   if(!result?.ok||!result.canExport)throw new Error('Result is not exportable');
   const {PDFDocument,StandardFonts,rgb}=globalThis.PDFLib;
@@ -37,7 +38,7 @@ export async function createReport(result){
     text(row.name,L+6,y,8.8);right(row.id==='water'?'q.s.p.':`${fmt(row.quantity)} ${row.unit}`,354,y,8.1);right(row.perKg===null?'':`${fmt(row.perKg)} ${row.perUnit}`,488,y,7.8);right(formatVolume(row.volume,row.id),R-6,y,9,bold);horizontal(y-7);y-=21;
   }
   y-=8;
-  const summaries=[['Volume total',fmt(t.totalVolume)+' mL'],['Vazão em 24 horas',fmt(t.infusion)+' mL/h'],['Taxa hídrica',fmt(t.fluid)+' mL/kg/dia'],['Taxa calórica',fmt(t.calories)+' kcal/kg/dia'],['Concentração final de glicose',fmt(t.glucosePercent)+'%'],['Proteína / calorias não proteicas',t.proteinRatio===null?'Não calculável (AA = 0)':'1 : '+fmt(t.proteinRatio)]];
+  const summaries=[['Volume total',fmt(t.totalVolume)+' mL'],['Vazão em 24 horas',fmt(t.infusion)+' mL/h'],['Taxa hídrica',fmt(t.fluid)+' mL/kg/dia'],['Taxa calórica',fmt(t.calories)+' kcal/kg/dia'],['Concentração final de glicose',fmt(t.glucosePercent)+'%'],['Osmolaridade estimada',osm(t.osmolarity)+' mOsm/L'],['Proteína / calorias não proteicas',t.proteinRatio===null?'Não calculável (AA = 0)':'1 : '+fmt(t.proteinRatio)]];
   for(const [name,value] of summaries){if(y<95)newPage('Indicadores da NPP');text(name,L+6,y,9,bold);right(value,R-6,y,9,bold);y-=17;}
   if(result.requiresCentral){if(y<91)newPage('Conferência do acesso');text('ACESSO CENTRAL OBRIGATÓRIO: glicose acima de 12,5%.',L+6,y,9,bold,green);y-=15;}
   newPage('Conferência dos parâmetros');
@@ -46,6 +47,7 @@ export async function createReport(result){
   for(const o of result.offers){text(o.name,L+6,y,9,bold);text(o.unit,L+6,y-12,8,regular,muted);right(fmt(o.requested),360,y,9);right(fmt(o.actual),R-6,y,9,bold);horizontal(y-18);y-=34;}
   y-=6;
   paragraph('Fatores energéticos definidos para esta calculadora: aminoácidos 4 kcal/g, lipídeos 9 kcal/g e glicose 4 kcal/g. A relação proteína/caloria considera somente as calorias de glicose e lipídeos.');
+  paragraph('Osmolaridade estimada pela equação neonatal de Pereira-da-Silva et al. (JPEN, 2004; PMID 14763792), com aminoácidos e glicose em g/L, sódio total em mEq/L e fósforo elementar em mg/L. Não corresponde à osmolalidade laboratorial medida.');
   if(result.rounding.length)paragraph('O arredondamento pode modificar as doses efetivas, especialmente de zinco e selênio. Confira a oferta efetiva antes do uso.');
   if(Math.abs(t.infusion-t.infusionExact)>1e-9)paragraph(`Vazão matemática: ${t.infusionExact.toFixed(4).replace('.',',')} mL/h; exibida: ${fmt(t.infusion)} mL/h. Confira a diferença entre vazão arredondada por 24 horas e volume total.`);
   for(const a of result.adjustments)paragraph(`Ajuste conferido pelo usuário: ${a.name}, solicitado ${fmt(a.requested)} ${a.unit}, resultante ${fmt(a.actual)} ${a.unit}, por contribuição de ${a.source}. Complemento não acrescentado.`,9,ink);

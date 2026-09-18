@@ -110,6 +110,23 @@ test('limite periférico antigo: 12,5% exatos liberados; acima bloqueia',()=>{
   assert.equal(at.totals.glucosePercent,12.5);assert.equal(at.canExport,true);
   assert.equal(above.canExport,false);assert.equal(above20(above),false);
 });
+test('osmolaridade usa concentrações finais, fósforo elementar e sódio total',()=>{
+  const r=run({weight:1,fluid:100,aa:2,lip:0,vig:5,na:3,p:1,pSalt:'glycero'});
+  // O sal complementar de sódio arredonda para 0,6 mL: a equação deve usar
+  // a oferta efetivamente preparada (3,02 mEq), não a dose solicitada (3,0).
+  const expected=20*8+72*7+30.2*2+(10*30.973761998)*0.2-50;
+  assert.ok(Math.abs(r.totals.osmolarity-expected)<1e-9);
+});
+test('osmolaridade acima de 900 orienta acesso central nos dois cenários e não bloqueia',()=>{
+  const peripheral=run({weight:1,fluid:100,aa:3,vig:125/14.4,access:'peripheral'});
+  assert.ok(peripheral.totals.osmolarity>900);
+  assert.equal(peripheral.canExport,true);
+  assert.equal(alertFor(peripheral,'osmolarity').level,'caution');
+  assert.match(alertFor(peripheral,'osmolarity').message,/900 mOsm\/L.*acesso venoso central/);
+  const central=run({weight:1,fluid:100,aa:3,vig:125/14.4,access:'central'});
+  assert.equal(alertFor(central,'osmolarity').level,'caution');
+  assert.match(alertFor(central,'osmolarity').message,/Mantenha o acesso venoso central selecionado/);
+});
 test('alertas não removem bloqueio por volume inviável',()=>{
   const r=run({fluid:20,aa:4,lip:5});assert.equal(r.canExport,false);
   assert.ok(r.blocks.some(b=>b.includes('ultrapassam o volume total')));
@@ -117,7 +134,7 @@ test('alertas não removem bloqueio por volume inviável',()=>{
 
 const baseline=JSON.parse(readFileSync(new URL('./fixtures/baseline-0.1.2.json',import.meta.url)));
 for(const {name,input,expected} of baseline.records)test(`regressão 0.1.2: ${name}`,()=>{
-  const actual=calculate(input);delete actual.alerts;delete actual.version;
+  const actual=calculate(input);delete actual.alerts;delete actual.version;delete actual.totals.osmolarity;
   assert.deepEqual(actual,expected); // Todas as saídas antigas, não só um total.
 });
 test('aplicativo e PDF usam VIG e o cache inclui o novo módulo',()=>{

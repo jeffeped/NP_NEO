@@ -32,7 +32,7 @@ function compareProducts(left,right) {
   return delta>0n?1:delta<0n?-1:0;
 }
 
-export function nutritionAlerts(input,{volumes,effective,totalVolume,glucosePercent}) {
+export function nutritionAlerts(input,{volumes,effective,totalVolume,glucosePercent,osmolarity}) {
   const alerts=[];
   const context=`Peso atual: ${formatAlertNumber(input.weight)} kg; dia de vida: ${input.day}.`;
   function add(id,nutrient,level,kind,value,reference,message) {
@@ -44,6 +44,13 @@ export function nutritionAlerts(input,{volumes,effective,totalVolume,glucosePerc
   if(totalVolume>0&&compareProducts([volumes.glucose,0.5,100],[totalVolume,20])>0) {
     add('glucose-concentration-high','glucose','caution','concentration',glucosePercent,20,
       `concentração final de glicose superior a 20%. Calculada: ${formatCalculated(glucosePercent,20,true)}%. Recomenda-se cautela e revisão da prescrição, mesmo em acesso venoso central. Acesso selecionado: ${input.access==='central'?'central':'periférico'}. ${context}`);
+  }
+  if(Number.isFinite(osmolarity)&&osmolarity>900) {
+    const accessGuidance=input.access==='central'
+      ?'Mantenha o acesso venoso central selecionado e confira o protocolo institucional.'
+      :'Considere acesso venoso central e confira o protocolo institucional.';
+    add('osmolarity-high','osmolarity','caution','concentration',osmolarity,900,
+      `osmolaridade estimada de ${Math.round(osmolarity)} mOsm/L, acima do limite de 900 mOsm/L geralmente recomendado para nutrição parenteral periférica. ${accessGuidance} Estimativa pela equação de Pereira-da-Silva et al.; não corresponde à osmolalidade laboratorial medida. ${context}`);
   }
   for(const [id,name,concentration] of [['aa','Aminoácidos',0.1],['lip','Lipídios',0.2]]) {
     const {dose,phase,ceiling}=macroReference(id,input.weight,input.day);

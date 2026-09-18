@@ -5,6 +5,7 @@ import {macroReference,formatAlertNumber} from './alerts.js';
 import {initHydration} from './hydration-ui.js';
 const $=id=>document.getElementById(id);
 const f=n=>Number.isFinite(n)?round1(n).toFixed(1).replace('.',','):'—';
+const osm=n=>Number.isFinite(n)?String(Math.round(n)):'—';
 const weightFormat=n=>new Intl.NumberFormat('pt-BR',{maximumFractionDigits:3}).format(n);
 let result=null,pdfUrl=null,downloadResult=null,installPrompt=null,serviceRegistration=null;
 const macros=[{id:'aa',name:'Aminoped 10%',unit:'g/kg/dia'},{id:'lip',name:'Lipídeos 20%',unit:'g/kg/dia'},{id:'vig',name:'Glicose 50% · VIG',unit:'mg/kg/min'}];
@@ -49,9 +50,9 @@ function render(r){
   const tbody=$('result-rows');tbody.replaceChildren();let group=0;
   for(const item of r.rows){if(item.group!==group&&item.group<3){const spacer=document.createElement('tr');spacer.className='spacer';spacer.setAttribute('aria-hidden','true');const cell=document.createElement('td');cell.colSpan=2;spacer.append(cell);tbody.append(spacer);}group=item.group;const tr=document.createElement('tr');tr.dataset.component=item.id;if(item.volume===0)tr.className='inactive';const name=textElement('td',item.name);name.append(textElement('span',item.id==='water'?'q.s.p. o volume total':`${f(item.quantity)} ${item.unit} · ${f(item.perKg)} ${item.perUnit}`));if(item.status)name.append(textElement('span',item.status));tr.append(name,textElement('td',item.volume===null?'Rever':formatVolume(item.volume,item.id)));tbody.append(tr);}
   const t=r.totals;$('result-summary').replaceChildren(
-    summaryRow('Volume total',f(t.totalVolume)+' mL'),summaryRow('Vazão · 24 h',f(t.infusion)+' mL/h'),summaryRow('Taxa hídrica',f(t.fluid)+' mL/kg/dia'),summaryRow('Taxa calórica',f(t.calories)+' kcal/kg/dia'),summaryRow('Concentração de glicose',f(t.glucosePercent)+'%',r.requiresCentral),summaryRow('Proteína / calorias não proteicas',t.proteinRatio===null?'Não calculável':'1 : '+f(t.proteinRatio))
+    summaryRow('Volume total',f(t.totalVolume)+' mL'),summaryRow('Vazão · 24 h',f(t.infusion)+' mL/h'),summaryRow('Taxa hídrica',f(t.fluid)+' mL/kg/dia'),summaryRow('Taxa calórica',f(t.calories)+' kcal/kg/dia'),summaryRow('Concentração de glicose',f(t.glucosePercent)+'%',r.requiresCentral),summaryRow('Osmolaridade estimada',osm(t.osmolarity)+' mOsm/L',r.input.access==='peripheral'&&t.osmolarity>900),summaryRow('Proteína / calorias não proteicas',t.proteinRatio===null?'Não calculável':'1 : '+f(t.proteinRatio))
   );
-  $('result-alerts').replaceChildren();
+  $('result-alerts').replaceChildren(textElement('div','Osmolaridade estimada pela equação neonatal de Pereira-da-Silva et al.; não corresponde à osmolalidade laboratorial medida.','notice osmolarity-note'));
   if(r.notices.length){const note=textElement('div',r.notices.join(' '),'notice');$('result-alerts').append(note);}
   for(const alert of r.alerts){const note=textElement('div',alert.message,'notice clinical-alert '+(alert.level==='info'?'info':alert.level==='high'?'danger':'caution'));note.dataset.alertId=alert.id;note.dataset.level=alert.level;$('result-alerts').append(note);}
   for(const block of r.blocks.filter(b=>!b.startsWith('Concentração de glicose')))$('result-alerts').append(textElement('div',block,'notice danger'));

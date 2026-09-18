@@ -34,16 +34,19 @@ test('interface: dia 1 na referência, orientação e exportação disponível',
   assert.deepEqual(app.alerts().map(a=>a.level),['info','info']);
   assert.match(app.el('reference-aa').textContent,/2,0 g\/kg\/dia/);
   assert.match(app.el('reference-vig').textContent,/velocidade de infusão de glicose/);
+  assert.match(app.el('result-summary').textContent,/Osmolaridade estimada\d+ mOsm\/L/);
+  assert.match(app.el('result-alerts').textContent,/não corresponde à osmolalidade laboratorial medida/);
 });
 test('interface: acima da referência inicial gera cautela sem bloquear',()=>{
   const app=openApp();app.set('aa',3);app.set('lip',3);app.calculate();
   assert.deepEqual(app.alerts().map(a=>a.level),['caution','caution']);
   assert.equal(app.el('export-pdf').disabled,false);
 });
-test('interface: três grupos de alertas coexistem com acesso central',()=>{
+test('interface: alertas clínicos coexistem com orientação para manter acesso central',()=>{
   const app=openApp();for(const [id,value] of Object.entries({day:2,fluid:140,aa:3.6,lip:4.1,vig:20}))app.set(id,value);
   app.calculate();
-  assert.deepEqual(app.alerts().map(a=>[a.id,a.level]),[['glucose-concentration-high','caution'],['aa-ceiling','high'],['lip-ceiling','high']]);
+  assert.deepEqual(app.alerts().map(a=>[a.id,a.level]),[['glucose-concentration-high','caution'],['osmolarity-high','caution'],['aa-ceiling','high'],['lip-ceiling','high']]);
+  assert.match(app.alerts()[1].text,/Mantenha o acesso venoso central selecionado/);
   assert.equal(app.el('export-pdf').disabled,false);
   assert.match(app.alerts()[0].text,/mesmo em acesso venoso central/);
 });
