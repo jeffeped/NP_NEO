@@ -2,6 +2,13 @@
 
 Registro das mudanças publicadas do NP_NEO. O histórico detalhado e auditável permanece também nos commits do Git.
 
+## 0.3.6 — 18/09/2026
+
+- Adiciona a aba “Notas importantes” com bases dos cálculos, limitações, segurança, privacidade e referências.
+- Transfere explicações fixas sobre osmolaridade, fatores energéticos e arredondamentos para a nova aba.
+- Mantém nas telas de resultado somente valores, avisos contextuais e bloqueios de segurança.
+- Amplia a navegação acessível por teclado para cinco abas.
+
 ## 0.3.5 — 18/09/2026
 
 - Corrige as doses de zinco e selênio conforme ESPGHAN/ESPEN/ESPR/CSPEN 2018.

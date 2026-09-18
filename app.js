@@ -36,7 +36,7 @@ function updateRules(){
   $('timing-oligo').textContent=Number.isFinite(day)&&day<8?'Não será incluído antes do 8º dia de vida.':'A partir do 8º dia de vida';
 }
 function invalidate(){result=null;downloadResult=null;$('calculated-result').hidden=true;$('empty-result').hidden=false;$('empty-result').textContent='Calcule novamente para conferir os parâmetros atuais.';$('pdf-download').hidden=true;$('pdf-status').textContent='';if(pdfUrl){URL.revokeObjectURL(pdfUrl);pdfUrl=null;}}
-const tabNames=['parameters','results','hydration','standard'];
+const tabNames=['parameters','results','hydration','standard','notes'];
 function view(name){for(const tab of tabNames){$(tab).hidden=name!==tab;$('tab-'+tab).setAttribute('aria-selected',String(name===tab));$('tab-'+tab).tabIndex=name===tab?0:-1;}window.scrollTo({top:0,behavior:'instant'});}
 for(const name of tabNames)$('tab-'+name).addEventListener('click',()=>view(name));
 $('edit-parameters').addEventListener('click',()=>view('parameters'));
@@ -55,16 +55,16 @@ function render(r){
   const t=r.totals;$('result-summary').replaceChildren(
     summaryRow('Volume total',f(t.totalVolume)+' mL'),summaryRow('Vazão · 24 h',f(t.infusion)+' mL/h'),summaryRow('Taxa hídrica',f(t.fluid)+' mL/kg/dia'),summaryRow('Taxa calórica',f(t.calories)+' kcal/kg/dia'),summaryRow('Concentração de glicose',f(t.glucosePercent)+'%',r.requiresCentral),summaryRow('Osmolaridade estimada',osm(t.osmolarity)+' mOsm/L',r.input.access==='peripheral'&&t.osmolarity>900),summaryRow('Proteína / calorias não proteicas',t.proteinRatio===null?'Não calculável':'1 : '+f(t.proteinRatio)),summaryRow('Relação Ca/P (mmol/mmol)',r.effective.p>0?f((r.effective.ca/2)/r.effective.p)+' : 1':'Não calculável (P = 0)')
   );
-  $('result-alerts').replaceChildren(textElement('div','Osmolaridade estimada pela equação neonatal de Pereira-da-Silva et al.; não corresponde à osmolalidade laboratorial medida.','notice osmolarity-note'));
+  $('result-alerts').replaceChildren();
   if(r.notices.length){const note=textElement('div',r.notices.join(' '),'notice');$('result-alerts').append(note);}
   for(const alert of r.alerts){const note=textElement('div',alert.message,'notice clinical-alert '+(alert.level==='info'?'info':alert.level==='high'?'danger':'caution'));note.dataset.alertId=alert.id;note.dataset.level=alert.level;$('result-alerts').append(note);}
   for(const block of r.blocks.filter(b=>!b.startsWith('Concentração de glicose')))$('result-alerts').append(textElement('div',block,'notice danger'));
   $('access-alert').hidden=!r.requiresCentral;
   if(r.requiresCentral)$('access-alert').textContent=r.accessBlocked?'Concentração de glicose acima de 12,5%. É obrigatório acesso central. Revise o acesso ou os parâmetros.':'Concentração de glicose acima de 12,5%: acesso central obrigatório. Acesso central selecionado.';
-  const offers=document.createElement('details');offers.className='section offers';offers.innerHTML='<summary>Conferir doses solicitadas e efetivas <span aria-hidden="true">⌄</span></summary><table><thead><tr><th>Nutriente</th><th>Solicitada</th><th>Efetiva</th></tr></thead><tbody></tbody></table><p class="help">As doses efetivas incluem contribuições de outros componentes e os volumes arredondados. Fatores energéticos definidos para esta calculadora: AA 4, lipídeos 9 e glicose 4 kcal/g.</p>';
+  const offers=document.createElement('details');offers.className='section offers';offers.innerHTML='<summary>Conferir doses solicitadas e efetivas <span aria-hidden="true">⌄</span></summary><table><thead><tr><th>Nutriente</th><th>Solicitada</th><th>Efetiva</th></tr></thead><tbody></tbody></table>';
   for(const o of r.offers){const tr=document.createElement('tr'),td=textElement('td',o.name);td.append(textElement('span',o.unit));tr.append(td,textElement('td',f(o.requested)),textElement('td',f(o.actual)));offers.querySelector('tbody').append(tr);}
   $('result-alerts').append(offers);
-  if(r.rounding.length)$('result-alerts').append(textElement('p','Zinco e selênio: duas casas decimais. Demais componentes: uma casa. Água q.s.p. conserva os centésimos necessários. Confira as doses efetivas.','infusion-note'));
+  if(r.rounding.length)$('result-alerts').append(textElement('p','Há volumes arredondados; confira as doses efetivas.','infusion-note'));
   if(Math.abs(t.infusion-t.infusionExact)>1e-9)$('result-alerts').append(textElement('p','A vazão é exibida com uma casa decimal. Vazão × 24 h pode diferir ligeiramente do volume total; confira a programação da infusão.','infusion-note'));
   $('acknowledgements').replaceChildren();
   for(const a of r.adjustments){const note=document.createElement('div');note.className='notice';note.append(textElement('p',`${a.name}: dose solicitada ${f(a.requested)} ${a.unit}; dose resultante ${f(a.actual)} ${a.unit}, já fornecida por ${a.source}. O sal complementar não foi acrescentado.`));const label=document.createElement('label'),check=document.createElement('input');check.type='checkbox';check.dataset.ack=a.id;check.addEventListener('change',updateExport);label.append(check,textElement('span',`Conferi e aceito a dose resultante de ${a.name.toLowerCase()}.`));note.append(label);$('acknowledgements').append(note);}

@@ -26,6 +26,7 @@
         <button id="tab-results" role="tab" aria-controls="results" aria-selected="false" type="button">Resultados</button>
         <button id="tab-hydration" role="tab" aria-controls="hydration" aria-selected="false" type="button" title="Hidratação venosa">HV</button>
         <button id="tab-standard" role="tab" aria-controls="standard" aria-selected="false" type="button">NP padrão</button>
+        <button id="tab-notes" role="tab" aria-controls="notes" aria-selected="false" type="button">Notas</button>
       </div>
     </header>
     <main>
@@ -145,6 +146,46 @@
           <p class="help">Uso com fotoproteção da bolsa e equipo; filtro de 1,2 µm recomendado. Conferir condições clínicas e laboratoriais antes da prescrição.</p>
         </div>
         <p class="help">Base: composição integral da bolsa (9,4 g de aminoácidos/300 mL). <a href="https://www.medicines.org.uk/emc/product/7400/smpc" target="_blank" rel="noopener noreferrer">Bula técnica Baxter — Numeta G13%E</a>.</p>
+      </section>
+      <section id="notes" role="tabpanel" aria-labelledby="tab-notes" hidden>
+        <h2 class="page-title">Notas importantes</h2>
+        <p class="caption">Bases dos cálculos, limitações e referências</p>
+        <section class="section"><div class="section-inner">
+          <h2>Finalidade e limites</h2>
+          <p>O NP_NEO é um instrumento de apoio ao cálculo e à conferência. Não substitui avaliação clínica, protocolo institucional, validação farmacêutica nem conferência da prescrição.</p>
+          <p>O aplicativo não confirma estabilidade físico-química, compatibilidade entre componentes ou ausência de precipitados. As apresentações e concentrações devem ser confrontadas com os rótulos utilizados pelo serviço.</p>
+        </div></section>
+        <section class="section"><div class="section-inner">
+          <h2>Osmolaridade estimada</h2>
+          <p>A osmolaridade é estimada pela equação neonatal de Pereira-da-Silva et al., usando as concentrações finais de aminoácidos e glicose em g/L, sódio total em mEq/L e fósforo elementar em mg/L:</p>
+          <p><strong>Osmolaridade (mOsm/L) = (AA × 8) + (glicose × 7) + (Na × 2) + (P × 0,2) − 50.</strong></p>
+          <p>O resultado é uma estimativa matemática e não corresponde à osmolalidade laboratorial medida. Valores acima de 900 mOsm/L geram orientação para acesso venoso central.</p>
+        </div></section>
+        <section class="section"><div class="section-inner">
+          <h2>Arredondamentos e ofertas efetivas</h2>
+          <p>Zinco e selênio são preparados com duas casas decimais; os demais componentes, com uma. A água q.s.p. conserva os centésimos necessários. As ofertas efetivas consideram os volumes arredondados e as contribuições provenientes de outros componentes.</p>
+          <p>Fatores energéticos utilizados: aminoácidos 4 kcal/g, lipídeos 9 kcal/g e glicose 4 kcal/g. A relação proteína/caloria considera somente as calorias não proteicas.</p>
+        </div></section>
+        <section class="section"><div class="section-inner">
+          <h2>Segurança do preparo e administração</h2>
+          <p>Conferir compatibilidade, estabilidade, relação Ca/P, osmolaridade, acesso venoso e oferta efetiva antes da utilização. A NP neonatal deve ser protegida da luz durante o preparo e a administração, conforme protocolo institucional e apresentação utilizada.</p>
+          <p>Na NP padrão, vitaminas e oligoelementos não estão incluídos no cálculo e devem ser avaliados separadamente.</p>
+        </div></section>
+        <section class="section"><div class="section-inner">
+          <h2>Referências principais</h2>
+          <ul>
+            <li>ESPGHAN/ESPEN/ESPR/CSPEN. Diretrizes de nutrição parenteral pediátrica. <em>Clinical Nutrition</em>. 2018;37(6 Pt B).</li>
+            <li>Domellöf M et al. Iron and trace minerals. <em>Clinical Nutrition</em>. 2018;37:2354–2359.</li>
+            <li>Mihatsch W et al. Calcium, phosphorus and magnesium. <em>Clinical Nutrition</em>. 2018;37:2360–2365.</li>
+            <li>Pereira-da-Silva L et al. Osmolaridade de soluções de nutrição parenteral neonatal. <em>JPEN</em>. 2004. PMID 14763792.</li>
+            <li><a href="https://www.medicines.org.uk/emc/product/7400/smpc" target="_blank" rel="noopener noreferrer">Bula técnica vigente — Numeta G13%E</a>.</li>
+          </ul>
+          <p>Consulte o <a href="https://github.com/jeffeped/NP_NEO/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer">histórico de versões</a> para as mudanças clínicas e funcionais.</p>
+        </div></section>
+        <section class="section"><div class="section-inner">
+          <h2>Privacidade</h2>
+          <p>Os parâmetros, cálculos e PDFs são processados no aparelho. O aplicativo não mantém cadastro ou histórico de pacientes. Não insira informações identificáveis nos campos ou arquivos exportados.</p>
+        </div></section>
       </section>
       <footer class="app-footer">
         <p>Versão de avaliação · conferir os resultados antes do uso assistencial.</p>

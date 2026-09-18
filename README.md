@@ -1,6 +1,6 @@
 # NP_NEO by Prof. Jeffe
 
-Calculadora de apoio à nutrição parenteral neonatal e hidratação venosa. Versão de avaliação 0.3.5.
+Calculadora de apoio à nutrição parenteral neonatal e hidratação venosa. Versão de avaliação 0.3.6.
 
 As mudanças de cada versão estão documentadas em [CHANGELOG.md](CHANGELOG.md), além do histórico auditável de commits do repositório.
 

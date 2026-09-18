@@ -46,8 +46,6 @@ export async function createReport(result){
   page.drawRectangle({x:L,y:y-9,width:R-L,height:24,color:shade});text('Parâmetro',L+6,y,9,bold);right('Solicitado',360,y,9,bold);right('Efetivo',R-6,y,9,bold);y-=30;
   for(const o of result.offers){text(o.name,L+6,y,9,bold);text(o.unit,L+6,y-12,8,regular,muted);right(fmt(o.requested),360,y,9);right(fmt(o.actual),R-6,y,9,bold);horizontal(y-18);y-=34;}
   y-=6;
-  paragraph('Fatores energéticos definidos para esta calculadora: aminoácidos 4 kcal/g, lipídeos 9 kcal/g e glicose 4 kcal/g. A relação proteína/caloria considera somente as calorias de glicose e lipídeos.');
-  paragraph('Osmolaridade estimada pela equação neonatal de Pereira-da-Silva et al. (JPEN, 2004; PMID 14763792), com aminoácidos e glicose em g/L, sódio total em mEq/L e fósforo elementar em mg/L. Não corresponde à osmolalidade laboratorial medida.');
   if(result.rounding.length)paragraph('O arredondamento pode modificar as doses efetivas, especialmente de zinco e selênio. Confira a oferta efetiva antes do uso.');
   if(Math.abs(t.infusion-t.infusionExact)>1e-9)paragraph(`Vazão matemática: ${t.infusionExact.toFixed(4).replace('.',',')} mL/h; exibida: ${fmt(t.infusion)} mL/h. Confira a diferença entre vazão arredondada por 24 horas e volume total.`);
   for(const a of result.adjustments)paragraph(`Ajuste conferido pelo usuário: ${a.name}, solicitado ${fmt(a.requested)} ${a.unit}, resultante ${fmt(a.actual)} ${a.unit}, por contribuição de ${a.source}. Complemento não acrescentado.`,9,ink);

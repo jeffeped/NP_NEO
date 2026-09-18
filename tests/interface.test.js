@@ -35,7 +35,10 @@ test('interface: dia 1 na referência, orientação e exportação disponível',
   assert.match(app.el('reference-aa').textContent,/2,0 g\/kg\/dia/);
   assert.match(app.el('reference-vig').textContent,/velocidade de infusão de glicose/);
   assert.match(app.el('result-summary').textContent,/Osmolaridade estimada\d+ mOsm\/L/);
-  assert.match(app.el('result-alerts').textContent,/não corresponde à osmolalidade laboratorial medida/);
+  assert.doesNotMatch(app.el('result-alerts').textContent,/não corresponde à osmolalidade laboratorial medida/);
+  app.dispatch('tab-notes','click');
+  assert.match(app.el('notes').textContent,/não corresponde à osmolalidade laboratorial medida/);
+  assert.match(app.el('notes').textContent,/Pereira-da-Silva/);
 });
 test('interface: zinco e selênio seguem prematuridade, não peso de 1.500 g',()=>{
   const app=openApp();
@@ -147,13 +150,13 @@ test('interface HV: formulário independente preserva resultado e exportação d
   assert.equal(app.el('hv-result').hidden,true);assert.equal(app.el('hydration').hidden,true);
 });
 
-test('interface: teclado percorre as quatro abas, incluindo início, fim e retorno',()=>{
+test('interface: teclado percorre as cinco abas, incluindo início, fim e retorno',()=>{
   const app=openApp();
   const key=(id,value)=>{const e=new app.window.Event('keydown',{bubbles:true,cancelable:true});Object.defineProperty(e,'key',{value});app.el(id).dispatchEvent(e);};
-  key('tab-parameters','End');assert.equal(app.el('standard').hidden,false);
-  key('tab-standard','ArrowRight');assert.equal(app.el('parameters').hidden,false);
-  key('tab-parameters','ArrowLeft');assert.equal(app.el('standard').hidden,false);
-  key('tab-standard','Home');assert.equal(app.el('parameters').hidden,false);
+  key('tab-parameters','End');assert.equal(app.el('notes').hidden,false);
+  key('tab-notes','ArrowRight');assert.equal(app.el('parameters').hidden,false);
+  key('tab-parameters','ArrowLeft');assert.equal(app.el('notes').hidden,false);
+  key('tab-notes','Home');assert.equal(app.el('parameters').hidden,false);
 });
 
 test('interface: NP padrão calcula por taxa, troca para proteína e invalida saída',()=>{
