@@ -35,17 +35,38 @@ export function calculateEnteral({rate,...options}){
   const composition=compositionFor(options);
   return {rate:r,composition,calories:r*composition.energy/100,protein:r*composition.protein/100};
 }
-export function integrateNutrition({parenteral={},enteral}){
-  const p={fluid:Number(parenteral.fluid)||0,calories:Number(parenteral.calories)||0,protein:Number(parenteral.protein)||0};
+export const IV_SOURCES=Object.freeze({none:'Sem aporte intravenoso',individual:'NP individualizada',standard:'NP padrão (Numeta)',hydration:'HV'});
+export function intravenousFromResult(source,result){
+  if(!Object.hasOwn(IV_SOURCES,source))throw new Error('Selecione o aporte intravenoso em uso.');
+  if(source==='none')return {fluid:0,calories:0,protein:0};
+  if(!result?.ok)throw new Error(`Calcule novamente ${IV_SOURCES[source]} na aba correspondente.`);
+  let values;
+  if(source==='individual'){
+    if(!result.canExport)throw new Error('Revise os impedimentos da NP individualizada antes de integrar.');
+    values={fluid:result.totals.fluid,calories:result.totals.calories,protein:result.effective.aa,weight:result.input.weight};
+  }else if(source==='standard'){
+    if(result.blocks.length)throw new Error('Revise os impedimentos da NP padrão antes de integrar.');
+    values={fluid:result.fluid,calories:result.rows.find(r=>r.label==='Energia total').perKg,protein:result.protein,weight:result.weight};
+  }else{
+    if(!result.canPrepare)throw new Error('Revise os impedimentos da HV antes de integrar.');
+    // Fator da glicose já utilizado no app: 4 kcal/g.
+    values={fluid:result.input.fluid,calories:result.mixture.glucoseGrams*4/result.input.weight,protein:0,weight:result.input.weight};
+  }
+  if(['fluid','calories','protein'].some(key=>!Number.isFinite(values[key])||values[key]<0))throw new Error('Aporte intravenoso inválido; recalcule na aba correspondente.');
+  return values;
+}
+export function integrateNutrition({parenteral={},enteral,source='individual'}){
+  if(!Object.hasOwn(IV_SOURCES,source))throw new Error('Selecione o aporte intravenoso em uso.');
+  const p=source==='none'?{fluid:0,calories:0,protein:0}:{fluid:Number(parenteral.fluid)||0,calories:Number(parenteral.calories)||0,protein:source==='hydration'?0:Number(parenteral.protein)||0};
   const e=enteral||{rate:0,calories:0,protein:0};
-  return {parenteral:p,enteral:{fluid:e.rate||0,calories:e.calories||0,protein:e.protein||0},
+  return {source,sourceLabel:IV_SOURCES[source],weight:source==='none'?null:parenteral.weight,parenteral:p,enteral:{fluid:e.rate||0,calories:e.calories||0,protein:e.protein||0},
     total:{fluid:p.fluid+(e.rate||0),calories:p.calories+(e.calories||0),protein:p.protein+(e.protein||0)}};
 }
 
 // Régua aprovada em 19/09/2026. Comparar valores internos, sem arredondar.
 export function assessTransition(integrated){
   const {parenteral,enteral,total}=integrated;
-  const hasPN=parenteral.fluid>0;
+  const hasPN=['individual','standard'].includes(integrated.source)&&parenteral.fluid>0;
   const active=hasPN&&enteral.fluid>50;
   return {active,reason:!hasPN?'no-pn':enteral.fluid<=50?'enteral-threshold':null,
     energyMet:active?total.calories>=110:null,
