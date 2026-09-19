@@ -1,8 +1,8 @@
 import {calculateEnteral,integrateNutrition} from './enteral.js';
-const $=id=>document.getElementById(id);
 const num=v=>{const n=Number(String(v??'').trim().replace(',','.'));return Number.isFinite(n)?n:null};
 const fmt=n=>Number.isFinite(n)?n.toFixed(1).replace('.',','):'—';
-export function initEnteral(getParenteral){
+export function initEnteral(doc,getParenteral){
+ const $=id=>doc.getElementById(id);
  const type=$('en-type'),lact=$('en-lactation-field'),fmField=$('en-fm85-field'),fm=$('en-fm85'),fmCustom=$('en-fm85-custom-field');
  const sync=()=>{const milk=type.value==='lmo'||type.value==='lhop';lact.hidden=type.value!=='lmo';fmField.hidden=!milk;if(!milk){fm.value='0';fmCustom.hidden=true}};
  type.addEventListener('change',sync);fm.addEventListener('change',()=>fmCustom.hidden=fm.value!=='custom');sync();
