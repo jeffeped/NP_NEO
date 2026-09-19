@@ -1,10 +1,10 @@
 # NP_NEO by Prof. Jeffe
 
-Calculadora de apoio à nutrição parenteral neonatal e hidratação venosa. Versão de avaliação 0.3.6.
+Instrumento de apoio à terapia nutricional neonatal, com nutrição parenteral, hidratação venosa e avaliação da dieta enteral. Versão de avaliação 0.4.0.
 
 As mudanças de cada versão estão documentadas em [CHANGELOG.md](CHANGELOG.md), além do histórico auditável de commits do repositório.
 
-O médico informa os parâmetros; o app calcula volumes e gera um relatório PDF no próprio aparelho. Não há cadastro de pacientes nem histórico de casos.
+O médico informa os parâmetros; o app calcula volumes, avalia a oferta enteral, integra o aporte nutricional parenteral + enteral e gera relatórios PDF no próprio aparelho. Não há cadastro de pacientes nem histórico de casos.
 
 ## Instalar no celular
 
