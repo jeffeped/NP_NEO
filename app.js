@@ -3,6 +3,7 @@ import {calculate,parseNumber,round1,formatVolume,VERSION} from './engine.js';
 import {createReport} from './pdf.js';
 import {macroReference,formatAlertNumber} from './alerts.js';
 import {initHydration} from './hydration-ui.js';
+import {initEnteral} from './enteral-ui.js';
 const $=id=>document.getElementById(id);
 const f=n=>Number.isFinite(n)?round1(n).toFixed(1).replace('.',','):'—';
 const osm=n=>Number.isFinite(n)?String(Math.round(n)):'—';
@@ -87,6 +88,7 @@ if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js',{upd
 window.addEventListener('online',checkOffline);window.addEventListener('offline',checkOffline);
 $('update-app').addEventListener('click',()=>{if(!confirm('Reiniciar para atualizar? Os parâmetros atuais serão descartados.'))return;navigator.serviceWorker.addEventListener('controllerchange',()=>location.reload(),{once:true});serviceRegistration?.waiting?.postMessage({type:'ACTIVATE_UPDATE'});});
 const hydrationUI=initHydration(document);
+initEnteral(()=>result?.ok?{fluid:result.totals.fluid,calories:result.totals.calories,protein:result.effective.aa}:{});
 window.addEventListener('pageshow',e=>{if(e.persisted){$('npp-form').reset();invalidate();updateRules();hydrationUI.reset();}});
 updateRules();
 
