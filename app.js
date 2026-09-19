@@ -88,7 +88,7 @@ if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js',{upd
 window.addEventListener('online',checkOffline);window.addEventListener('offline',checkOffline);
 $('update-app').addEventListener('click',()=>{if(!confirm('Reiniciar para atualizar? Os parâmetros atuais serão descartados.'))return;navigator.serviceWorker.addEventListener('controllerchange',()=>location.reload(),{once:true});serviceRegistration?.waiting?.postMessage({type:'ACTIVATE_UPDATE'});});
 const hydrationUI=initHydration(document);
-initEnteral(()=>result?.ok?{fluid:result.totals.fluid,calories:result.totals.calories,protein:result.effective.aa}:{});
+initEnteral(document,()=>result?.ok?{fluid:result.totals.fluid,calories:result.totals.calories,protein:result.effective.aa}:{});
 window.addEventListener('pageshow',e=>{if(e.persisted){$('npp-form').reset();invalidate();updateRules();hydrationUI.reset();}});
 updateRules();
 
