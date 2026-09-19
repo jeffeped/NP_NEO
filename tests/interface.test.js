@@ -7,6 +7,7 @@ import * as engine from '../engine.js';
 import {macroReference,formatAlertNumber} from '../alerts.js';
 import {initStandard} from '../standard-ui.js';
 import {initHydration} from '../hydration-ui.js';
+import {initEnteral} from '../enteral-ui.js';
 
 // Executa o app real em um DOM simulado; não substitui a revisão visual em navegador.
 const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
@@ -15,7 +16,7 @@ function openApp() {
   const {document,window}=parseHTML(html);
   window.HTMLElement.prototype.scrollIntoView=function(){};
   const context={document,window:{addEventListener(){},scrollTo(){}},navigator:{},
-    console,URL,Blob,MessageChannel,...engine,macroReference,formatAlertNumber,initHydration,initStandard,
+    console,URL,Blob,MessageChannel,...engine,macroReference,formatAlertNumber,initHydration,initStandard,initEnteral,
     createReport:async()=>new Uint8Array()};
   vm.runInNewContext(source,context);
   // O DOM simulado não seleciona implicitamente a primeira opção como o navegador.
