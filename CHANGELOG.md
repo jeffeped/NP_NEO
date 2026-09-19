@@ -2,6 +2,17 @@
 
 Registro das mudanças publicadas do NP_NEO. O histórico detalhado e auditável permanece também nos commits do Git.
 
+## 0.4.0 — 18/09/2026
+
+- Marco de expansão do NP_NEO em direção ao GROW_NEO.
+- Adiciona o módulo de dieta enteral com LMO, LHOP, FPT e FP.
+- Estima energia e proteína do LMO conforme fase da lactação e permite composição conhecida/analisada.
+- Inclui fortificação com FM85 e cálculo da oferta enteral em kcal/kg/dia e g de proteína/kg/dia.
+- Integra nutrição parenteral e enteral em um quadro de aporte nutricional total: taxa hídrica, energia e proteína.
+- Adiciona exportação do aporte nutricional total em PDF, sem identificação do paciente.
+- Adiciona casos de verificação do módulo enteral, testes de interface, teste do PDF e integração contínua automatizada.
+- Mantém a versão como instrumento de avaliação; validação clínica formal ainda não realizada.
+
 ## 0.3.6 — 18/09/2026
 
 - Adiciona a aba “Notas importantes” com bases dos cálculos, limitações, segurança, privacidade e referências.
