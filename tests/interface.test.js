@@ -1,3 +1,4 @@
+import {initAppUpdate} from '../app-update.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -16,7 +17,7 @@ function openApp() {
   const {document,window}=parseHTML(html);
   window.HTMLElement.prototype.scrollIntoView=function(){};
   const context={document,window:{addEventListener(){},scrollTo(){}},navigator:{},
-    console,URL,Blob,MessageChannel,...engine,macroReference,formatAlertNumber,initHydration,initStandard,initEnteral,
+    console,URL,Blob,MessageChannel,initAppUpdate,...engine,macroReference,formatAlertNumber,initHydration,initStandard,initEnteral,
     createReport:async()=>new Uint8Array()};
   vm.runInNewContext(source,context);
   // O DOM simulado não seleciona implicitamente a primeira opção como o navegador.

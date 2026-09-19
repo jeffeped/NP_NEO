@@ -2,6 +2,16 @@
 
 Registro das mudanças publicadas do NP_NEO. O histórico detalhado e auditável permanece também nos commits do Git.
 
+## 0.4.4 — 19/09/2026
+
+- Renomeia a interface, identificação de instalação e relatórios para GROW_NEO by Prof. Jefferson.
+- Adiciona a logo aprovada no canto superior direito, preservando a identificação UEA.
+- Retira o selo Avaliação do cabeçalho; mantém a orientação de conferência clínica no rodapé.
+- Move Atualizar para abaixo da logo, sempre visível, com consulta de nova versão, mensagens de estado e confirmação antes de reiniciar.
+- Organiza as seis abas em duas linhas no celular, sem quebrar palavras.
+- Atualiza cache offline para incluir logo e módulo de atualização. Não altera cálculos ou regras clínicas.
+- Verificação: 252 testes aprovados, incluindo atualização sem nova versão, cancelamento, ativação e falha de conexão.
+
 ## 0.4.3 — 19/09/2026
 
 - Implementa a régua de transição PN → EN aprovada: ativa somente com EN >50 mL/kg/dia e PN presente; avalia separadamente energia total ≥110 kcal/kg/dia e proteína total ≥2,50 g/kg/dia.

@@ -4,23 +4,33 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#08764f">
-  <meta name="description" content="Calculadora de apoio à nutrição parenteral neonatal. Processamento local, sem histórico de casos.">
+  <meta name="description" content="Apoio à nutrição parenteral e enteral neonatal. Processamento local, sem histórico de casos.">
   <meta name="referrer" content="no-referrer">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="NP_NEO by Prof. Jeffe">
+  <meta name="apple-mobile-web-app-title" content="GROW_NEO by Prof. Jefferson">
   <meta name="author" content="Jefferson Guilherme">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; worker-src 'self'">
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./assets/icon-192.png">
   <link rel="apple-touch-icon" href="./assets/icon-192.png">
   <link rel="stylesheet" href="./styles.css">
-  <title>NP_NEO by Prof. Jeffe</title>
+  <title>GROW_NEO by Prof. Jefferson</title>
 </head>
 <body>
   <div id="npp-app">
     <header class="app-header">
-      <div class="brand-row"><div class="brand"><img class="brand-logo" src="./assets/uea-logo.png" alt="UEA — Universidade do Estado do Amazonas" width="267" height="36"><div><h1>NP_NEO <span class="brand-author">by Prof. Jeffe</span></h1><div class="brand-subtitle">Calculadora de nutrição parenteral</div></div></div><span class="version-label">Avaliação</span></div>
+      <div class="brand-row">
+        <div class="brand">
+          <img class="brand-logo" src="./assets/uea-logo.png" alt="UEA — Universidade do Estado do Amazonas" width="267" height="36">
+          <div><h1>GROW_NEO <span class="brand-author">by Prof. Jefferson</span></h1><div class="brand-subtitle">Nutrição e crescimento neonatal</div></div>
+        </div>
+        <div class="brand-actions">
+          <img class="app-logo" src="./assets/grow-neo-logo.png" alt="GROW_NEO — bebê em contato pele a pele e broto de crescimento" width="1280" height="1280">
+          <button id="update-app" type="button" class="update-button" aria-describedby="update-status">Atualizar</button>
+          <span id="update-status" class="update-status" role="status" aria-live="polite"></span>
+        </div>
+      </div>
       <div class="tabs" role="tablist" aria-label="Calculadora">
         <button id="tab-parameters" role="tab" aria-controls="parameters" aria-selected="true" type="button" title="Nutrição parenteral individualizada">NP ind</button>
         <button id="tab-results" role="tab" aria-controls="results" aria-selected="false" type="button">Resultados</button>
@@ -192,7 +202,7 @@
         </div></section>
         <section class="section"><div class="section-inner">
           <h2>Finalidade e limites</h2>
-          <p>O NP_NEO é um instrumento de apoio ao cálculo e à conferência. Não substitui avaliação clínica, protocolo institucional, validação farmacêutica nem conferência da prescrição.</p>
+          <p>O GROW_NEO é um instrumento de apoio ao cálculo e à conferência. Não substitui avaliação clínica, protocolo institucional, validação farmacêutica nem conferência da prescrição.</p>
           <p>O aplicativo não confirma estabilidade físico-química, compatibilidade entre componentes ou ausência de precipitados. As apresentações e concentrações devem ser confrontadas com os rótulos utilizados pelo serviço.</p>
         </div></section>
         <section class="section"><div class="section-inner">
@@ -233,9 +243,8 @@
         <button id="install-app" type="button" class="text-button" hidden>Instalar no celular</button>
         <button id="install-help-button" type="button" class="text-button">Como instalar</button>
         <p id="install-help" hidden>No iPhone: abra este link no Safari, toque em Compartilhar e em Adicionar à Tela de Início. No Android: abra no Chrome e use Instalar app ou Adicionar à tela inicial.</p>
-        <button id="update-app" type="button" class="text-button" hidden>Atualização disponível · reiniciar</button>
         <details class="privacy"><summary>Privacidade e dados</summary><p>Parâmetros, cálculos e PDFs são processados neste aparelho. O app não cria histórico de casos nem envia esses campos a um servidor. Fechar ou recarregar a página descarta os dados do formulário. O PDF salvo ou compartilhado fica no destino escolhido por você. A hospedagem e o acesso ao link podem gerar registros técnicos do provedor.</p></details>
-        <span>NP_NEO by Prof. Jeffe · versão <span id="app-version"></span></span>
+        <span>GROW_NEO by Prof. Jefferson · versão <span id="app-version"></span></span>
       </footer>
     </main>
   </div>

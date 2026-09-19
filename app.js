@@ -1,3 +1,4 @@
+import {initAppUpdate} from './app-update.js';
 import {initStandard} from './standard-ui.js';
 import {calculate,parseNumber,round1,formatVolume,VERSION} from './engine.js';
 import {createReport} from './pdf.js';
@@ -76,7 +77,7 @@ $('npp-form').addEventListener('submit',e=>{e.preventDefault();$('form-errors').
 $('export-pdf').addEventListener('click',async()=>{
   if(!result?.canExport||[...document.querySelectorAll('[data-ack]')].some(x=>!x.checked))return;
   const snapshot=result;$('export-pdf').disabled=true;$('pdf-status').textContent='Preparando PDF no aparelho…';
-  try{const bytes=await createReport(snapshot);if(result!==snapshot)return;const blob=new Blob([bytes],{type:'application/pdf'});if(pdfUrl)URL.revokeObjectURL(pdfUrl);pdfUrl=URL.createObjectURL(blob);downloadResult=snapshot;const link=$('pdf-download');link.href=pdfUrl;link.download='NP_NEO-calculo.pdf';link.hidden=false;link.click();$('pdf-status').textContent='PDF gerado. Se o download não iniciar, use o link abaixo.';}catch(error){console.error('PDF generation failed');$('pdf-status').textContent='Não foi possível gerar o PDF. Aguarde o carregamento completo do app e tente novamente.';}finally{updateExport();}
+  try{const bytes=await createReport(snapshot);if(result!==snapshot)return;const blob=new Blob([bytes],{type:'application/pdf'});if(pdfUrl)URL.revokeObjectURL(pdfUrl);pdfUrl=URL.createObjectURL(blob);downloadResult=snapshot;const link=$('pdf-download');link.href=pdfUrl;link.download='GROW_NEO-calculo.pdf';link.hidden=false;link.click();$('pdf-status').textContent='PDF gerado. Se o download não iniciar, use o link abaixo.';}catch(error){console.error('PDF generation failed');$('pdf-status').textContent='Não foi possível gerar o PDF. Aguarde o carregamento completo do app e tente novamente.';}finally{updateExport();}
 });
 $('pdf-download').addEventListener('click',e=>{if(!result||result!==downloadResult)e.preventDefault();});
 $('install-help-button').addEventListener('click',()=>{$('install-help').hidden=!$('install-help').hidden;});
@@ -84,9 +85,9 @@ window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installProm
 $('install-app').addEventListener('click',async()=>{if(installPrompt){await installPrompt.prompt();installPrompt=null;$('install-app').hidden=true;}});
 window.addEventListener('appinstalled',()=>{$('install-app').hidden=true;});
 async function checkOffline(){const controller=navigator.serviceWorker.controller;if(!controller)return;const channel=new MessageChannel();channel.port1.onmessage=e=>{$('offline-status').textContent=e.data.ready?(navigator.onLine?'Pronto para usar offline':'Você está offline · cálculos e PDF disponíveis'):'Uso offline ainda não preparado.';};controller.postMessage({type:'CHECK_OFFLINE'},[channel.port2]);}
-if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(reg=>{serviceRegistration=reg;if(reg.waiting)$('update-app').hidden=false;reg.addEventListener('updatefound',()=>{const worker=reg.installing;worker?.addEventListener('statechange',()=>{if(worker.state==='installed'&&navigator.serviceWorker.controller)$('update-app').hidden=false;});});return navigator.serviceWorker.ready;}).then(checkOffline).catch(()=>{$('offline-status').textContent='Não foi possível preparar o modo offline. Reabra o link com internet.';});navigator.serviceWorker.addEventListener('controllerchange',checkOffline);}else{$('offline-status').textContent='Este navegador não oferece instalação offline.';}
+const appUpdate=initAppUpdate({button:$('update-app'),status:$('update-status'),serviceWorker:navigator.serviceWorker,confirmRestart:message=>confirm(message),reload:()=>location.reload()});
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(reg=>{serviceRegistration=reg;appUpdate.setRegistration(reg);return navigator.serviceWorker.ready;}).then(checkOffline).catch(()=>{$('offline-status').textContent='Não foi possível preparar o modo offline. Reabra o link com internet.';$('update-status').textContent='Reabra o app com internet para habilitar atualizações.';});navigator.serviceWorker.addEventListener('controllerchange',checkOffline);}else{$('offline-status').textContent='Este navegador não oferece instalação offline.';}
 window.addEventListener('online',checkOffline);window.addEventListener('offline',checkOffline);
-$('update-app').addEventListener('click',()=>{if(!confirm('Reiniciar para atualizar? Os parâmetros atuais serão descartados.'))return;navigator.serviceWorker.addEventListener('controllerchange',()=>location.reload(),{once:true});serviceRegistration?.waiting?.postMessage({type:'ACTIVATE_UPDATE'});});
 const hydrationUI=initHydration(document);
 initEnteral(document,()=>lastValidParenteral?.ok?{fluid:lastValidParenteral.totals.fluid,calories:lastValidParenteral.totals.calories,protein:lastValidParenteral.effective.aa}:{});
 window.addEventListener('pageshow',e=>{if(e.persisted){$('npp-form').reset();invalidate();updateRules();hydrationUI.reset();}});

@@ -34,7 +34,7 @@ export function initStandard(document){
     try{
       const bytes=await createStandardReport(snapshot);if(result!==snapshot)return;
       if(pdfUrl)URL.revokeObjectURL(pdfUrl);pdfUrl=URL.createObjectURL(new Blob([bytes],{type:'application/pdf'}));
-      const link=$('std-pdf-download');link.href=pdfUrl;link.download='NP_NEO-NP-padrao.pdf';link.hidden=false;link.click();
+      const link=$('std-pdf-download');link.href=pdfUrl;link.download='GROW_NEO-NP-padrao.pdf';link.hidden=false;link.click();
       $('std-pdf-status').textContent='PDF gerado. Se necessário, use o link abaixo.';
     }catch(error){if(result===snapshot)$('std-pdf-status').textContent='Não foi possível gerar o PDF. Tente novamente.';}
     finally{if(result===snapshot)$('std-export').disabled=false;}

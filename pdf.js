@@ -6,7 +6,7 @@ export async function createReport(result){
   if(!result?.ok||!result.canExport)throw new Error('Result is not exportable');
   const {PDFDocument,StandardFonts,rgb}=globalThis.PDFLib;
   const doc=await PDFDocument.create();
-  doc.setTitle('Cálculo de nutrição parenteral neonatal');doc.setAuthor('Jefferson Guilherme');doc.setCreator('Jefferson Guilherme');doc.setSubject('NP_NEO by Prof. Jeffe — relatório de cálculo');doc.setKeywords(['NPP','neonatal','cálculo']);
+  doc.setTitle('Cálculo de nutrição parenteral neonatal');doc.setAuthor('Jefferson Guilherme');doc.setCreator('Jefferson Guilherme');doc.setSubject('GROW_NEO by Prof. Jefferson — relatório de cálculo');doc.setKeywords(['NPP','neonatal','cálculo']);
   doc.setCreationDate(new Date());doc.setModificationDate(new Date());
   const regular=await doc.embedFont(StandardFonts.Helvetica),bold=await doc.embedFont(StandardFonts.HelveticaBold);
   const logoBytes=await fetch(new URL('./assets/uea-logo.png',import.meta.url)).then(r=>{if(!r.ok)throw new Error('Logo unavailable');return r.arrayBuffer();});
@@ -23,7 +23,7 @@ export async function createReport(result){
   function newPage(title){
     page=doc.addPage([W,H]);page.drawImage(logo,{x:L,y:746,width:156,height:156*logo.height/logo.width});
     text('ESCOLA SUPERIOR DE CIÊNCIAS DA SAÚDE - ESA',218,751,9,bold);
-    center(title,710,14,bold);center('Relatório de cálculo · NP_NEO by Prof. Jeffe · versão '+result.version,694,8,regular);y=672;
+    center(title,710,14,bold);center('Relatório de cálculo · GROW_NEO by Prof. Jefferson · versão '+result.version,694,8,regular);y=672;
   }
   function horizontal(yy){page.drawLine({start:{x:L,y:yy},end:{x:R,y:yy},thickness:.5,color:line});}
   const ctx=result.input,t=result.totals;
