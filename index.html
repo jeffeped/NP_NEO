@@ -26,7 +26,7 @@
         <button id="tab-results" role="tab" aria-controls="results" aria-selected="false" type="button">Resultados</button>
         <button id="tab-hydration" role="tab" aria-controls="hydration" aria-selected="false" type="button" title="Hidratação venosa">HV</button>
         <button id="tab-standard" role="tab" aria-controls="standard" aria-selected="false" type="button">NP padrão</button>
-        <button id="tab-notes" role="tab" aria-controls="notes" aria-selected="false" type="button">Notas</button>
+        <button id="tab-enteral" role="tab" aria-controls="enteral" aria-selected="false" type="button">Enteral</button><button id="tab-notes" role="tab" aria-controls="notes" aria-selected="false" type="button">Notas</button>
       </div>
     </header>
     <main>
@@ -146,6 +146,36 @@
           <p class="help">Uso com fotoproteção da bolsa e equipo; filtro de 1,2 µm recomendado. Conferir condições clínicas e laboratoriais antes da prescrição.</p>
         </div>
         <p class="help">Base: composição integral da bolsa (9,4 g de aminoácidos/300 mL). <a href="https://www.medicines.org.uk/emc/product/7400/smpc" target="_blank" rel="noopener noreferrer">Bula técnica Baxter — Numeta G13%E</a>.</p>
+      </section>
+      <section id="enteral" role="tabpanel" aria-labelledby="tab-enteral" hidden>
+        <h2 class="page-title">Dieta enteral</h2>
+        <p class="caption">Estimativa de energia e proteína · integração com a nutrição parenteral</p>
+        <form id="enteral-form" class="section section-inner" autocomplete="off" novalidate>
+          <div class="field-grid">
+            <label class="field full">Tipo de dieta<select id="en-type" class="hv-select" required>
+              <option value="">Selecione</option><option value="lmo">LMO — leite materno ordenhado</option><option value="lhop">LHOP — leite humano ordenhado e pasteurizado</option><option value="fpt_prenan">FPT — Pré NAN</option><option value="fpt_aptamil_pre">FPT — Aptamil Pré</option><option value="fp_nan1">FP — NAN 1</option><option value="fp_aptamil1">FP — Aptamil 1</option>
+            </select></label>
+            <label id="en-lactation-field" class="field full" hidden>Dias de lactação<div class="input-box"><input id="en-lactation" inputmode="numeric" type="text"><span class="unit">dias</span></div></label>
+            <label class="field full">Taxa de dieta enteral<div class="input-box"><input id="en-rate" inputmode="decimal" type="text" required><span class="unit">mL/kg/dia</span></div></label>
+            <label id="en-fm85-field" class="field full" hidden>FM85<select id="en-fm85" class="hv-select"><option value="0">Não</option><option value="4">Padrão — 1 g/25 mL</option><option value="custom">Outra concentração</option></select></label>
+            <label id="en-fm85-custom-field" class="field full" hidden>FM85<div class="input-box"><input id="en-fm85-custom" inputmode="decimal" type="text"><span class="unit">g/100 mL</span></div></label>
+          </div>
+          <details class="section enteral-analyzed"><summary><h2>Composição conhecida/analisada</h2><span aria-hidden="true">⌄</span></summary><div class="section-inner field-grid">
+            <label class="field">Energia<div class="input-box"><input id="en-energy" inputmode="decimal" type="text"><span class="unit">kcal/100 mL</span></div></label>
+            <label class="field">Proteína<div class="input-box"><input id="en-protein" inputmode="decimal" type="text"><span class="unit">g/100 mL</span></div></label>
+            <p class="help full">Se ambos forem informados, substituem a composição estimada.</p>
+          </div></details>
+          <div id="en-errors" class="notice danger" hidden></div>
+          <button class="primary" type="submit">Calcular dieta enteral</button>
+        </form>
+        <section id="en-result" hidden aria-live="polite">
+          <div id="en-context" class="context"></div>
+          <div id="en-summary" class="summary"></div>
+          <p id="en-estimated-note" class="help" hidden>Composição estimada — não corresponde à análise individual do leite.</p>
+          <h2 class="page-title enteral-total-title">Oferta nutricional total</h2>
+          <div class="table-wrap"><table aria-label="Oferta nutricional total"><thead><tr><th>Indicador</th><th>PN</th><th>Enteral</th><th>Total</th></tr></thead><tbody id="en-total-rows"></tbody></table></div>
+          <p id="en-pn-note" class="help"></p>
+        </section>
       </section>
       <section id="notes" role="tabpanel" aria-labelledby="tab-notes" hidden>
         <h2 class="page-title">Notas importantes</h2>
