@@ -103,3 +103,18 @@ Na NP individualizada, prematuros recebem referência de zinco de 400–500 mcg/
 ### Relação Ca/P na prescrição (0.3.4)
 
 A tela e o PDF mostram a relação molar Ca/P (mmol/mmol) logo abaixo de proteína/calorias não proteicas, tanto na NP individualizada quanto na padrão. A individualizada usa as ofertas efetivas após arredondamento dos volumes: (Ca em mEq ÷ 2) ÷ P em mmol. Sem fósforo, informa “Não calculável (P = 0)”. Exibição com uma casa decimal.
+
+## Régua de transição PN → EN — v0.4.3
+
+Critérios operacionais aprovados pelo responsável clínico em 19/09/2026:
+
+| Condição | Comportamento |
+| --- | --- |
+| EN ≤50 mL/kg/dia ou ausência de PN | Régua inativa |
+| EN >50 mL/kg/dia com PN presente | Avalia os totais PN + EN |
+| Energia total ≥110 kcal/kg/dia | Meta energética atingida |
+| Proteína total ≥2,50 g/kg/dia | Meta proteica atingida |
+
+As comparações usam os valores internos sem arredondamento. A presença de PN é identificada por volume parenteral positivo na integração existente (última NP individualizada calculada). NP padrão e HV não são somadas. A régua é informativa; não determina redução/suspensão da PN. Tela e PDF usam a mesma avaliação. Os critérios estão também na aba Notas.
+
+Ver [relatório de verificação](RELATORIO_TRANSICAO_PN_EN.md). Executar `npm ci` e `npm test` para a regressão completa.

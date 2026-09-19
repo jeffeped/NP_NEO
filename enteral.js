@@ -41,3 +41,23 @@ export function integrateNutrition({parenteral={},enteral}){
   return {parenteral:p,enteral:{fluid:e.rate||0,calories:e.calories||0,protein:e.protein||0},
     total:{fluid:p.fluid+(e.rate||0),calories:p.calories+(e.calories||0),protein:p.protein+(e.protein||0)}};
 }
+
+// Régua aprovada em 19/09/2026. Comparar valores internos, sem arredondar.
+export function assessTransition(integrated){
+  const {parenteral,enteral,total}=integrated;
+  const hasPN=parenteral.fluid>0;
+  const active=hasPN&&enteral.fluid>50;
+  return {active,reason:!hasPN?'no-pn':enteral.fluid<=50?'enteral-threshold':null,
+    energyMet:active?total.calories>=110:null,
+    proteinMet:active?total.protein>=2.5:null};
+}
+
+export function transitionLines(integrated){
+  const assessment=assessTransition(integrated);
+  if(!assessment.active)return [assessment.reason==='no-pn'
+    ?'Régua inativa: sem PN no cálculo integrado.'
+    :'Régua inativa: oferta enteral menor ou igual a 50 mL/kg/dia.'];
+  return ['Régua ativa: enteral >50 mL/kg/dia com PN presente.',
+    `Energia total: ${assessment.energyMet?'meta atingida':'abaixo da meta'} (mínimo 110 kcal/kg/dia).`,
+    `Proteína total: ${assessment.proteinMet?'meta atingida':'abaixo da meta'} (mínimo 2,50 g/kg/dia).`];
+}
