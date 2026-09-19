@@ -204,3 +204,14 @@ test('interface Enteral: composição analisada substitui estimativa',()=>{
   assert.match(app.el('en-summary').textContent,/70,0/);assert.match(app.el('en-summary').textContent,/1,5/);
   assert.equal(app.el('en-estimated-note').hidden,true);
 });
+
+test('interface Enteral: preserva última NP válida ao navegar após edição',()=>{
+ const app=openApp();app.calculate();
+ app.set('fluid',180);
+ app.dispatch('tab-enteral','click');app.set('en-type','lhop');app.dispatch('en-type','change');app.set('en-rate',80);app.dispatch('enteral-form','submit');
+ assert.doesNotMatch(app.el('en-pn-note').textContent,/coluna PN está zerada/);
+ assert.match(app.el('en-total-rows').textContent,/200,0|280,0|160,0/);
+});
+test('interface Enteral: tabela total usa classe responsiva dedicada',()=>{
+ const app=openApp();assert.ok(app.document.querySelector('.enteral-total-table'));
+});
