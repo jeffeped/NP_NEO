@@ -23,6 +23,6 @@ export async function createEnteralReport({enteral,integrated}){
  y-=16;text('A régua não determina redução ou suspensão automática da PN.',L,y,8,regular,muted);
  y-=16;text('PN: última NP individualizada calculada nesta sessão.',L,y,8,regular,muted);
  text('Sem identificação do paciente. Conferir os resultados antes do uso assistencial.',L,82,8,regular,muted);
- text('GROW_NEO by Prof. Jeffe · processamento local',L,50,8,regular,muted);
+ text('GROW_NEO by Prof. Jefferson · processamento local',L,50,8,regular,muted);
  return doc.save();
 }
