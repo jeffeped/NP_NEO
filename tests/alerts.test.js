@@ -68,7 +68,7 @@ for(const weight of [0.8,0.999,1,1.2])for(const day of [1,2,8])for(const aa of [
     assert.equal(a.level,high?'high':aa===(day===1?2:3)?'info':'caution');
     assert.equal(a.blocking,false);assert.equal(r.canExport,true);
     assert.equal(a.weightKg,weight);assert.equal(a.day,day);
-    assert.doesNotMatch(a.message,/Peso atual|dia de vida/);
+    assert.doesNotMatch(a.message,/Peso atual:|dia de vida:\s*\d/);
     assert.match(a.message,day===1?/inicial no 1º dia de vida.*2,0/:/progressão após o 1º dia de vida.*3,0/);
     if(weight>=1)assert.doesNotMatch(a.message,/teto de 3,5|Teto: 3,5|teto máximo/);
   });
@@ -175,6 +175,6 @@ test('aplicativo e PDF usam VIG e o cache inclui o novo módulo',()=>{
 
 test('alertas concisos: osmolaridade e macronutrientes não repetem peso/idade nem teto lipídico quando não ultrapassado',()=>{
  const r=run({weight:1.4,day:14,fluid:100,aa:2,lip:2,vig:8,access:'central'});
- for(const a of r.alerts.filter(x=>['osmolarity','aa','lip'].includes(x.nutrient)))assert.doesNotMatch(a.message,/Peso atual|dia de vida/);
+ for(const a of r.alerts.filter(x=>['osmolarity','aa','lip'].includes(x.nutrient)))assert.doesNotMatch(a.message,/Peso atual:|dia de vida:\s*\d/);
  const lip=alertFor(r,'lip');assert.doesNotMatch(lip.message,/Teto: 4,0|não é uma meta/);
 });
