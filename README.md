@@ -104,7 +104,7 @@ Na NP individualizada, prematuros recebem referência de zinco de 400–500 mcg/
 
 A tela e o PDF mostram a relação molar Ca/P (mmol/mmol) logo abaixo de proteína/calorias não proteicas, tanto na NP individualizada quanto na padrão. A individualizada usa as ofertas efetivas após arredondamento dos volumes: (Ca em mEq ÷ 2) ÷ P em mmol. Sem fósforo, informa “Não calculável (P = 0)”. Exibição com uma casa decimal.
 
-## Régua de transição PN → EN — v0.4.3
+## Integração intravenosa + enteral e régua PN → EN — v0.5.0
 
 Critérios operacionais aprovados pelo responsável clínico em 19/09/2026:
 
@@ -115,6 +115,8 @@ Critérios operacionais aprovados pelo responsável clínico em 19/09/2026:
 | Energia total ≥110 kcal/kg/dia | Meta energética atingida |
 | Proteína total ≥2,50 g/kg/dia | Meta proteica atingida |
 
-As comparações usam os valores internos sem arredondamento. A presença de PN é identificada por volume parenteral positivo na integração existente (última NP individualizada calculada). NP padrão e HV não são somadas. A régua é informativa; não determina redução/suspensão da PN. Tela e PDF usam a mesma avaliação. Os critérios estão também na aba Notas.
+As comparações usam os valores internos sem arredondamento. Na aba Enteral, selecione explicitamente uma única fonte: sem aporte intravenoso, NP individualizada, NP padrão (Numeta) ou HV. A fonte precisa ter um cálculo atual válido, sem bloqueios, na aba correspondente. Alterações invalidam o resultado e exigem recálculo. A presença de PN exige fonte individualizada ou padrão com volume positivo. HV fornece volume e energia da glicose (4 kcal/g, fator já usado no app), sem proteína; com HV ou sem aporte intravenoso, a régua fica inativa. A régua é informativa; não determina redução/suspensão da PN. Tela e PDF usam a mesma avaliação. Os critérios estão também na aba Notas.
 
 Ver [relatório de verificação](RELATORIO_TRANSICAO_PN_EN.md). Executar `npm ci` e `npm test` para a regressão completa.
+
+Ver [verificação da integração v0.5.0](RELATORIO_INTEGRACAO_IV_EN.md).

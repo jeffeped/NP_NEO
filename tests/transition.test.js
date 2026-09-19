@@ -29,7 +29,7 @@ function openEnteral(pn){
  initEnteral(document,()=>pn);
  const dispatch=(id,type)=>el(id).dispatchEvent(new window.Event(type,{bubbles:true,cancelable:true}));
  const set=(id,value)=>{const input=el(id);if(input.tagName==='SELECT'){for(const opt of input.options)opt.removeAttribute('selected');Array.from(input.options).find(opt=>opt.value===value).selected=true;}else input.value=String(value);dispatch(id,'input');};
- set('en-type','lhop');set('en-energy',40);set('en-protein',1);set('en-rate',100);
+ set('en-source','individual');set('en-type','lhop');set('en-energy',40);set('en-protein',1);set('en-rate',100);
  return {el,set,dispatch};
 }
 for(const [energy,protein] of [[109.9,2.49],[110,2.5],[109.9,2.5],[110,2.49]])test(`interface mantém avaliações separadas: ${energy}/${protein}`,()=>{

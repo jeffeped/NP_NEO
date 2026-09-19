@@ -5,11 +5,12 @@ import {createReport} from './pdf.js';
 import {macroReference,formatAlertNumber} from './alerts.js';
 import {initHydration} from './hydration-ui.js';
 import {initEnteral} from './enteral-ui.js';
+import {intravenousFromResult} from './enteral.js';
 const $=id=>document.getElementById(id);
 const f=n=>Number.isFinite(n)?round1(n).toFixed(1).replace('.',','):'—';
 const osm=n=>Number.isFinite(n)?String(Math.round(n)):'—';
 const weightFormat=n=>new Intl.NumberFormat('pt-BR',{maximumFractionDigits:3}).format(n);
-let result=null,lastValidParenteral=null,pdfUrl=null,downloadResult=null,installPrompt=null,serviceRegistration=null;
+let result=null,pdfUrl=null,downloadResult=null,installPrompt=null,serviceRegistration=null;
 const macros=[{id:'aa',name:'Aminoped 10%',unit:'g/kg/dia'},{id:'lip',name:'Lipídeos 20%',unit:'g/kg/dia'},{id:'vig',name:'Glicose 50% · VIG',unit:'mg/kg/min'}];
 const salts=[{id:'na',name:'Sódio',unit:'mEq/kg/dia',options:[['nacl','Cloreto de sódio 10%'],['acetate','Acetato de sódio']]},{id:'k',name:'Potássio',unit:'mEq/kg/dia',salt:'Cloreto de potássio 10%'},{id:'ca',name:'Cálcio',unit:'mEq/kg/dia',salt:'Gluconato de cálcio 10%'},{id:'mg',name:'Magnésio',unit:'mEq/kg/dia',salt:'Sulfato de magnésio 10%'},{id:'p',name:'Fósforo',unit:'mmol/kg/dia',options:[['kphos','Fosfato de potássio'],['glycero','Glicerofosfato de sódio']]}];
 const omitHTML=(id,name)=>`<label class="omit"><input id="omit-${id}" type="checkbox" data-omit="${id}" aria-label="Não ofertar ${name}">Não ofertar</label>`;
@@ -73,7 +74,7 @@ function render(r){
   updateExport();
 }
 function updateExport(){const accepted=[...document.querySelectorAll('[data-ack]')].every(x=>x.checked);$('export-pdf').disabled=!result?.canExport||!accepted;}
-$('npp-form').addEventListener('submit',e=>{e.preventDefault();$('form-errors').hidden=true;document.querySelectorAll('.invalid').forEach(x=>x.classList.remove('invalid'));const r=calculate(collect());if(!r.ok){invalidate();const list=document.createElement('ul');for(const err of r.errors){list.append(textElement('li',err.message));const id={gaWeeks:'ga',gaDays:'ga-days',naSalt:'salt-na',pSalt:'salt-p'}[err.field]||err.field;const el=$(id);if(el){el.closest('.field,.dose')?.classList.add('invalid');const details=el.closest('details');if(details)details.open=true;}}$('form-errors').replaceChildren(list);$('form-errors').hidden=false;$('form-errors').scrollIntoView({block:'center'});return;}result=r;lastValidParenteral=r;render(r);view('results');});
+$('npp-form').addEventListener('submit',e=>{e.preventDefault();$('form-errors').hidden=true;document.querySelectorAll('.invalid').forEach(x=>x.classList.remove('invalid'));const r=calculate(collect());if(!r.ok){invalidate();const list=document.createElement('ul');for(const err of r.errors){list.append(textElement('li',err.message));const id={gaWeeks:'ga',gaDays:'ga-days',naSalt:'salt-na',pSalt:'salt-p'}[err.field]||err.field;const el=$(id);if(el){el.closest('.field,.dose')?.classList.add('invalid');const details=el.closest('details');if(details)details.open=true;}}$('form-errors').replaceChildren(list);$('form-errors').hidden=false;$('form-errors').scrollIntoView({block:'center'});return;}result=r;render(r);view('results');});
 $('export-pdf').addEventListener('click',async()=>{
   if(!result?.canExport||[...document.querySelectorAll('[data-ack]')].some(x=>!x.checked))return;
   const snapshot=result;$('export-pdf').disabled=true;$('pdf-status').textContent='Preparando PDF no aparelho…';
@@ -89,8 +90,7 @@ const appUpdate=initAppUpdate({button:$('update-app'),status:$('update-status'),
 if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(reg=>{serviceRegistration=reg;appUpdate.setRegistration(reg);return navigator.serviceWorker.ready;}).then(checkOffline).catch(()=>{$('offline-status').textContent='Não foi possível preparar o modo offline. Reabra o link com internet.';$('update-status').textContent='Reabra o app com internet para habilitar atualizações.';});navigator.serviceWorker.addEventListener('controllerchange',checkOffline);}else{$('offline-status').textContent='Este navegador não oferece instalação offline.';}
 window.addEventListener('online',checkOffline);window.addEventListener('offline',checkOffline);
 const hydrationUI=initHydration(document);
-initEnteral(document,()=>lastValidParenteral?.ok?{fluid:lastValidParenteral.totals.fluid,calories:lastValidParenteral.totals.calories,protein:lastValidParenteral.effective.aa}:{});
-window.addEventListener('pageshow',e=>{if(e.persisted){$('npp-form').reset();invalidate();updateRules();hydrationUI.reset();}});
+const standardUI=initStandard(document);
+const enteralUI=initEnteral(document,source=>intravenousFromResult(source,source==='individual'?result:source==='standard'?standardUI.getResult():source==='hydration'?hydrationUI.getResult():null));
+window.addEventListener('pageshow',e=>{if(e.persisted){$('npp-form').reset();invalidate();updateRules();hydrationUI.reset();standardUI.reset();enteralUI.invalidate();}});
 updateRules();
-
-initStandard(document);

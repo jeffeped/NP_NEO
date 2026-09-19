@@ -159,9 +159,13 @@
       </section>
       <section id="enteral" role="tabpanel" aria-labelledby="tab-enteral" hidden>
         <h2 class="page-title">Dieta enteral</h2>
-        <p class="caption">Estimativa de energia e proteína · integração com a nutrição parenteral</p>
+        <p class="caption">Estimativa de energia e proteína · integração com o aporte intravenoso</p>
         <form id="enteral-form" class="section section-inner" autocomplete="off" novalidate>
           <div class="field-grid">
+            <label class="field full">Aporte intravenoso em uso<select id="en-source" class="hv-select" required>
+              <option value="">Selecione a fonte</option><option value="none">Sem aporte intravenoso</option><option value="individual">NP individualizada</option><option value="standard">NP padrão (Numeta)</option><option value="hydration">HV</option>
+            </select></label>
+            <p class="help full">Escolha uma única fonte. Calcule-a na aba correspondente antes de integrar; após editar os parâmetros, recalcule.</p>
             <label class="field full">Tipo de dieta<select id="en-type" class="hv-select" required>
               <option value="">Selecione</option><option value="lmo">LMO — leite materno ordenhado</option><option value="lhop">LHOP — leite humano ordenhado e pasteurizado</option><option value="fpt_prenan">FPT — Pré NAN</option><option value="fpt_aptamil_pre">FPT — Aptamil Pré</option><option value="fp_nan1">FP — NAN 1</option><option value="fp_aptamil1">FP — Aptamil 1</option>
             </select></label>
@@ -183,7 +187,7 @@
           <div id="en-summary" class="summary"></div>
           <p id="en-estimated-note" class="help" hidden>Composição estimada — não corresponde à análise individual do leite.</p>
           <h2 class="page-title enteral-total-title">Oferta nutricional total</h2>
-          <div class="table-wrap"><table class="enteral-total-table" aria-label="Oferta nutricional total"><thead><tr><th>Indicador</th><th>PN</th><th>Enteral</th><th>Total</th></tr></thead><tbody id="en-total-rows"></tbody></table></div>
+          <div class="table-wrap"><table class="enteral-total-table" aria-label="Oferta nutricional total"><thead><tr><th>Indicador</th><th id="en-iv-heading">IV</th><th>Enteral</th><th>Total</th></tr></thead><tbody id="en-total-rows"></tbody></table></div>
           <h2 class="page-title">Régua de transição PN → EN</h2>
           <div id="en-transition" class="notice" role="status"></div>
           <p class="help">Metas avaliadas antes do arredondamento. Consulte os critérios na aba Notas.</p>
@@ -198,7 +202,7 @@
           <p>A régua fica ativa quando a oferta enteral é maior que 50 mL/kg/dia e há PN no cálculo integrado. Em 50 mL/kg/dia, permanece inativa.</p>
           <p>Na fase ativa, compara os totais PN + EN com as metas mínimas de energia de 110 kcal/kg/dia e proteína de 2,50 g/kg/dia. Cada meta é avaliada separadamente, usando os valores internos antes do arredondamento da apresentação.</p>
           <p>Estes são os critérios operacionais aprovados para o aplicativo. A régua não determina redução ou suspensão automática da PN. A composição estimada do leite mantém a incerteza dos aportes calculados.</p>
-          <p>A integração usa a última NP individualizada calculada nesta sessão; NP padrão e HV não entram nesta soma. Recalcule a NP e a enteral quando os aportes forem alterados.</p>
+          <p>A integração soma a enteral a uma única fonte selecionada: NP individualizada, NP padrão (Numeta), HV ou sem aporte intravenoso. Usa o cálculo válido atual da aba correspondente, com precisão interna completa. Alterar a fonte ou seus parâmetros invalida o resultado integrado; recalcule antes de exportar. Não soma cálculos de outras abas automaticamente.</p><p>Na HV, a energia corresponde à glicose (4 kcal/g, fator já utilizado neste app); a proteína intravenosa é zero. Com HV ou sem aporte intravenoso, a régua PN → EN fica inativa. Os totais hídrico, energético e proteico continuam disponíveis.</p>
         </div></section>
         <section class="section"><div class="section-inner">
           <h2>Finalidade e limites</h2>

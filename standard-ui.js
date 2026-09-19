@@ -40,4 +40,5 @@ export function initStandard(document){
     finally{if(result===snapshot)$('std-export').disabled=false;}
   });
 
+  return {getResult:()=>result,reset:()=>{$('std-form').reset();invalidate();}};
 }

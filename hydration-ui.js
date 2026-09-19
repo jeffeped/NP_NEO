@@ -5,8 +5,8 @@ export function initHydration(document){
   const form=$('form');
   $('electrolytes').innerHTML=HYDRATION_COMPONENTS.map(c=>`<div class="dose"><label class="field" for="hv-${c.id}">${c.name} · ${c.solution}<div class="input-box"><input id="hv-${c.id}" inputmode="decimal" type="text" placeholder="Informe a dose" required aria-label="HV: dose de ${c.name.toLowerCase()}"><span class="unit" data-hv-dose-unit>Selecione a unidade</span></div></label></div>`).join('');
   $('concentrations').innerHTML=HYDRATION_COMPONENTS.map(c=>`<label class="field">${c.solution}<div class="input-box"><input id="hv-concentration-${c.id}" inputmode="decimal" type="text" value="${String(c.concentration).replace('.',',')}" required aria-label="HV: equivalência de ${c.name.toLowerCase()}"><span class="unit">mEq/mL</span></div></label>`).join('');
-  let lastUnit=$('doseUnit').value;
-  const invalidate=()=>{$('result').hidden=true;$('errors').hidden=true;$('empty').hidden=false;};
+  let lastUnit=$('doseUnit').value,resultSnapshot=null;
+  const invalidate=()=>{resultSnapshot=null;$('result').hidden=true;$('errors').hidden=true;$('empty').hidden=false;};
   form.addEventListener('input',invalidate);
   form.addEventListener('change',invalidate);
   $('doseUnit').addEventListener('change',()=>{
@@ -30,7 +30,7 @@ export function initHydration(document){
       for(const error of result.errors){list.append(text('li',error.message));const el=$(error.field);el?.closest('.field')?.classList.add('invalid');const details=el?.closest('details');if(details)details.open=true;}
       $('errors').replaceChildren(list);$('errors').hidden=false;$('errors').scrollIntoView({block:'center'});return;
     }
-    $('empty').hidden=true;$('result').hidden=false;
+    resultSnapshot=result;$('empty').hidden=true;$('result').hidden=false;
     $('summary').replaceChildren(summary('VT = taxa hídrica × peso',`${f(result.input.fluid)} × ${f(result.input.weight)} = ${fv(result.totals.totalVolume)} mL/24 h`),summary('Glicose necessária = VIG × peso × 60 × 24 ÷ 1000',`${f(result.input.vig)} × ${f(result.input.weight)} × 60 × 24 ÷ 1000 = ${f(result.totals.glucoseGrams)} g/24 h`),summary('Volume dos eletrólitos',`${fv(result.totals.electrolytesVolume)} mL`),summary('VR = VT − volume dos eletrólitos',`${fv(result.totals.totalVolume)} − ${fv(result.totals.electrolytesVolume)} = ${fv(result.totals.glucoseSolutionsVolume)} mL`),summary('Vazão em 24 horas',`${fv(result.totals.infusion)} mL/h`));
     $('blocks').replaceChildren(...result.blocks.map(message=>text('div',message,'notice danger')));
     $('composition').hidden=!result.canPrepare;
@@ -47,5 +47,5 @@ export function initHydration(document){
     $('result').scrollIntoView({block:'start'});
   });
   const reset=()=>{form.reset();lastUnit='';form.querySelectorAll('[data-hv-dose-unit]').forEach(el=>el.textContent='Selecione a unidade');$('unit-note').textContent='Informe zero quando não houver oferta do eletrólito. Não são sugeridas doses automaticamente.';form.querySelectorAll('.invalid').forEach(el=>el.classList.remove('invalid'));invalidate();};
-  return {reset};
+  return {reset,getResult:()=>resultSnapshot};
 }

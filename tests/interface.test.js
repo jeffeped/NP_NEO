@@ -1,3 +1,4 @@
+import {intravenousFromResult} from '../enteral.js';
 import {initAppUpdate} from '../app-update.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -17,7 +18,7 @@ function openApp() {
   const {document,window}=parseHTML(html);
   window.HTMLElement.prototype.scrollIntoView=function(){};
   const context={document,window:{addEventListener(){},scrollTo(){}},navigator:{},
-    console,URL,Blob,MessageChannel,initAppUpdate,...engine,macroReference,formatAlertNumber,initHydration,initStandard,initEnteral,
+    console,URL,Blob,MessageChannel,initAppUpdate,intravenousFromResult,...engine,macroReference,formatAlertNumber,initHydration,initStandard,initEnteral,
     createReport:async()=>new Uint8Array()};
   vm.runInNewContext(source,context);
   // O DOM simulado não seleciona implicitamente a primeira opção como o navegador.
@@ -193,26 +194,75 @@ test('prescrição: Ca/P molar após P/cal usa ofertas efetivas, incluindo arred
 
 test('interface Enteral: LMO maduro calcula oferta e integra com NP da sessão',()=>{
   const app=openApp();app.calculate();app.dispatch('tab-enteral','click');
-  app.set('en-type','lmo');app.dispatch('en-type','change');app.set('en-lactation',14);app.set('en-rate',80);
+  app.set('en-source','individual');app.set('en-type','lmo');app.dispatch('en-type','change');app.set('en-lactation',14);app.set('en-rate',80);
   app.dispatch('enteral-form','submit');
   assert.equal(app.el('en-result').hidden,false);
   assert.match(app.el('en-summary').textContent,/55,0/);assert.match(app.el('en-summary').textContent,/1,2/);
   assert.match(app.el('en-total-rows').textContent,/mL\/kg\/dia/);assert.equal(app.el('en-estimated-note').hidden,false);
 });
 test('interface Enteral: composição analisada substitui estimativa',()=>{
-  const app=openApp();app.dispatch('tab-enteral','click');app.set('en-type','lhop');app.dispatch('en-type','change');
+  const app=openApp();app.dispatch('tab-enteral','click');app.set('en-source','none');app.set('en-type','lhop');app.dispatch('en-type','change');
   app.set('en-rate',100);app.set('en-energy',70);app.set('en-protein',1.5);app.dispatch('enteral-form','submit');
   assert.match(app.el('en-summary').textContent,/70,0/);assert.match(app.el('en-summary').textContent,/1,5/);
   assert.equal(app.el('en-estimated-note').hidden,true);
 });
 
-test('interface Enteral: preserva última NP válida ao navegar após edição',()=>{
- const app=openApp();app.calculate();
- app.set('fluid',180);
- app.dispatch('tab-enteral','click');app.set('en-type','lhop');app.dispatch('en-type','change');app.set('en-rate',80);app.dispatch('enteral-form','submit');
- assert.doesNotMatch(app.el('en-pn-note').textContent,/coluna PN está zerada/);
- assert.match(app.el('en-total-rows').textContent,/200,0|280,0|160,0/);
+test('interface Enteral: edição da NP exige recálculo, sem recuperar valores antigos',()=>{
+ const app=openApp();app.calculate();app.set('en-source','individual');app.set('en-type','lhop');app.set('en-rate',80);app.dispatch('enteral-form','submit');
+ assert.equal(app.el('en-result').hidden,false);
+ app.set('fluid',180);assert.equal(app.el('en-result').hidden,true);
+ app.dispatch('enteral-form','submit');assert.match(app.el('en-errors').textContent,/Calcule novamente/);assert.equal(app.el('en-result').hidden,true);
+ app.calculate();app.dispatch('enteral-form','submit');assert.equal(app.el('en-result').hidden,false);
 });
 test('interface Enteral: tabela total usa classe responsiva dedicada',()=>{
  const app=openApp();assert.ok(app.document.querySelector('.enteral-total-table'));
+});
+
+function enteralSetup(app,source){app.set('en-source',source);app.set('en-type','lhop');app.set('en-rate',80);app.dispatch('enteral-form','submit');}
+function standardSetup(app,mode='fluid',value=60,access='central'){
+ for(const [id,v] of Object.entries({'std-weight':1,'std-day':2,'std-mode':mode,'std-value':value,'std-access':access}))app.set(id,v);
+ app.dispatch('std-form','submit');
+}
+function hydrationSetup(app,vig=5){
+ for(const [id,v] of Object.entries({'hv-weight':1,'hv-fluid':60,'hv-vig':vig,'hv-doseUnit':'perKgDay','hv-na':0,'hv-k':0,'hv-ca':0,'hv-mg':0}))app.set(id,v);
+ app.dispatch('hv-form','submit');
+}
+function totalCells(app){return Array.from(app.el('en-total-rows').children).map(row=>Array.from(row.children).slice(1).map(cell=>cell.textContent));}
+test('integração real: Numeta + enteral, seleção exclusiva mesmo com outras abas calculadas',()=>{
+ const app=openApp();app.calculate();hydrationSetup(app);standardSetup(app);
+ enteralSetup(app,'standard');assert.equal(app.el('en-errors').hidden,true);
+ assert.deepEqual(totalCells(app),[['60,0','80,0','140,0'],['54,6','52,0','106,6'],['1,88','0,96','2,84']]);
+ assert.match(app.el('en-pn-note').textContent,/NP padrão \(Numeta\)/);assert.match(app.el('en-transition').textContent,/Régua ativa/);
+ assert.match(app.el('en-transition').textContent,/Energia total: abaixo da meta/);assert.match(app.el('en-transition').textContent,/Proteína total: meta atingida/);
+});
+test('integração real: Numeta pelo modo proteína produz os mesmos totais',()=>{
+ const app=openApp();standardSetup(app,'protein',1.88);enteralSetup(app,'standard');
+ assert.deepEqual(totalCells(app),[['60,0','80,0','140,0'],['54,6','52,0','106,6'],['1,88','0,96','2,84']]);
+});
+test('integração real: HV + enteral soma energia da glicose sem proteína IV e mantém régua inativa',()=>{
+ const app=openApp();app.calculate();standardSetup(app);hydrationSetup(app);enteralSetup(app,'hydration');
+ assert.deepEqual(totalCells(app),[['60,0','80,0','140,0'],['28,8','52,0','80,8'],['0,00','0,96','0,96']]);
+ assert.equal(app.el('en-iv-heading').textContent,'HV');assert.match(app.el('en-pn-note').textContent,/Fonte: HV/);assert.match(app.el('en-transition').textContent,/sem PN/);
+});
+test('integração real: sem IV ignora todos os resultados calculados',()=>{
+ const app=openApp();app.calculate();standardSetup(app);hydrationSetup(app);enteralSetup(app,'none');
+ assert.deepEqual(totalCells(app),[['0,0','80,0','80,0'],['0,0','52,0','52,0'],['0,00','0,96','0,96']]);assert.match(app.el('en-transition').textContent,/sem PN/);
+});
+for(const source of ['individual','standard','hydration'])test(`integração real: fonte ${source} não calculada não vira zero silenciosamente`,()=>{
+ const app=openApp();enteralSetup(app,source);assert.equal(app.el('en-result').hidden,true);assert.match(app.el('en-errors').textContent,/Calcule novamente/);
+});
+for(const [source,setup,field] of [['standard',standardSetup,'std-value'],['hydration',hydrationSetup,'hv-vig']])test(`integração real: edição ${source} invalida soma e exportação`,()=>{
+ const app=openApp();setup(app);enteralSetup(app,source);assert.equal(app.el('en-result').hidden,false);
+ app.set(field,1);assert.equal(app.el('en-result').hidden,true);assert.equal(app.el('en-pdf-download').hidden,true);
+ app.dispatch('enteral-form','submit');assert.match(app.el('en-errors').textContent,/Calcule novamente/);
+});
+test('integração real: impedimento da Numeta não permite exportação indireta',()=>{
+ const app=openApp();standardSetup(app,'fluid',60,'peripheral');enteralSetup(app,'standard');assert.match(app.el('en-errors').textContent,/impedimentos/);assert.equal(app.el('en-result').hidden,true);
+});
+test('integração real: HV impossível não entra na soma',()=>{
+ const app=openApp();hydrationSetup(app,0);enteralSetup(app,'hydration');assert.match(app.el('en-errors').textContent,/impedimentos/);assert.equal(app.el('en-result').hidden,true);
+});
+test('integração real: selecionar fonte é obrigatório e trocar fonte invalida resultado',()=>{
+ const app=openApp();enteralSetup(app,'');assert.match(app.el('en-errors').textContent,/Selecione o aporte/);
+ enteralSetup(app,'none');assert.equal(app.el('en-result').hidden,false);app.set('en-source','standard');assert.equal(app.el('en-result').hidden,true);
 });

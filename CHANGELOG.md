@@ -2,6 +2,15 @@
 
 Registro das mudanças publicadas do NP_NEO. O histórico detalhado e auditável permanece também nos commits do Git.
 
+## 0.5.0 — 19/09/2026
+
+- Integra a enteral a uma fonte intravenosa explicitamente selecionada: sem IV, NP individualizada, NP padrão (Numeta) ou HV.
+- Soma taxas hídrica, energética e proteica com precisão interna; Numeta usa a energia integral da bolsa e HV usa glicose × 4 kcal/g, sem proteína intravenosa.
+- Identifica a fonte e o peso de seu cálculo na tela e no PDF. Não soma outras abas automaticamente.
+- Exige cálculo atual válido da fonte; edições, fonte ausente e impedimentos já existentes não podem gerar/exportar totais obsoletos.
+- Aplica a régua aprovada a NP individualizada e Numeta; mantém inativa com HV ou sem IV. Limiares inalterados.
+- Atualiza Notas, documentação e cache. 305 testes aprovados, incluindo as quatro fontes, ambas as entradas de Numeta, fronteiras, invalidação, bloqueios e PDF.
+
 ## 0.4.4 — 19/09/2026
 
 - Renomeia a interface, identificação de instalação e relatórios para GROW_NEO by Prof. Jefferson.
