@@ -34,7 +34,7 @@ function compareProducts(left,right) {
 
 export function nutritionAlerts(input,{volumes,effective,totalVolume,glucosePercent,osmolarity}) {
   const alerts=[];
-  const context=`Peso atual: ${formatAlertNumber(input.weight)} kg; dia de vida: ${input.day}.`;
+  const context='';
   function add(id,nutrient,level,kind,value,reference,message) {
     alerts.push({id,nutrient,level,kind,value,reference,blocking:false,
       weightKg:input.weight,day:input.day,message:`${ALERT_LABELS[level]}: ${message}`});
@@ -50,7 +50,7 @@ export function nutritionAlerts(input,{volumes,effective,totalVolume,glucosePerc
       ?'Mantenha o acesso venoso central selecionado e confira o protocolo institucional.'
       :'Considere acesso venoso central e confira o protocolo institucional.';
     add('osmolarity-high','osmolarity','caution','concentration',osmolarity,900,
-      `osmolaridade estimada de ${Math.round(osmolarity)} mOsm/L, acima do limite de 900 mOsm/L geralmente recomendado para nutrição parenteral periférica. ${accessGuidance} Estimativa pela equação de Pereira-da-Silva et al.; não corresponde à osmolalidade laboratorial medida. ${context}`);
+      `osmolaridade estimada: ${Math.round(osmolarity)} mOsm/L (>900 mOsm/L). ${accessGuidance}`);
   }
   for(const [id,name,concentration] of [['aa','Aminoácidos',0.1],['lip','Lipídios',0.2]]) {
     const {dose,phase,ceiling}=macroReference(id,input.weight,input.day);
@@ -60,18 +60,16 @@ export function nutritionAlerts(input,{volumes,effective,totalVolume,glucosePerc
     const aboveCeiling=aboveRequested||aboveEffective;
     const relation=requested<dose?'abaixo':requested>dose?'acima':'na referência';
     const level=aboveCeiling?'high':requested===dose?'info':'caution';
-    let message=`${name}: dose solicitada ${formatAlertNumber(requested)} g/kg/dia; dose efetiva calculada ${formatCalculated(effective[id],ceiling??dose,aboveEffective)} g/kg/dia. Referência ${phase}: ${formatAlertNumber(dose)} g/kg/dia. `;
+    let message=`${name}: ${formatAlertNumber(requested)} g/kg/dia (${relation} da referência ${phase}: ${formatAlertNumber(dose)} g/kg/dia). `;
     if(aboveCeiling) {
       const source=aboveRequested&&aboveEffective?'solicitada e efetiva':aboveRequested?'solicitada':'efetiva após arredondamento dos volumes de preparo';
       message+=`A dose ${source} ultrapassa o teto de ${formatAlertNumber(ceiling)} g/kg/dia${id==='aa'?' aplicável somente a RN com peso <1000 g':''}. Revise a prescrição. `;
     } else {
-      message+=requested===dose?'Dose solicitada na referência habitual. ':`Dose solicitada ${relation} da referência habitual; revisar conforme o contexto clínico. `;
-      if(ceiling!==null)message+=`Teto: ${formatAlertNumber(ceiling)} g/kg/dia${id==='aa'?', somente para RN com peso <1000 g':''}; este teto não é uma meta de oferta. `;
-      else message+='Para RN com peso ≥1000 g, a referência de progressão é 3,0 g/kg/dia; não foi definido um teto máximo neste protocolo. ';
+      message+=requested===dose?'Dose na referência habitual. ':`Revisar conforme o contexto clínico. `;
     }
     add(`${id}-${aboveCeiling?'ceiling':requested===dose?'guidance':'reference'}`,id,level,
       aboveCeiling?'ceiling':'reference',aboveRequested?requested:aboveEffective?effective[id]:requested,
-      aboveCeiling?ceiling:dose,message+context);
+      aboveCeiling?ceiling:dose,message);
   }
   // Relação sempre molar: cálcio é informado em mEq (1 mmol = 2 mEq)
   // e fósforo em mmol. Só há relação definida quando ambos são ofertados.
