@@ -2,6 +2,13 @@
 
 Registro das mudanças publicadas do NP_NEO. O histórico detalhado e auditável permanece também nos commits do Git.
 
+## 0.4.1 — 18/09/2026
+
+- Corrige a apresentação responsiva da tabela de oferta nutricional total em telas de celular.
+- Preserva a última NP individualizada válida durante a navegação para a aba Enteral, permitindo a soma PN + enteral.
+- Acrescenta testes de regressão específicos para ambas as correções.
+- Não altera regras ou fórmulas clínicas.
+
 ## 0.4.0 — 18/09/2026
 
 - Marco de expansão do NP_NEO em direção ao GROW_NEO.
