@@ -68,9 +68,9 @@ for(const weight of [0.8,0.999,1,1.2])for(const day of [1,2,8])for(const aa of [
     assert.equal(a.level,high?'high':aa===(day===1?2:3)?'info':'caution');
     assert.equal(a.blocking,false);assert.equal(r.canExport,true);
     assert.equal(a.weightKg,weight);assert.equal(a.day,day);
-    assert.match(a.message,/dose solicitada/);assert.match(a.message,/dose efetiva calculada/);
-    assert.match(a.message,day===1?/Referência inicial.*2,0/:/Referência de progressão.*3,0/);
-    if(weight>=1){assert.doesNotMatch(a.message,/teto de 3,5|Teto: 3,5/);assert.match(a.message,/não foi definido um teto máximo/);}
+    assert.doesNotMatch(a.message,/Peso atual|dia de vida/);
+    assert.match(a.message,day===1?/inicial no 1º dia de vida.*2,0/:/progressão após o 1º dia de vida.*3,0/);
+    if(weight>=1)assert.doesNotMatch(a.message,/teto de 3,5|Teto: 3,5|teto máximo/);
   });
 }
 for(const day of [1,2,8])for(const lip of [0,2,2.1,3,4,4.1]) {
@@ -78,7 +78,8 @@ for(const day of [1,2,8])for(const lip of [0,2,2.1,3,4,4.1]) {
     const r=run({day,lip});const a=alertFor(r,'lip');
     assert.equal(a.level,lip>4?'high':lip===(day===1?2:3)?'info':'caution');
     assert.equal(r.canExport,true);assert.equal(a.blocking,false);
-    assert.match(a.message,day===1?/Referência inicial.*2,0/:/Referência de progressão.*3,0/);
+    assert.match(a.message,day===1?/inicial no 1º dia de vida.*2,0/:/progressão após o 1º dia de vida.*3,0/);
+    if(lip<=4)assert.doesNotMatch(a.message,/Teto: 4,0|não é uma meta/);
     if(lip===4)assert.doesNotMatch(a.message,/ultrapassa/);
     if(lip>4)assert.match(a.message,/ultrapassa o teto de 4,0/);
   });
@@ -87,7 +88,7 @@ for(const [field,value] of [['aa',3.5000000000000004],['lip',4.000000000000001]]
   test(`${field}: valor solicitado imediatamente acima do teto`,()=>{
     const a=alertFor(run({[field]:value}),field);
     assert.equal(a.level,'high');assert.equal(a.value,value);
-    assert.match(a.message,/dose solicitada.*ultrapassa/);
+    assert.match(a.message,/ultrapassa o teto/);
   });
 }
 test('arredondamento do volume pode ultrapassar teto lipídico mesmo com solicitação no teto',()=>{
@@ -170,4 +171,10 @@ test('aplicativo e PDF usam VIG e o cache inclui o novo módulo',()=>{
   const sw=readFileSync(new URL('../sw.js',import.meta.url),'utf8');
   assert.ok(sw.includes(`npp-neo-static-${VERSION}`));assert.ok(sw.includes('./alerts.js'));
   assert.equal(parseNumber('20,0001'),20.0001);
+});
+
+test('alertas concisos: osmolaridade e macronutrientes não repetem peso/idade nem teto lipídico quando não ultrapassado',()=>{
+ const r=run({weight:1.4,day:14,fluid:100,aa:2,lip:2,vig:8,access:'central'});
+ for(const a of r.alerts.filter(x=>['osmolarity','aa','lip'].includes(x.nutrient)))assert.doesNotMatch(a.message,/Peso atual|dia de vida/);
+ const lip=alertFor(r,'lip');assert.doesNotMatch(lip.message,/Teto: 4,0|não é uma meta/);
 });
