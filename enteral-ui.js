@@ -1,5 +1,5 @@
 import {calculateEnteral,integrateNutrition} from './enteral.js';
-const num=v=>{const n=Number(String(v??'').trim().replace(',','.'));return Number.isFinite(n)?n:null};
+const num=v=>{const s=String(v??'').trim();if(s==='')return null;const n=Number(s.replace(',','.'));return Number.isFinite(n)?n:null};
 const fmt=n=>Number.isFinite(n)?n.toFixed(1).replace('.',','):'—';
 export function initEnteral(doc,getParenteral){
  const $=id=>doc.getElementById(id);
