@@ -2,6 +2,14 @@
 
 Registro das mudanças publicadas do NP_NEO. O histórico detalhado e auditável permanece também nos commits do Git.
 
+## 0.4.2 — 18/09/2026
+
+- Torna os alertas de resultado mais objetivos, aproveitando a aba Notas para explicações fixas.
+- Remove peso e dia de vida repetidos das mensagens de alerta.
+- Simplifica os alertas de osmolaridade, aminoácidos e lipídios.
+- Remove a frase sobre teto lipídico dos alertas habituais; o teto permanece explícito quando realmente ultrapassado.
+- Não altera regras ou cálculos clínicos.
+
 ## 0.4.1 — 18/09/2026
 
 - Corrige a apresentação responsiva da tabela de oferta nutricional total em telas de celular.
