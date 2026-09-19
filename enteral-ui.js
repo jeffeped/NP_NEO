@@ -4,7 +4,7 @@ const fmt=n=>Number.isFinite(n)?n.toFixed(1).replace('.',','):'—';
 export function initEnteral(doc,getParenteral){
  const $=id=>doc.getElementById(id);
  const type=$('en-type'),lact=$('en-lactation-field'),fmField=$('en-fm85-field'),fm=$('en-fm85'),fmCustom=$('en-fm85-custom-field');
- const sync=()=>{const milk=type.value==='lmo'||type.value==='lhop';lact.hidden=type.value!=='lmo';fmField.hidden=!milk;if(!milk){fm.value='0';fmCustom.hidden=true}};
+ const sync=()=>{const milk=type.value==='lmo'||type.value==='lhop';lact.hidden=type.value!=='lmo';fmField.hidden=!milk;if(!milk){fmCustom.hidden=true}};
  type.addEventListener('change',sync);fm.addEventListener('change',()=>fmCustom.hidden=fm.value!=='custom');sync();
  $('enteral-form').addEventListener('submit',e=>{e.preventDefault();const errors=[];
    if(!type.value)errors.push('Selecione o tipo de dieta.');
