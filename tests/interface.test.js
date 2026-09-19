@@ -189,3 +189,18 @@ test('prescrição: Ca/P molar após P/cal usa ofertas efetivas, incluindo arred
   app.set('p',0);app.calculate();
   assert.equal(app.el('result-summary').lastChild.lastChild.textContent,'Não calculável (P = 0)');
 });
+
+test('interface Enteral: LMO maduro calcula oferta e integra com NP da sessão',()=>{
+  const app=openApp();app.calculate();app.dispatch('tab-enteral','click');
+  app.set('en-type','lmo');app.dispatch('en-type','change');app.set('en-lactation',14);app.set('en-rate',80);
+  app.dispatch('enteral-form','submit');
+  assert.equal(app.el('en-result').hidden,false);
+  assert.match(app.el('en-summary').textContent,/55,0/);assert.match(app.el('en-summary').textContent,/1,2/);
+  assert.match(app.el('en-total-rows').textContent,/mL\/kg\/dia/);assert.equal(app.el('en-estimated-note').hidden,false);
+});
+test('interface Enteral: composição analisada substitui estimativa',()=>{
+  const app=openApp();app.dispatch('tab-enteral','click');app.set('en-type','lhop');app.dispatch('en-type','change');
+  app.set('en-rate',100);app.set('en-energy',70);app.set('en-protein',1.5);app.dispatch('enteral-form','submit');
+  assert.match(app.el('en-summary').textContent,/70,0/);assert.match(app.el('en-summary').textContent,/1,5/);
+  assert.equal(app.el('en-estimated-note').hidden,true);
+});
