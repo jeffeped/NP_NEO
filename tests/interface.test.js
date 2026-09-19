@@ -7,6 +7,7 @@ import * as engine from '../engine.js';
 import {macroReference,formatAlertNumber} from '../alerts.js';
 import {initStandard} from '../standard-ui.js';
 import {initHydration} from '../hydration-ui.js';
+import {initEnteral} from '../enteral-ui.js';
 
 // Executa o app real em um DOM simulado; não substitui a revisão visual em navegador.
 const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
@@ -15,7 +16,7 @@ function openApp() {
   const {document,window}=parseHTML(html);
   window.HTMLElement.prototype.scrollIntoView=function(){};
   const context={document,window:{addEventListener(){},scrollTo(){}},navigator:{},
-    console,URL,Blob,MessageChannel,...engine,macroReference,formatAlertNumber,initHydration,initStandard,
+    console,URL,Blob,MessageChannel,...engine,macroReference,formatAlertNumber,initHydration,initStandard,initEnteral,
     createReport:async()=>new Uint8Array()};
   vm.runInNewContext(source,context);
   // O DOM simulado não seleciona implicitamente a primeira opção como o navegador.
@@ -187,4 +188,19 @@ test('prescrição: Ca/P molar após P/cal usa ofertas efetivas, incluindo arred
   assert.equal(app.el('result-summary').lastChild.lastChild.textContent,'0,0 : 1');
   app.set('p',0);app.calculate();
   assert.equal(app.el('result-summary').lastChild.lastChild.textContent,'Não calculável (P = 0)');
+});
+
+test('interface Enteral: LMO maduro calcula oferta e integra com NP da sessão',()=>{
+  const app=openApp();app.calculate();app.dispatch('tab-enteral','click');
+  app.set('en-type','lmo');app.dispatch('en-type','change');app.set('en-lactation',14);app.set('en-rate',80);
+  app.dispatch('enteral-form','submit');
+  assert.equal(app.el('en-result').hidden,false);
+  assert.match(app.el('en-summary').textContent,/55,0/);assert.match(app.el('en-summary').textContent,/1,2/);
+  assert.match(app.el('en-total-rows').textContent,/mL\/kg\/dia/);assert.equal(app.el('en-estimated-note').hidden,false);
+});
+test('interface Enteral: composição analisada substitui estimativa',()=>{
+  const app=openApp();app.dispatch('tab-enteral','click');app.set('en-type','lhop');app.dispatch('en-type','change');
+  app.set('en-rate',100);app.set('en-energy',70);app.set('en-protein',1.5);app.dispatch('enteral-form','submit');
+  assert.match(app.el('en-summary').textContent,/70,0/);assert.match(app.el('en-summary').textContent,/1,5/);
+  assert.equal(app.el('en-estimated-note').hidden,true);
 });
