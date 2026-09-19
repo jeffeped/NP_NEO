@@ -2,6 +2,15 @@
 
 Registro das mudanças publicadas do NP_NEO. O histórico detalhado e auditável permanece também nos commits do Git.
 
+## 0.4.3 — 19/09/2026
+
+- Implementa a régua de transição PN → EN aprovada: ativa somente com EN >50 mL/kg/dia e PN presente; avalia separadamente energia total ≥110 kcal/kg/dia e proteína total ≥2,50 g/kg/dia.
+- Compara valores internos sem arredondamento; mostra proteína com duas casas na tabela integrada e no PDF.
+- Inclui a régua no PDF e os critérios nas Notas; mantém a integração com a última NP individualizada calculada na sessão.
+- Invalida resultado/PDF enteral após edição enteral ou novo cálculo de PN e impede download de geração assíncrona obsoleta.
+- Atualiza versão, lockfile e cache offline. Regressão: 247 testes aprovados; fronteiras, ausência de PN, interface e PDF cobertos.
+- Não acrescenta regra de redução ou suspensão automática da PN.
+
 ## 0.4.2 — 18/09/2026
 
 - Torna os alertas de resultado mais objetivos, aproveitando a aba Notas para explicações fixas.

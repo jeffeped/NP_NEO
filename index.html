@@ -174,12 +174,22 @@
           <p id="en-estimated-note" class="help" hidden>Composição estimada — não corresponde à análise individual do leite.</p>
           <h2 class="page-title enteral-total-title">Oferta nutricional total</h2>
           <div class="table-wrap"><table class="enteral-total-table" aria-label="Oferta nutricional total"><thead><tr><th>Indicador</th><th>PN</th><th>Enteral</th><th>Total</th></tr></thead><tbody id="en-total-rows"></tbody></table></div>
+          <h2 class="page-title">Régua de transição PN → EN</h2>
+          <div id="en-transition" class="notice" role="status"></div>
+          <p class="help">Metas avaliadas antes do arredondamento. Consulte os critérios na aba Notas.</p>
           <p id="en-pn-note" class="help"></p><button id="en-export" class="primary" type="button">Exportar aporte total em PDF</button><p id="en-pdf-status" class="help" role="status"></p><a id="en-pdf-download" class="download-link" hidden>Baixar relatório em PDF</a>
         </section>
       </section>
       <section id="notes" role="tabpanel" aria-labelledby="tab-notes" hidden>
         <h2 class="page-title">Notas importantes</h2>
         <p class="caption">Bases dos cálculos, limitações e referências</p>
+        <section class="section"><div class="section-inner">
+          <h2>Régua de transição PN → EN</h2>
+          <p>A régua fica ativa quando a oferta enteral é maior que 50 mL/kg/dia e há PN no cálculo integrado. Em 50 mL/kg/dia, permanece inativa.</p>
+          <p>Na fase ativa, compara os totais PN + EN com as metas mínimas de energia de 110 kcal/kg/dia e proteína de 2,50 g/kg/dia. Cada meta é avaliada separadamente, usando os valores internos antes do arredondamento da apresentação.</p>
+          <p>Estes são os critérios operacionais aprovados para o aplicativo. A régua não determina redução ou suspensão automática da PN. A composição estimada do leite mantém a incerteza dos aportes calculados.</p>
+          <p>A integração usa a última NP individualizada calculada nesta sessão; NP padrão e HV não entram nesta soma. Recalcule a NP e a enteral quando os aportes forem alterados.</p>
+        </div></section>
         <section class="section"><div class="section-inner">
           <h2>Finalidade e limites</h2>
           <p>O NP_NEO é um instrumento de apoio ao cálculo e à conferência. Não substitui avaliação clínica, protocolo institucional, validação farmacêutica nem conferência da prescrição.</p>

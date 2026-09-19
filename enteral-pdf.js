@@ -1,5 +1,6 @@
 import {VERSION} from './engine.js';
-const fmt=n=>Number.isFinite(n)?n.toFixed(1).replace('.',','):'—';
+import {transitionLines} from './enteral.js';
+const fmt=(n,digits=1)=>Number.isFinite(n)?n.toFixed(digits).replace('.',','):'—';
 export async function createEnteralReport({enteral,integrated}){
  if(!enteral||!integrated)throw new Error('Enteral result is not exportable');
  const {PDFDocument,StandardFonts,rgb}=globalThis.PDFLib;const doc=await PDFDocument.create();
@@ -15,7 +16,12 @@ export async function createEnteralReport({enteral,integrated}){
  let y=580;page.drawRectangle({x:L,y:y-8,width:R-L,height:25,color:shade});
  text('Indicador',L+6,y,9,bold);right('PN',300,y,9,bold);right('Enteral',430,y,9,bold);right('Total',R-6,y,9,bold);y-=30;
  const rows=[['Taxa hídrica','mL/kg/dia','fluid'],['Energia','kcal/kg/dia','calories'],['Proteína','g/kg/dia','protein']];
- for(const [name,unit,key] of rows){text(name,L+6,y,9,bold);text(unit,L+6,y-12,7.5,regular,muted);right(fmt(integrated.parenteral[key]),300,y,9);right(fmt(integrated.enteral[key]),430,y,9);right(fmt(integrated.total[key]),R-6,y,9,bold);y-=34;}
+ for(const [name,unit,key] of rows){text(name,L+6,y,9,bold);text(unit,L+6,y-12,7.5,regular,muted);right(fmt(integrated.parenteral[key],key==='protein'?2:1),300,y,9);right(fmt(integrated.enteral[key],key==='protein'?2:1),430,y,9);right(fmt(integrated.total[key],key==='protein'?2:1),R-6,y,9,bold);y-=34;}
+ y-=14;text('Régua de transição PN / EN',L,y,11,bold);y-=22;
+ for(const line of transitionLines(integrated)){text(line,L,y,9);y-=18;}
+ y-=8;text('Metas avaliadas sobre os totais PN + EN, antes do arredondamento.',L,y,8,regular,muted);
+ y-=16;text('A régua não determina redução ou suspensão automática da PN.',L,y,8,regular,muted);
+ y-=16;text('PN: última NP individualizada calculada nesta sessão.',L,y,8,regular,muted);
  text('Sem identificação do paciente. Conferir os resultados antes do uso assistencial.',L,82,8,regular,muted);
  text('GROW_NEO by Prof. Jeffe · processamento local',L,50,8,regular,muted);
  return doc.save();
