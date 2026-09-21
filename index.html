@@ -175,6 +175,11 @@
               <option value="">Selecione a fonte</option><option value="none">Sem aporte intravenoso</option><option value="individual">NP individualizada</option><option value="standard">NP padrão (Numeta)</option><option value="hydration">HV</option>
             </select></label>
             <p class="help full">Escolha uma única fonte. Calcule-a na aba correspondente antes de integrar; após editar os parâmetros, recalcule.</p>
+            <label class="field full">Fase clínica<select id="en-phase" class="hv-select"><option value="">Selecione a fase</option><option value="oligoanuria">Fase de oligoanúria</option><option value="transition">Fase de transição</option><option value="growth">Fase de crescimento</option></select></label>
+            <p class="help full">Seleção clínica manual. Crescimento: bebê clinicamente estável em crescimento. A fase de transição clínica é distinta da régua nutricional PN / EN.</p>
+            <label class="field">Peso ao nascer<div class="input-box"><input id="en-birth-weight" inputmode="decimal" type="text"><span class="unit">g</span></div></label>
+            <label class="field">Idade gestacional ao nascer<div class="input-box"><input id="en-gestational-age" inputmode="decimal" type="text"><span class="unit">semanas</span></div></label>
+            <p class="help full">Dados opcionais, necessários para comparar com a referência de crescimento. IG em semanas completas ou decimais (ex.: 32,5).</p>
             <label class="field full">Tipo de dieta<select id="en-type" class="hv-select" required>
               <option value="">Selecione</option><option value="lmo">LMO — leite materno ordenhado</option><option value="lhop">LHOP — leite humano ordenhado e pasteurizado</option><option value="fpt_prenan">FPT — Pré NAN</option><option value="fpt_aptamil_pre">FPT — Aptamil Pré</option><option value="fp_nan1">FP — NAN 1</option><option value="fp_aptamil1">FP — Aptamil 1</option>
             </select></label>
@@ -198,6 +203,7 @@
           <h2 class="page-title enteral-total-title">Oferta nutricional total</h2>
           <div class="table-wrap"><table class="enteral-total-table" aria-label="Oferta nutricional total"><thead><tr><th>Indicador</th><th id="en-iv-heading">IV</th><th>Enteral</th><th>Total</th></tr></thead><tbody id="en-total-rows"></tbody></table></div>
           <h2 class="page-title">Régua de transição PN → EN</h2>
+          <h3>Referências por fase clínica</h3><div id="en-clinical-reference" class="notice" role="status"></div>
           <div id="en-transition" class="notice" role="status"></div>
           <p class="help">Metas avaliadas antes do arredondamento. Consulte os critérios na aba Notas.</p>
           <p id="en-pn-note" class="help"></p><button id="en-export" class="primary" type="button">Exportar aporte total em PDF</button><p id="en-pdf-status" class="help" role="status"></p><a id="en-pdf-download" class="download-link" hidden>Baixar relatório em PDF</a>
@@ -205,6 +211,12 @@
       </section>
       <section id="notes" role="tabpanel" aria-labelledby="tab-notes" hidden>
         <h2 class="page-title">Notas importantes</h2>
+        <section class="section section-inner"><h3>Enteral — fase clínica e referências</h3>
+        <p>A fase é selecionada pelo médico, sem inferência pelo dia de vida. As diretrizes de NP de 2018 não estabelecem três faixas específicas de oligoanúria, transição e crescimento. Referências de D1 e D2 são informativas, não metas atribuídas automaticamente à fase.</p>
+        <p>A comparação de crescimento é restrita à enteral isolada ou HV + enteral, em prematuros estáveis com peso ao nascer &lt;1800 g: 115–140 kcal/kg/dia e 3,5–4,0 g/kg/dia de proteína. Com HV, a energia inclui glicose IV e a proteína provém da dieta. A distância até a referência de alimentação plena não equivale a uma avaliação completa da adequação clínica. Valores são comparados antes do arredondamento. Faixas maiores para situações selecionadas não são metas padrão.</p>
+        <p>Joosten K et al. Energy. Clin Nutr. 2018;37:2309–2314. <a href="https://doi.org/10.1016/j.clnu.2018.06.944">doi:10.1016/j.clnu.2018.06.944</a>.</p>
+        <p>Van Goudoever JB et al. Amino acids. Clin Nutr. 2018;37:2315–2323. <a href="https://doi.org/10.1016/j.clnu.2018.06.945">doi:10.1016/j.clnu.2018.06.945</a>.</p>
+        <p>Embleton ND et al. Enteral Nutrition in Preterm Infants (2022). JPGN. 2023;76:248–268. <a href="https://doi.org/10.1097/MPG.0000000000003642">doi:10.1097/MPG.0000000000003642</a>.</p></section>
         <p class="caption">Bases dos cálculos, limitações e referências</p>
         <section class="section"><div class="section-inner">
           <h2>Régua de transição PN → EN</h2>

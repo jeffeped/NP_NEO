@@ -82,3 +82,34 @@ export function transitionLines(integrated){
     `Energia total: ${assessment.energyMet?'meta atingida':'abaixo da meta'} (mínimo 110 kcal/kg/dia).`,
     `Proteína total: ${assessment.proteinMet?'meta atingida':'abaixo da meta'} (mínimo 2,50 g/kg/dia).`];
 }
+
+
+export const CLINICAL_PHASES=Object.freeze({oligoanuria:'Fase de oligoanúria',transition:'Fase de transição',growth:'Fase de crescimento'});
+export function clinicalReferenceLines(integrated,{phase='',birthWeight=null,gestationalAge=null}={}){
+ const lines=[`Fase clínica: ${CLINICAL_PHASES[phase]||'não informada'}.`];
+ if(!phase)return [...lines,'Selecione a fase clínica para consultar as referências.'];
+ if(!Object.hasOwn(CLINICAL_PHASES,phase))throw new Error('Fase clínica inválida.');
+ if(phase!=='growth')return [...lines,
+  'ESPGHAN 2018 — referências parenterais para prematuros:',
+  'D1: energia mínima de referência 45–55 kcal/kg/dia; AA 1,5–2,5 g/kg/dia.',
+  'Desde D2: AA 2,5–3,5 g/kg/dia e energia não proteica >65 kcal/kg/dia.',
+  'Esses valores não definem metas próprias da oligoanúria ou da transição.',
+  'Proteína enteral não é classificada pela faixa de aminoácidos parenterais.',
+  'Referências: Joosten et al., 2018; van Goudoever et al., 2018.'];
+ lines.push('Referência enteral de crescimento — ESPGHAN 2022 (publicada em 2023).');
+ if(!(Number.isFinite(birthWeight)&&birthWeight>0&&Number.isFinite(gestationalAge)&&gestationalAge>0))return [...lines,'Informe peso ao nascer e idade gestacional ao nascer para verificar aplicabilidade.'];
+ lines.push(`Peso ao nascer: ${birthWeight} g; IG ao nascer: ${gestationalAge} semanas.`);
+ if(birthWeight>=1800||gestationalAge>=37)return [...lines,'Referência não aplicada: população de prematuros com peso ao nascer <1800 g.'];
+ lines.push('Para prematuros clinicamente estáveis em crescimento:',
+ 'Energia: 115–140 kcal/kg/dia. Proteína enteral: 3,5–4,0 g/kg/dia.');
+ if(!['none','hydration'].includes(integrated.source))return [...lines,'Comparação enteral não aplicada à oferta mista com NP; consulte a régua PN / EN.'];
+ const fmt=n=>n.toFixed(2).replace('.',',');
+ for(const [label,key,low,high,unit] of [['Energia','calories',115,140,'kcal/kg/dia'],['Proteína','protein',3.5,4,'g/kg/dia']]){
+  const value=integrated.total[key];
+  const status=value<low?`faltam ${fmt(low-value)} ${unit} até o limite inferior`:value>high?`${fmt(value-high)} ${unit} acima do limite superior`:'dentro da faixa de referência';
+  lines.push(`${label} ofertada: ${fmt(value)} ${unit} — ${status}.`);
+ }
+ if(integrated.source==='hydration')lines.push('Energia ofertada: HV + enteral; proteína ofertada: somente enteral.');
+ return [...lines,'Distância até a referência de alimentação plena; não determina ajuste automático.',
+ 'Fonte: Embleton et al., JPGN 2023;76:248–268.'];
+}

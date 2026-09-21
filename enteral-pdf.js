@@ -1,10 +1,10 @@
 import {VERSION} from './engine.js';
-import {transitionLines} from './enteral.js';
+import {transitionLines,clinicalReferenceLines} from './enteral.js';
 const fmt=(n,digits=1)=>Number.isFinite(n)?n.toFixed(digits).replace('.',','):'—';
-export async function createEnteralReport({enteral,integrated}){
+export async function createEnteralReport({enteral,integrated,clinical}){
  if(!enteral||!integrated)throw new Error('Enteral result is not exportable');
  const {PDFDocument,StandardFonts,rgb}=globalThis.PDFLib;const doc=await PDFDocument.create();
- doc.setTitle('Avaliação nutricional integrada neonatal');doc.setAuthor('Jefferson Guilherme');doc.setCreator('Jefferson Guilherme');doc.setSubject('GROW_NEO — aporte nutricional total');
+ doc.setTitle('Avaliação nutricional integrada neonatal');doc.setAuthor('Jefferson P Guilherme');doc.setCreator('Jefferson P Guilherme');doc.setSubject('GROW_NEO — aporte nutricional total');
  const regular=await doc.embedFont(StandardFonts.Helvetica),bold=await doc.embedFont(StandardFonts.HelveticaBold);
  const page=doc.addPage([612,792]),ink=rgb(.1,.17,.13),muted=rgb(.32,.39,.35),shade=rgb(.91,.95,.92),L=43,R=569;
  const text=(v,x,y,s=9,f=regular,c=ink)=>page.drawText(String(v),{x,y,size:s,font:f,color:c});
@@ -25,5 +25,18 @@ export async function createEnteralReport({enteral,integrated}){
  y-=16;text(integrated.source==='none'?'Totais somente da dieta enteral.':`Fonte calculada nesta sessão: ${integrated.sourceLabel}${Number.isFinite(integrated.weight)?' · peso '+String(integrated.weight).replace('.',',')+' kg':''}.`,L,y,8,regular,muted);
  text('Sem identificação do paciente. Conferir os resultados antes do uso assistencial.',L,82,8,regular,muted);
  text('GROW_NEO by Prof. Jefferson · processamento local',L,50,8,regular,muted);
+ if(clinical){
+  const refPage=doc.addPage([612,792]);let ry=742;
+  refPage.drawText('Referências por fase clínica',{x:L,y:ry,size:14,font:bold,color:ink});ry-=30;
+  for(const line of clinicalReferenceLines(integrated,clinical)){
+   let row='';for(const word of line.split(' ')){
+    const next=row?row+' '+word:word;
+    if(regular.widthOfTextAtSize(next,9)>R-L){refPage.drawText(row,{x:L,y:ry,size:9,font:regular,color:ink});ry-=14;row=word;}else row=next;
+   }
+   refPage.drawText(row,{x:L,y:ry,size:9,font:regular,color:ink});ry-=23;
+  }
+  refPage.drawText('Referências bibliográficas completas na aba Notas do aplicativo.',{x:L,y:82,size:8,font:regular,color:muted});
+ }
  return doc.save();
 }
+
