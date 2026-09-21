@@ -1,5 +1,5 @@
 import {nutritionAlerts} from './alerts.js';
-export const VERSION = '0.5.0';
+export const VERSION = '0.5.1';
 export const CONCENTRATIONS = Object.freeze({aa:0.1,lip:0.2,glucose:0.5,nacl:1.7,acetate:2,kcl:1.34,calcium:0.5,magnesium:0.8,kphosP:1.1,kphosK:2,glyceroP:1,glyceroNa:2,oligoZn:500,zinc:200,selenium:60});
 export const ENERGY = Object.freeze({aa:4,lip:9,glucose:4});
 export const round1 = n => Math.round((n + Number.EPSILON * Math.max(1, Math.abs(n))) * 10) / 10;
@@ -135,3 +135,4 @@ export function calculate(input) {
   return {ok:true,input:{...n,access:input.access,naSalt:input.naSalt,pSalt:input.pSalt,omit},rows,volumes,grams,effective,offers,rounding,adjustments,notices,alerts,blocks,requiresCentral,accessBlocked,canExport:blocks.length===0,
     totals:{totalVolume,componentsVolume:componentsCents/100,water:volumes.water,infusion:round1(totalVolume/24),infusionExact:totalVolume/24,fluid:totalVolume/w,calories:calories/w,glucosePercent,osmolarity,nonProtein:nonProtein/w,proteinRatio:grams.aa>0?nonProtein/grams.aa:null},version:VERSION};
 }
+

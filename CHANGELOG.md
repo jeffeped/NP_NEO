@@ -2,6 +2,20 @@
 
 Registro das mudanças publicadas do NP_NEO. O histórico detalhado e auditável permanece também nos commits do Git.
 
+## 0.5.1 — 21/09/2026
+
+- Em 21/09/2026, o responsável aprovou manter provisoriamente o método de osmolaridade da HV para testes e comparação com a fórmula clínica habitual. Eventual troca exigirá revisão explícita do método; não há substituição automática.
+- Registra referências bibliográficas completas nas Notas e a procedência no código, distinguindo o método aditivo publicado da adaptação estequiométrica implementada.
+
+- Acrescenta Exportar PDF à HV, com composição, parâmetros, osmolaridade e autoria de Jefferson P Guilherme.
+- Exibe a osmolaridade calculada imediatamente após a concentração final de glicose na tela e no PDF.
+- Acrescenta VT e vazão juntos na última linha dos resultados e do relatório.
+- Estima a osmolaridade pela soma das contribuições dos componentes no volume final, com dissociação ideal dos sais e osmolaridades de bula ajustáveis para SG 5% e SG 50%. Explica fórmula, referências e limites nas Notas.
+- Preserva cálculos de volume, VIG e doses e a regra de uma casa decimal com arredondamento para cima na apresentação.
+- Impede exportação de mistura inviável e invalida PDFs após edição, inclusive durante a geração. Inclui o gerador no cache offline.
+
+- Verificação local: 95 testes aprovados (HV, osmolaridade, exportação, invalidação, integração e PDFs); PDF renderizado e conferido visualmente.
+
 ## 0.5.0 — 19/09/2026
 
 - Integra a enteral a uma fonte intravenosa explicitamente selecionada: sem IV, NP individualizada, NP padrão (Numeta) ou HV.

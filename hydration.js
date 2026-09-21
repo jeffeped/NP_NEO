@@ -1,5 +1,15 @@
 import {CONCENTRATIONS,parseNumber} from './engine.js';
 
+// Osmolaridades de referência das soluções glicosadas, em mOsm/L.
+// Conferir a apresentação: glicose hidratada e anidra podem diferir.
+// Método aditivo: RxKinetics, Calculating Osmolarity of an IV Admixture,
+// https://www.rxkinetics.com/iv_osmolarity.html (consulta: 2026-09-21).
+// Adaptação: osmolaridades de bula para glicose e estequiometria ideal
+// para sais; não é uma equação empírica validada para HV neonatal.
+// Bulas Halex Istar / Isofarma e unidades documentadas na aba Notas.
+export const HYDRATION_GLUCOSE_OSMOLARITY = Object.freeze({sg5:252.3,sg50:2775});
+const SALT_OSMOLES_PER_MEQ = Object.freeze({na:2,k:2,ca:1.5,mg:1});
+
 export const HYDRATION_COMPONENTS = Object.freeze([
   Object.freeze({id:'na',name:'Sódio',solution:'NaCl 10%',concentration:CONCENTRATIONS.nacl}),
   Object.freeze({id:'k',name:'Potássio',solution:'KCl 10%',concentration:CONCENTRATIONS.kcl}),
@@ -45,7 +55,7 @@ export function formatHydrationVolume(value){
 }
 
 export function calculateHydration(input){
-  const errors=[],n={},concentrations={};
+  const errors=[],n={},concentrations={},glucoseOsmolarity={};
   const labels={weight:'Peso atual',fluid:'Taxa hídrica',vig:'VIG',na:'Sódio',k:'Potássio',ca:'Cálcio',mg:'Magnésio'};
   for(const field of Object.keys(labels)){
     n[field]=parseNumber(input[field]);
@@ -56,6 +66,10 @@ export function calculateHydration(input){
   for(const c of HYDRATION_COMPONENTS){
     concentrations[c.id]=parseNumber(input.concentrations?.[c.id]);
     if(!Number.isFinite(concentrations[c.id])||concentrations[c.id]<=0||concentrations[c.id]>1e12)errors.push({field:`concentration-${c.id}`,message:`${c.solution}: informe a equivalência do rótulo em mEq/mL, maior que zero.`});
+  }
+  for(const id of ['sg5','sg50']){
+    glucoseOsmolarity[id]=parseNumber(input.glucoseOsmolarity?.[id]??HYDRATION_GLUCOSE_OSMOLARITY[id]);
+    if(!Number.isFinite(glucoseOsmolarity[id])||glucoseOsmolarity[id]<=0||glucoseOsmolarity[id]>1e6)errors.push({field:`osm-${id}`,message:`${id==='sg5'?'SG 5%':'SG 50%'}: informe a osmolaridade da bula em mOsm/L, maior que zero.`});
   }
   if(errors.length)return {ok:false,errors};
 
@@ -87,6 +101,13 @@ export function calculateHydration(input){
   const sg50=blocks.length?null:div(sub(glucose,minimum),sub(sg50Concentration,sg5Concentration));
   const sg5=sg50===null?null:sub(available,sg50);
   const mixture=sg50===null?null:{sg5:num(sg5),sg50:num(sg50),glucoseGrams:num(div(glucose,ratio(1000n))),glucosePercent:num(div(glucose,mul(total,ratio(10n)))),vig:num(div(add(mul(sg5,sg5Concentration),mul(sg50,sg50Concentration)),mul(weight,minutes)))};
-  return {ok:true,input:{...n,doseUnit:input.doseUnit,concentrations},rows,blocks,canPrepare:blocks.length===0,mixture,vigRange,
+  if(mixture){
+    // Soma de partículas: NaCl e KCl = 2 por mmol; gluconato de
+    // cálcio = 3 por mmol de Ca; MgSO4 = 2 por mmol de Mg.
+    // Ca e Mg são divalentes: converter mEq em mmol antes da soma.
+    const saltOsmoles=rows.reduce((sum,row)=>sum+row.amountMeq*SALT_OSMOLES_PER_MEQ[row.id],0);
+    mixture.osmolarity=(mixture.sg5*glucoseOsmolarity.sg5+mixture.sg50*glucoseOsmolarity.sg50+saltOsmoles*1000)/totalVolume;
+  }
+  return {ok:true,input:{...n,doseUnit:input.doseUnit,concentrations,glucoseOsmolarity},rows,blocks,canPrepare:blocks.length===0,mixture,vigRange,
     totals:{totalVolume,infusion:totalVolume/24,glucoseGrams:num(div(glucose,ratio(1000n))),electrolytesVolume:num(electrolytesVolume),glucoseSolutionsVolume:num(available)}};
 }
