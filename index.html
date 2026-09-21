@@ -108,6 +108,11 @@
             <div class="section-inner">
               <p class="help">Valores iniciais do cadastro atual do APP. Confira e ajuste os mEq/mL conforme o rótulo da apresentação utilizada; a indicação “10%” isoladamente não informa os mEq do íon.</p>
               <div id="hv-concentrations" class="field-grid"></div>
+              <div class="field-grid">
+                <label class="field">Osmolaridade do SG 5%<div class="input-box"><input id="hv-osm-sg5" type="text" inputmode="decimal" value="252,3" required><span class="unit">mOsm/L</span></div></label>
+                <label class="field">Osmolaridade do SG 50%<div class="input-box"><input id="hv-osm-sg50" type="text" inputmode="decimal" value="2775" required><span class="unit">mOsm/L</span></div></label>
+              </div>
+              <p class="help">Confira a osmolaridade na bula do SG utilizado. Referências iniciais: SG 5% Halex Istar e SG 50% Isofarma. As apresentações podem diferir; consulte as Notas.</p>
               <p class="help">SG 5%: 0,05 g de glicose/mL. SG 50%: 0,5 g de glicose/mL.<br>VR = VT − soma dos volumes dos eletrólitos.<br>SG 50% (mL) = [gG − (VR × 0,05)] ÷ 0,45.<br>SG 5% (mL) = VR − SG 50%.</p>
             </div>
           </details>
@@ -122,7 +127,11 @@
           <div id="hv-composition">
             <div class="table-wrap"><table aria-label="Composição calculada da hidratação venosa"><thead><tr><th>Componente / quantidade</th><th>Volume (mL)</th></tr></thead><tbody id="hv-rows"></tbody></table></div>
             <p class="help">O volume dos eletrólitos está incluído no VT. A glicose calculada inclui SG 5% e SG 50%. VT, vazão e volumes são exibidos com uma casa decimal, arredondados para cima apenas na apresentação; os cálculos internos preservam a precisão completa. SG 5% completa o VT. Confira a oferta após o arredondamento de preparo.</p>
+            <div id="hv-final-summary" class="summary"></div>
           </div>
+          <button id="hv-export" class="primary" type="button" disabled>Exportar PDF</button>
+          <p id="hv-pdf-status" class="help" role="status"></p>
+          <a id="hv-pdf-download" class="download-link" hidden>Baixar relatório em PDF</a>
         </section>
       </section>
       <section id="standard" role="tabpanel" aria-labelledby="tab-standard" hidden>
@@ -210,10 +219,25 @@
           <p>O aplicativo não confirma estabilidade físico-química, compatibilidade entre componentes ou ausência de precipitados. As apresentações e concentrações devem ser confrontadas com os rótulos utilizados pelo serviço.</p>
         </div></section>
         <section class="section"><div class="section-inner">
-          <h2>Osmolaridade estimada</h2>
+          <h2>Osmolaridade estimada da NP individualizada</h2>
           <p>A osmolaridade é estimada pela equação neonatal de Pereira-da-Silva et al., usando as concentrações finais de aminoácidos e glicose em g/L, sódio total em mEq/L e fósforo elementar em mg/L:</p>
           <p><strong>Osmolaridade (mOsm/L) = (AA × 8) + (glicose × 7) + (Na × 2) + (P × 0,2) − 50.</strong></p>
           <p>O resultado é uma estimativa matemática e não corresponde à osmolalidade laboratorial medida. Valores acima de 900 mOsm/L geram orientação para acesso venoso central.</p>
+        </div></section>
+        <section class="section"><div class="section-inner">
+          <h2>Osmolaridade calculada da HV</h2>
+          <p>Soma das contribuições osmóticas dividida pelo volume final da mistura, antes dos arredondamentos de apresentação:</p>
+          <p><strong>Osmolaridade (mOsm/L) = [V5 × O5 + V50 × O50 + 1000 × (2 × Na + 2 × K + 1,5 × Ca + Mg)] ÷ VT.</strong></p>
+          <p>V5, V50 e VT em mL; O5 e O50 são as osmolaridades das soluções glicosadas em mOsm/L; Na, K, Ca e Mg são os mEq totais na mistura, não as doses por kg. Os fatores dos sais pressupõem dissociação ideal de NaCl, KCl, gluconato de cálcio e sulfato de magnésio. Incluem seus ânions; não somar o cloreto novamente.</p>
+          <p>É uma estimativa físico-química, não uma medição nem confirmação de compatibilidade ou adequação do acesso. Não contempla excipientes dos sais, interações não ideais ou alterações no preparo. A equação de NP individualizada não é aplicada à HV.</p>
+          <p>As osmolaridades das soluções glicosadas são ajustáveis pelas bulas: referências iniciais de 252,3 mOsm/L para SG 5% Halex Istar e 2775 mOsm/L para SG 50% Isofarma. Produtos com glicose hidratada ou anidra podem diferir mesmo com a mesma porcentagem.</p>
+          <p>A expressão implementada adapta o método aditivo abaixo: usa osmolaridades de bula para as soluções glicosadas e contagem estequiométrica ideal de partículas para os sais. Não corresponde a uma equação empírica validada especificamente para esta HV neonatal.</p>
+          <p><strong>Referências do cálculo da HV</strong></p>
+          <ol>
+            <li>RxKinetics. <a href="https://www.rxkinetics.com/iv_osmolarity.html" target="_blank" rel="noopener noreferrer">Calculating Osmolarity of an IV Admixture</a> [Internet]. [sem data; citado em 21 set 2026]. Base do método: somar os miliosmóis dos componentes e dividir pelo volume final em litros.</li>
+            <li>Halex Istar. <a href="https://halexistar.com.br/wp-content/uploads/2025/10/glicose-halex-istar-bula-paciente-161212183.pdf" target="_blank" rel="noopener noreferrer">Glicose Halex Istar: solução injetável 5% (50 mg/mL). Bula do paciente</a> [Internet; citado em 21 set 2026]. Referência inicial de SG 5%: 252,3 mOsm/L.</li>
+            <li>Halex Istar. <a href="https://halexistar.com.br/wp-content/uploads/2025/10/2-15915313-2.pdf" target="_blank" rel="noopener noreferrer">Isofarma – Solução de glicose: 250 mg/mL e 500 mg/mL. Bula profissional de saúde</a> [Internet; citado em 21 set 2026]. Referência inicial de SG 50%: 2775 mOsm/L.</li>
+          </ol>
         </div></section>
         <section class="section"><div class="section-inner">
           <h2>Arredondamentos e ofertas efetivas</h2>

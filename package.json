@@ -1,6 +1,6 @@
 {
   "name": "np-neo",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -13,3 +13,4 @@
     "linkedom": "0.18.12"
   }
 }
+
