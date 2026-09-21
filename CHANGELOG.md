@@ -2,6 +2,15 @@
 
 Registro das mudanças publicadas do NP_NEO. O histórico detalhado e auditável permanece também nos commits do Git.
 
+## 0.5.2 — 21/09/2026
+
+- Acrescenta seleção manual de fase clínica: oligoanúria, transição ou crescimento.
+- Acrescenta peso e idade gestacional ao nascer, sem inferir esses dados de outras abas.
+- Para crescimento estável, compara HV + enteral ou enteral isolada à referência ESPGHAN 2022/2023 somente em prematuros com peso ao nascer <1800 g. Exibe distância aos limites antes do arredondamento.
+- Nas fases iniciais, mostra referências parenterais contextualizadas de D1/D2 (ESPGHAN 2018), sem criar faixas por fase ou classificar proteína enteral pela faixa parenteral.
+- Mantém a régua PN / EN independente. Acrescenta referências ao PDF e bibliografia às Notas; edição dos campos invalida os resultados.
+- Verificação local: 99 testes aprovados; relatório de crescimento com duas páginas renderizado e inspecionado. Publicação autorizada em 21/09/2026. Sem verificação visual em navegador nesta etapa.
+
 ## 0.5.1 — 21/09/2026
 
 - Em 21/09/2026, o responsável aprovou manter provisoriamente o método de osmolaridade da HV para testes e comparação com a fórmula clínica habitual. Eventual troca exigirá revisão explícita do método; não há substituição automática.

@@ -1,4 +1,4 @@
-import {calculateEnteral,integrateNutrition,transitionLines,IV_SOURCES} from './enteral.js';
+import {calculateEnteral,integrateNutrition,transitionLines,clinicalReferenceLines,IV_SOURCES} from './enteral.js';
 import {createEnteralReport} from './enteral-pdf.js';
 const num=v=>{const s=String(v??'').trim();if(s==='')return null;const n=Number(s.replace(',','.'));return Number.isFinite(n)?n:null};
 const fmt=(n,digits=1)=>Number.isFinite(n)?n.toFixed(digits).replace('.',','):'—';
@@ -18,9 +18,11 @@ export function initEnteral(doc,getParenteral){
    const ld=num($('en-lactation').value);if(type.value==='lmo'&&(ld===null||ld<0))errors.push('Informe os dias de lactação.');
    const ae=num($('en-energy').value),ap=num($('en-protein').value);if((ae===null)!==(ap===null))errors.push('Para composição analisada, informe energia e proteína.');
    let fort=fm.value==='custom'?num($('en-fm85-custom').value):num(fm.value);if(fort===null)fort=0;if(fort<0)errors.push('Informe uma concentração válida de FM85.');
+   const clinical={phase:$('en-phase').value,birthWeight:num($('en-birth-weight').value),gestationalAge:num($('en-gestational-age').value)};
+   for(const [id,value,max,label] of [['en-birth-weight',clinical.birthWeight,10000,'peso ao nascer'],['en-gestational-age',clinical.gestationalAge,45,'idade gestacional']])if($(id).value.trim()&&(value===null||value<=0||value>max))errors.push(`Informe ${label} válido.`);
    invalidate();$('en-errors').hidden=!errors.length;$('en-errors').textContent=errors.join(' ');if(errors.length)return;
    const opts={type:type.value,rate,lactationDays:ld,fm85GramsPer100mL:fort};if(ae!==null&&ap!==null){opts.analyzedEnergy=ae;opts.analyzedProtein=ap}
-   try{const en=calculateEnteral(opts),pn=source==='none'?{}:getParenteral(source),all=integrateNutrition({parenteral:pn,enteral:en,source});last={enteral:en,integrated:all};
+   try{const en=calculateEnteral(opts),pn=source==='none'?{}:getParenteral(source),all=integrateNutrition({parenteral:pn,enteral:en,source});last={enteral:en,integrated:all,clinical};
      $('en-context').innerHTML=`<span>${en.composition.label}</span><span>${fmt(en.composition.energy)} kcal/100 mL</span><span>${fmt(en.composition.protein)} g proteína/100 mL</span>`;
      $('en-summary').innerHTML=`<div class="summary-row"><span>Taxa enteral</span><strong>${fmt(en.rate)} mL/kg/dia</strong></div><div class="summary-row"><span>Energia enteral</span><strong>${fmt(en.calories)} kcal/kg/dia</strong></div><div class="summary-row"><span>Proteína enteral</span><strong>${fmt(en.protein)} g/kg/dia</strong></div>`;
      $('en-estimated-note').hidden=!en.composition.estimated;
@@ -29,9 +31,11 @@ export function initEnteral(doc,getParenteral){
      $('en-iv-heading').textContent=source==='hydration'?'HV':source==='none'?'IV (zero)':'PN';
      $('en-pn-note').textContent=`Fonte: ${all.sourceLabel}. ${source==='none'?'Totais somente da dieta enteral.':`Cálculo atual da aba correspondente${Number.isFinite(all.weight)?' · peso '+String(all.weight).replace('.',',')+' kg':''}.`}`;
      $('en-transition').replaceChildren(...transitionLines(all).map(line=>{const p=doc.createElement('p');p.textContent=line;return p;}));
+     $('en-clinical-reference').replaceChildren(...clinicalReferenceLines(all,clinical).map(line=>{const p=doc.createElement('p');p.textContent=line;return p;}));
      $('en-result').hidden=false;
    }catch(err){$('en-errors').hidden=false;$('en-errors').textContent=err.message}
  });
 $('en-export').addEventListener('click',async()=>{if(!last)return;const snapshot=last;$('en-export').disabled=true;$('en-pdf-status').textContent='Preparando PDF no aparelho…';try{const bytes=await createEnteralReport(snapshot);if(last!==snapshot)return;const blob=new Blob([bytes],{type:'application/pdf'});if(pdfUrl)URL.revokeObjectURL(pdfUrl);pdfUrl=URL.createObjectURL(blob);const link=$('en-pdf-download');link.href=pdfUrl;link.download='GROW_NEO-aporte-nutricional-total.pdf';link.hidden=false;link.click();$('en-pdf-status').textContent='PDF gerado.';}catch(e){$('en-pdf-status').textContent='Não foi possível gerar o PDF.';}finally{$('en-export').disabled=false;}});
  return {invalidate};
 }
+
