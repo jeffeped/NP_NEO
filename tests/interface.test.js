@@ -192,6 +192,15 @@ test('prescrição: Ca/P molar após P/cal usa ofertas efetivas, incluindo arred
   assert.equal(app.el('result-summary').lastChild.lastChild.textContent,'Não calculável (P = 0)');
 });
 
+test('interface: mostra concentrações finais de cálcio e fósforo',()=>{
+  const app=openApp();app.set('weight',1);app.set('fluid',100);app.set('ca',5);app.set('p',2.5);app.set('salt-p','glycero');app.calculate();
+  assert.match(app.el('result-summary').textContent,/Concentração final de cálcio50,0 mEq\/L/);
+  assert.match(app.el('result-summary').textContent,/Concentração final de fósforo25,0 mmol\/L/);
+  assert.doesNotMatch(app.el('result-alerts').textContent,/composição estudada/);
+  app.set('ca',5.05);app.calculate();
+  assert.match(app.el('result-alerts').textContent,/concentração mineral elevada/);
+});
+
 test('interface Enteral: LMO maduro calcula oferta e integra com NP da sessão',()=>{
   const app=openApp();app.calculate();app.dispatch('tab-enteral','click');
   app.set('en-source','individual');app.set('en-type','lmo');app.dispatch('en-type','change');app.set('en-lactation',14);app.set('en-rate',80);
