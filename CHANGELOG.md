@@ -1,5 +1,13 @@
 # Histórico de versões
 
+## 0.5.3 — 22/09/2026
+
+- Exibe as concentrações finais de cálcio em mEq/L e fósforo em mmol/L na NP individualizada e no PDF.
+- Orienta confirmação farmacêutica quando gluconato de cálcio e glicerofosfato de sódio ultrapassam a composição estudada de 50 mEq/L e 25 mmol/L, respectivamente.
+- Para cálcio associado a fosfato inorgânico, orienta conferência em curva específica da formulação.
+- Mantém o alerta de compatibilidade separado da relação molar Ca:P e sem bloqueio de cálculo ou exportação.
+- Referência: Wang et al., Pediatrics & Neonatology, 2020; DOI 10.1016/j.pedneo.2020.02.004.
+
 Registro das mudanças publicadas do NP_NEO. O histórico detalhado e auditável permanece também nos commits do Git.
 
 ## 0.5.2 — 21/09/2026

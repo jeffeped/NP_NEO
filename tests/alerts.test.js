@@ -118,6 +118,39 @@ test('relação Ca:P não é criada quando cálcio ou fósforo não é ofertado'
   assert.equal(run({ca:0,p:1}).alerts.some(a=>a.nutrient==='ca-p'),false);
   assert.equal(run({ca:2,p:0}).alerts.some(a=>a.nutrient==='ca-p'),false);
 });
+test('compatibilidade Ca/P: composição estudada exata não gera alerta',()=>{
+  const r=run({weight:1,fluid:100,ca:5,p:2.5,pSalt:'glycero'});
+  assert.equal(r.totals.calciumConcentration,50);
+  assert.equal(r.totals.phosphorusConcentration,25);
+  assert.equal(alertFor(r,'ca-p-compatibility'),undefined);
+});
+for(const [ca,p,reason] of [[5.05,2.5,'cálcio'],[5,2.6,'fósforo'],[5.05,2.6,'ambos']]) {
+  test(`compatibilidade Ca/P: alerta acima da faixa estudada por ${reason}`,()=>{
+    const r=run({weight:1,fluid:100,ca,p,pSalt:'glycero'});
+    const a=alertFor(r,'ca-p-compatibility');
+    assert.equal(a.id,'CAP_CONCENTRATION_STUDIED_RANGE');
+    assert.equal(a.level,'caution');assert.equal(a.blocking,false);assert.equal(r.canExport,true);
+    assert.match(a.message,/composição estudada.*Confirme a compatibilidade físico-química/);
+  });
+}
+test('compatibilidade Ca/P: valor interno imediatamente acima aparece arredondado para cima',()=>{
+  const input={...base,pSalt:'glycero',weight:1};
+  const calculated={volumes:{glucose:0,aa:0,lip:0},effective:{aa:0,lip:0,ca:5.000000001,p:2.5},totalVolume:100,
+    glucosePercent:0,osmolarity:0,calciumConcentration:50.00000001,phosphorusConcentration:25};
+  const a=nutritionAlerts(input,calculated).find(x=>x.id==='CAP_CONCENTRATION_STUDIED_RANGE');
+  assert.match(a.message,/Ca 50,1 mEq\/L/);
+});
+test('compatibilidade Ca/P: fosfato inorgânico exige curva específica',()=>{
+  const r=run({weight:1,fluid:100,ca:2,p:1,pSalt:'kphos'});
+  const a=alertFor(r,'ca-p-compatibility');
+  assert.equal(a.id,'CAP_INORGANIC_COMPATIBILITY');
+  assert.match(a.message,/fosfato inorgânico.*curva específica/);
+  assert.equal(r.canExport,true);
+});
+test('compatibilidade Ca/P: não alerta sem associação dos dois minerais',()=>{
+  assert.equal(alertFor(run({weight:1,fluid:100,ca:5.1,p:0}),'ca-p-compatibility'),undefined);
+  assert.equal(alertFor(run({weight:1,fluid:100,ca:0,p:2.6}),'ca-p-compatibility'),undefined);
+});
 test('vírgula decimal, kg e omissões são preservados',()=>{
   const r=run({weight:'0,8',aa:'2,0',lip:'2,0',vig:'5,0'});
   assert.equal(r.input.weight,0.8);assert.equal(r.volumes.aa,16);assert.equal(r.volumes.lip,8);
@@ -163,7 +196,7 @@ test('alertas não removem bloqueio por volume inviável',()=>{
 
 const baseline=JSON.parse(readFileSync(new URL('./fixtures/baseline-0.3.5.json',import.meta.url)));
 for(const {name,input,expected} of baseline.records)test(`regressão 0.3.5: ${name}`,()=>{
-  const actual=calculate(input);delete actual.alerts;delete actual.version;delete actual.totals.osmolarity;
+  const actual=calculate(input);delete actual.alerts;delete actual.version;delete actual.totals.osmolarity;delete actual.totals.calciumConcentration;delete actual.totals.phosphorusConcentration;
   assert.deepEqual(actual,expected); // Todas as saídas antigas, não só um total.
 });
 test('aplicativo e PDF usam VIG e o cache inclui o novo módulo',()=>{

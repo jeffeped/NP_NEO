@@ -7,6 +7,10 @@ function formatCalculated(value,reference,above) {
   // Não exibir o próprio teto quando a oferta real o ultrapassou por pouco.
   return formatAlertNumber(above&&display===reference?value:display);
 }
+function formatConcentrationAlert(value) {
+  const roundedUp=Math.ceil((value-1e-12)*10)/10;
+  return formatAlertNumber(roundedUp);
+}
 
 export function macroReference(nutrient,weight,day) {
   return {
@@ -32,7 +36,7 @@ function compareProducts(left,right) {
   return delta>0n?1:delta<0n?-1:0;
 }
 
-export function nutritionAlerts(input,{volumes,effective,totalVolume,glucosePercent,osmolarity}) {
+export function nutritionAlerts(input,{volumes,effective,totalVolume,glucosePercent,osmolarity,calciumConcentration,phosphorusConcentration}) {
   const alerts=[];
   const context='';
   function add(id,nutrient,level,kind,value,reference,message) {
@@ -51,6 +55,20 @@ export function nutritionAlerts(input,{volumes,effective,totalVolume,glucosePerc
       :'Considere acesso venoso central e confira o protocolo institucional.';
     add('osmolarity-high','osmolarity','caution','concentration',osmolarity,900,
       `osmolaridade estimada: ${Math.round(osmolarity)} mOsm/L (>900 mOsm/L). ${accessGuidance}`);
+  }
+  // Wang et al. (Pediatr Neonatol. 2020;61:339-345; PMID 32199865)
+  // avaliaram gluconato de cálcio 50 mEq/L + glicerofosfato de sódio
+  // 25 mmol/L em formulações neonatais. Esses valores delimitam a composição
+  // diretamente estudada; não constituem um limite universal de solubilidade.
+  if(totalVolume>0&&effective.ca>0&&effective.p>0) {
+    if(input.pSalt==='glycero'&&(calciumConcentration>50||phosphorusConcentration>25)) {
+      add('CAP_CONCENTRATION_STUDIED_RANGE','ca-p-compatibility','caution','concentration',
+        Math.max(calciumConcentration/50,phosphorusConcentration/25),1,
+        `concentração mineral elevada: Ca ${formatConcentrationAlert(calciumConcentration)} mEq/L; P ${formatConcentrationAlert(phosphorusConcentration)} mmol/L. Um ou mais valores excedem a composição estudada com gluconato de cálcio e glicerofosfato de sódio. Confirme a compatibilidade físico-química com a farmácia responsável.`);
+    } else if(input.pSalt==='kphos') {
+      add('CAP_INORGANIC_COMPATIBILITY','ca-p-compatibility','caution','compatibility',null,null,
+        `cálcio associado a fosfato inorgânico: Ca ${formatConcentrationAlert(calciumConcentration)} mEq/L; P ${formatConcentrationAlert(phosphorusConcentration)} mmol/L. Confirme a compatibilidade em curva específica da formulação com a farmácia responsável.`);
+    }
   }
   for(const [id,name,concentration] of [['aa','Aminoácidos',0.1],['lip','Lipídios',0.2]]) {
     const {dose,phase,ceiling}=macroReference(id,input.weight,input.day);

@@ -104,6 +104,10 @@ Na NP individualizada, prematuros recebem referência de zinco de 400–500 mcg/
 
 A tela e o PDF mostram a relação molar Ca/P (mmol/mmol) logo abaixo de proteína/calorias não proteicas, tanto na NP individualizada quanto na padrão. A individualizada usa as ofertas efetivas após arredondamento dos volumes: (Ca em mEq ÷ 2) ÷ P em mmol. Sem fósforo, informa “Não calculável (P = 0)”. Exibição com uma casa decimal.
 
+### Concentrações finais de cálcio e fósforo (0.5.3)
+
+Na NP individualizada, a tela e o PDF mostram cálcio em mEq/L e fósforo em mmol/L, calculados com as quantidades efetivamente preparadas e o volume final da bolsa. Com gluconato de cálcio e glicerofosfato de sódio, valores acima de 50 mEq/L de cálcio ou 25 mmol/L de fósforo geram orientação para confirmar a compatibilidade físico-química com a farmácia. Esses valores correspondem à composição estudada por Wang et al. (Pediatr Neonatol. 2020;61:339-345; DOI 10.1016/j.pedneo.2020.02.004) e não constituem limite universal de solubilidade. Quando há cálcio associado a fosfato inorgânico, o aplicativo solicita conferência em curva específica da formulação. Os avisos não bloqueiam o cálculo ou a exportação.
+
 ## Integração intravenosa + enteral e régua PN → EN — v0.5.0
 
 Critérios operacionais aprovados pelo responsável clínico em 19/09/2026:
