@@ -51,7 +51,8 @@ test('interface: zinco e selênio seguem prematuridade, não peso de 1.500 g',()
   app.set('weight','1,8');app.set('ga',36);app.set('ga-days',6);app.set('znDose',500);
   assert.match(app.el('rule-zn').textContent,/400 a 500/);
   assert.match(app.el('rule-se').textContent,/7 mcg/);
-  assert.equal(app.el('znDose').disabled,false);assert.equal(app.el('seDose').disabled,true);
+  assert.equal(app.el('znDose').disabled,false);assert.equal(app.el('seDose').disabled,false);
+  assert.match(app.el('seDose').placeholder,/Referência: 7/);
   app.calculate();
   assert.match(app.el('result-alerts').textContent,/Zinco total/);
   app.set('ga',37);app.set('ga-days',0);

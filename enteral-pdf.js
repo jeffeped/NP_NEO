@@ -1,7 +1,8 @@
 import {VERSION} from './engine.js';
 import {transitionLines,clinicalReferenceLines} from './enteral.js';
 const fmt=(n,digits=1)=>Number.isFinite(n)?n.toFixed(digits).replace('.',','):'—';
-export async function createEnteralReport({enteral,integrated,clinical}){
+const pma=n=>{const days=Math.round(n*7);return `${Math.floor(days/7)} sem + ${days%7} d`;};
+export async function createEnteralReport({enteral,integrated,clinical,growth}){
  if(!enteral||!integrated)throw new Error('Enteral result is not exportable');
  const {PDFDocument,StandardFonts,rgb}=globalThis.PDFLib;const doc=await PDFDocument.create();
  doc.setTitle('Avaliação nutricional integrada neonatal');doc.setAuthor('Jefferson P Guilherme');doc.setCreator('Jefferson P Guilherme');doc.setSubject('GROW_NEO — aporte nutricional total');
@@ -23,6 +24,15 @@ export async function createEnteralReport({enteral,integrated,clinical}){
  y-=8;text('Metas avaliadas sobre os totais PN + EN, antes do arredondamento.',L,y,8,regular,muted);
  y-=16;text('A régua não determina redução ou suspensão automática da PN.',L,y,8,regular,muted);
  y-=16;text(integrated.source==='none'?'Totais somente da dieta enteral.':`Fonte calculada nesta sessão: ${integrated.sourceLabel}${Number.isFinite(integrated.weight)?' · peso '+String(integrated.weight).replace('.',',')+' kg':''}.`,L,y,8,regular,muted);
+ if(growth){
+  y-=30;text('Crescimento ponderal',L,y,11,bold);y-=20;
+  text(`${growth.input.sex==='female'?'Feminino':'Masculino'} · intervalo ${growth.intervalDays} dias · IPM média ${pma(growth.midpointPmaWeeks)}`,L,y,9);y-=17;
+  text(`Ganho: ${fmt(growth.totalGain,0)} g · ${fmt(growth.gramsPerDay)} g/dia · peso médio ${fmt(growth.averageWeight,0)} g`,L,y,9);y-=17;
+  text(`Velocidade pelo peso médio: ${fmt(growth.gramsPerKgDay)} g/kg/dia`,L,y,9,bold);y-=17;
+  if(!growth.birthWeightRecovered){text('Ainda não recuperou o peso de nascimento; percentual da referência não calculado.',L,y,8,regular,muted);y-=16;}
+  if(growth.reference){text(`Fenton 2025 · ${growth.reference.startWeek}–${growth.reference.endWeek} sem · P50 ${fmt(growth.reference.gramsPerKgDay)} g/kg/dia${growth.percentOfReference===null?'':` · ${fmt(growth.percentOfReference,0)}% da referência`}`,L,y,8,regular,muted);y-=16;}
+  if(growth.shortInterval)text('Intervalo inferior a 5 dias: maior sensibilidade a variações hídricas e de pesagem.',L,y,8,regular,muted);
+ }
  text('Sem identificação do paciente. Conferir os resultados antes do uso assistencial.',L,82,8,regular,muted);
  text('GROW_NEO by Prof. Jefferson · processamento local',L,50,8,regular,muted);
  if(clinical){
@@ -39,4 +49,3 @@ export async function createEnteralReport({enteral,integrated,clinical}){
  }
  return doc.save();
 }
-

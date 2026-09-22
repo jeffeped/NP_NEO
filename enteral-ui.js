@@ -2,7 +2,7 @@ import {calculateEnteral,integrateNutrition,transitionLines,clinicalReferenceLin
 import {createEnteralReport} from './enteral-pdf.js';
 const num=v=>{const s=String(v??'').trim();if(s==='')return null;const n=Number(s.replace(',','.'));return Number.isFinite(n)?n:null};
 const fmt=(n,digits=1)=>Number.isFinite(n)?n.toFixed(digits).replace('.',','):'—';
-export function initEnteral(doc,getParenteral){
+export function initEnteral(doc,getParenteral,getGrowth=()=>null){
  let last=null,pdfUrl=null;
  const $=id=>doc.getElementById(id);
  const invalidate=()=>{last=null;$('en-result').hidden=true;$('en-pdf-download').hidden=true;$('en-pdf-status').textContent='';if(pdfUrl){URL.revokeObjectURL(pdfUrl);pdfUrl=null;}};
@@ -35,7 +35,6 @@ export function initEnteral(doc,getParenteral){
      $('en-result').hidden=false;
    }catch(err){$('en-errors').hidden=false;$('en-errors').textContent=err.message}
  });
-$('en-export').addEventListener('click',async()=>{if(!last)return;const snapshot=last;$('en-export').disabled=true;$('en-pdf-status').textContent='Preparando PDF no aparelho…';try{const bytes=await createEnteralReport(snapshot);if(last!==snapshot)return;const blob=new Blob([bytes],{type:'application/pdf'});if(pdfUrl)URL.revokeObjectURL(pdfUrl);pdfUrl=URL.createObjectURL(blob);const link=$('en-pdf-download');link.href=pdfUrl;link.download='GROW_NEO-aporte-nutricional-total.pdf';link.hidden=false;link.click();$('en-pdf-status').textContent='PDF gerado.';}catch(e){$('en-pdf-status').textContent='Não foi possível gerar o PDF.';}finally{$('en-export').disabled=false;}});
+$('en-export').addEventListener('click',async()=>{if(!last)return;const snapshot=last,growth=getGrowth();$('en-export').disabled=true;$('en-pdf-status').textContent='Preparando PDF no aparelho…';try{const bytes=await createEnteralReport({...snapshot,growth});if(last!==snapshot||getGrowth()!==growth)return;const blob=new Blob([bytes],{type:'application/pdf'});if(pdfUrl)URL.revokeObjectURL(pdfUrl);pdfUrl=URL.createObjectURL(blob);const link=$('en-pdf-download');link.href=pdfUrl;link.download='GROW_NEO-aporte-nutricional-total.pdf';link.hidden=false;link.click();$('en-pdf-status').textContent=growth?'PDF gerado com os dados de crescimento.':'PDF gerado. Calcule a aba Crescimento para incluí-la no relatório.';}catch(e){$('en-pdf-status').textContent='Não foi possível gerar o PDF.';}finally{$('en-export').disabled=false;}});
  return {invalidate};
 }
-

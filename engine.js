@@ -1,5 +1,5 @@
 import {nutritionAlerts} from './alerts.js';
-export const VERSION = '0.6.0';
+export const VERSION = '0.6.1';
 export const CONCENTRATIONS = Object.freeze({aa:0.1,lip:0.2,glucose:0.5,nacl:1.7,acetate:2,kcl:1.34,calcium:0.5,magnesium:0.8,kphosP:1.1,kphosK:2,glyceroP:1,glyceroNa:2,oligoZn:500,zinc:200,selenium:60});
 export const ENERGY = Object.freeze({aa:4,lip:9,glucose:4});
 export const round1 = n => Math.round((n + Number.EPSILON * Math.max(1, Math.abs(n))) * 10) / 10;
@@ -28,7 +28,8 @@ export function calculate(input) {
   if(!['kphos','glycero'].includes(input.pSalt)) errors.push({field:'pSalt',message:'Selecione o sal de fósforo.'});
   const preterm=Number.isFinite(n.gaWeeks)&&n.gaWeeks<37;
   n.znDose=omit.zn?0:(preterm?parseNumber(input.znDose):250);
-  n.seDose=omit.se?0:(preterm?7:parseNumber(input.seDose));
+  n.seDose=omit.se?0:parseNumber(input.seDose);
+  if(!omit.se&&(!Number.isFinite(n.seDose)||n.seDose<=0)) errors.push({field:'seDose',message:'Selênio: informe uma dose maior que zero ou marque Não ofertar.'});
   if(!omit.zn&&preterm&&(!Number.isFinite(n.znDose)||n.znDose<400||n.znDose>500)) errors.push({field:'znDose',message:'Para prematuros, informe zinco entre 400 e 500 mcg/kg/dia.'});
   if(!omit.se&&!preterm&&(!Number.isFinite(n.seDose)||n.seDose<2||n.seDose>3)) errors.push({field:'seDose',message:'Para recém-nascidos a termo, informe selênio entre 2 e 3 mcg/kg/dia.'});
   if(errors.length) return {ok:false,errors};
@@ -88,6 +89,7 @@ export function calculate(input) {
   if(!eligibleOligo&&!omit.oligo) notices.push('Solução de oligoelementos não incluída: início no 8º dia de vida.');
   if(!omit.zn&&zincRequested*w>5000) notices.push('Zinco limitado ao máximo de 5 mg/dia.');
   if(!omit.se&&n.seDose*w>100) notices.push('Selênio limitado ao máximo de 100 mcg/dia.');
+  if(!omit.se&&preterm&&Math.abs(n.seDose-7)>1e-9) notices.push(`Selênio: dose informada ${String(n.seDose).replace('.',',')} mcg/kg/dia; referência para prematuros: 7 mcg/kg/dia.`);
   const totalCents=Math.round(round1(n.fluid*w)*100);
   const componentsCents=Object.values(volumes).reduce((s,v)=>s+Math.round(v*100),0);
   if(!Number.isSafeInteger(totalCents)||!Number.isSafeInteger(componentsCents))return {ok:false,errors:[{field:'weight',message:'Os valores ultrapassam a capacidade numérica do cálculo. Revise os parâmetros.'}]};

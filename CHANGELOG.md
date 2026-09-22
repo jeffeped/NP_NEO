@@ -1,6 +1,13 @@
 # Histórico de versões
 
-## 0.6.0 — em revisão
+## 0.6.1 — em revisão
+
+- Reforça visualmente os limites das abas, com borda, fundo e relevo próprios de botão, preservando o destaque verde da aba selecionada.
+- Inclui o último cálculo válido da aba Crescimento no PDF de aporte nutricional total.
+- Impede a conclusão de uma exportação se o cálculo de crescimento for alterado enquanto o PDF estiver sendo gerado.
+- Libera a edição da dose de selênio em prematuros, mantendo 7 mcg/kg/dia como sugestão e exibindo aviso não bloqueante quando a dose informada for diferente.
+
+## 0.6.0 — 22/09/2026
 
 - Acrescenta a aba Crescimento com velocidade ponderal pelo método do peso médio do período, em g/kg/dia, além do ganho total e em g/dia.
 - Calcula a idade pós-menstrual média a partir da IG ao nascer e dos dias de vida inicial e final.

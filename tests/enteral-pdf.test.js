@@ -4,6 +4,7 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {calculateEnteral,integrateNutrition} from '../enteral.js';
 import {createEnteralReport} from '../enteral-pdf.js';
+import {calculateGrowth} from '../growth.js';
 
 vm.runInThisContext(readFileSync(new URL('../vendor/pdf-lib.min.js',import.meta.url),'utf8'));
 
@@ -17,6 +18,18 @@ test('PDF Enteral: gera aporte nutricional total com autoria e versão',async()=
   assert.match(doc.getTitle(),/Avaliação nutricional integrada neonatal/);
   assert.match(doc.getSubject(),/aporte nutricional total/);
   assert.equal(doc.getPageCount(),1);
+});
+
+test('PDF Enteral: inclui o cálculo válido de crescimento',async()=>{
+ const enteral=calculateEnteral({type:'lhop',rate:120});
+ const integrated=integrateNutrition({source:'none',parenteral:{},enteral});
+ const growth=calculateGrowth({sex:'female',birthWeight:1000,initialWeight:1100,finalWeight:1300,gaWeeks:28,gaDays:0,initialDay:10,finalDay:20});
+ const original=PDFLib.PDFPage.prototype.drawText,lines=[];
+ PDFLib.PDFPage.prototype.drawText=function(value,opts){lines.push(value);assert.ok(opts.y>=0);return original.call(this,value,opts);};
+ try{await createEnteralReport({enteral,integrated,growth});}finally{PDFLib.PDFPage.prototype.drawText=original;}
+ assert.ok(lines.includes('Crescimento ponderal'));
+ assert.ok(lines.some(line=>line.includes('Velocidade pelo peso médio: 16,7 g/kg/dia')));
+ assert.ok(lines.some(line=>line.includes('Fenton 2025 · 28–31 sem · P50 16,6 g/kg/dia · 100% da referência')));
 });
 
 for(const [rate,energy,protein,active,energyText,proteinText] of [

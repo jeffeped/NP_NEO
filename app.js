@@ -20,7 +20,7 @@ $('macros').innerHTML=macros.map(doseHTML).join('');$('electrolytes').innerHTML=
 for(const id of ['aa','lip','vig']){const help=document.createElement('p');help.className='help';help.id='reference-'+id;$(id).closest('.dose-controls').append(help);$(id).setAttribute('aria-describedby',help.id);}
 $('reference-vig').textContent='VIG — velocidade de infusão de glicose, em mg/kg/min. Concentração final >20%: cautela, inclusive em acesso central.';
 const micros=[{id:'va',name:'Polivit A Ped',rule:'2 mL/kg · máximo 5 mL',time:'A partir do 3º dia de vida'},{id:'vb',name:'Polivit B Ped',rule:'2 mL/kg · máximo 5 mL',time:'A partir do 3º dia de vida'},{id:'oligo',name:'Solução de oligoelementos',rule:'0,2 mL/kg/dia',time:'A partir do 8º dia de vida'},{id:'zn',name:'Sulfato de zinco',rule:'Dose conforme a idade gestacional',time:'Desconta o zinco já ofertado pelos oligoelementos'},{id:'se',name:'Selênio',rule:'Dose conforme a idade gestacional',time:'Desde o 1º dia de vida'}];
-$('micros').innerHTML=micros.map(d=>`<div class="dose" data-dose="${d.id}"><div class="dose-top"><span class="dose-name">${d.name}</span>${omitHTML(d.id,d.name)}</div><div class="dose-controls"><span class="auto" id="rule-${d.id}">${d.rule}</span><p class="help" id="timing-${d.id}">${d.time}</p>${['zn','se'].includes(d.id)?`<div class="input-box"><input id="${d.id}Dose" inputmode="decimal" type="text" value="${d.id==='zn'?'400':'2'}" aria-label="Dose de ${d.id==='zn'?'zinco':'selênio'}"><span class="unit">mcg/kg/dia</span></div>`:''}</div></div>`).join('');
+$('micros').innerHTML=micros.map(d=>`<div class="dose" data-dose="${d.id}"><div class="dose-top"><span class="dose-name">${d.name}</span>${omitHTML(d.id,d.name)}</div><div class="dose-controls"><span class="auto" id="rule-${d.id}">${d.rule}</span><p class="help" id="timing-${d.id}">${d.time}</p>${['zn','se'].includes(d.id)?`<div class="input-box"><input id="${d.id}Dose" inputmode="decimal" type="text" value="${d.id==='zn'?'400':'7'}" aria-label="Dose de ${d.id==='zn'?'zinco':'selênio'}"><span class="unit">mcg/kg/dia</span></div>`:''}</div></div>`).join('');
 $('app-version').textContent=VERSION;
 function updateRules(){
   const w=parseNumber($('weight').value),day=parseNumber($('day').value),ga=parseNumber($('ga').value);
@@ -33,9 +33,9 @@ function updateRules(){
   $('rule-zn').textContent=Number.isFinite(ga)?(preterm?'Prematuro: escolha de 400 a 500 mcg/kg/dia':'Termo: 250 mcg/kg/dia'):'Dose conforme a idade gestacional';
   $('rule-se').textContent=Number.isFinite(ga)?(preterm?'Prematuro: 7 mcg/kg/dia':'Termo: escolha de 2 a 3 mcg/kg/dia'):'Dose conforme a idade gestacional';
   $('znDose').disabled=$('omit-zn').checked||!preterm;
-  $('seDose').disabled=$('omit-se').checked||preterm;
+  $('seDose').disabled=$('omit-se').checked;
   $('znDose').placeholder=preterm?'400 a 500':'250 (automático)';
-  $('seDose').placeholder=preterm?'7 (automático)':'2 a 3';
+  $('seDose').placeholder=preterm?'Referência: 7':'2 a 3';
   for(const id of ['va','vb'])$('timing-'+id).textContent=Number.isFinite(day)&&day<3?'Não será incluído antes do 3º dia de vida.':'A partir do 3º dia de vida';
   $('timing-oligo').textContent=Number.isFinite(day)&&day<8?'Não será incluído antes do 8º dia de vida.':'A partir do 8º dia de vida';
 }
@@ -92,7 +92,7 @@ if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js',{upd
 window.addEventListener('online',checkOffline);window.addEventListener('offline',checkOffline);
 const hydrationUI=initHydration(document);
 const standardUI=initStandard(document);
-const enteralUI=initEnteral(document,source=>intravenousFromResult(source,source==='individual'?result:source==='standard'?standardUI.getResult():source==='hydration'?hydrationUI.getResult():null));
 const growthUI=initGrowth(document);
+const enteralUI=initEnteral(document,source=>intravenousFromResult(source,source==='individual'?result:source==='standard'?standardUI.getResult():source==='hydration'?hydrationUI.getResult():null),()=>growthUI.getResult());
 window.addEventListener('pageshow',e=>{if(e.persisted){$('npp-form').reset();invalidate();updateRules();hydrationUI.reset();standardUI.reset();enteralUI.invalidate();growthUI.invalidate();}});
 updateRules();

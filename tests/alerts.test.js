@@ -9,15 +9,18 @@ const run=changes=>{const r=calculate({...base,...changes});assert.equal(r.ok,tr
 const alertFor=(r,id)=>r.alerts.find(a=>a.nutrient===id);
 const above20=r=>!!alertFor(r,'glucose');
 
-test('oligoelementos: prematuro 36+6 usa zinco 400–500 e selênio 7',()=>{
+test('oligoelementos: prematuro 36+6 sugere selênio 7, mas aceita edição com aviso',()=>{
   const omit={...base.omit,zn:false,se:false};
   for(const znDose of [400,500]){
-    const r=run({weight:1.8,gaWeeks:36,gaDays:6,znDose,omit});
+    const r=run({weight:1.8,gaWeeks:36,gaDays:6,znDose,seDose:7,omit});
     assert.equal(r.offers.find(o=>o.id==='zn').requested,znDose);
     assert.equal(r.offers.find(o=>o.id==='se').requested,7);
   }
   assert.equal(calculate({...base,gaWeeks:36,gaDays:6,znDose:399,omit}).ok,false);
   assert.equal(calculate({...base,gaWeeks:36,gaDays:6,znDose:501,omit}).ok,false);
+  const edited=run({weight:1.8,gaWeeks:36,gaDays:6,znDose:400,seDose:6,omit});
+  assert.equal(edited.offers.find(o=>o.id==='se').requested,6);
+  assert.ok(edited.notices.some(n=>n.includes('referência para prematuros: 7')));
 });
 test('oligoelementos: termo 37+0 usa zinco 250 e selênio 2–3',()=>{
   const omit={...base.omit,zn:false,se:false};
