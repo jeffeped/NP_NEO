@@ -1,5 +1,14 @@
 # Histórico de versões
 
+## 0.6.0 — em revisão
+
+- Acrescenta a aba Crescimento com velocidade ponderal pelo método do peso médio do período, em g/kg/dia, além do ganho total e em g/dia.
+- Calcula a idade pós-menstrual média a partir da IG ao nascer e dos dias de vida inicial e final.
+- Compara descritivamente com a mediana específica por sexo e faixa de idade pós-menstrual da referência Fenton 2025 (22–49 semanas).
+- Antes da recuperação do peso de nascimento, exibe a mensagem clínica acordada e não calcula o percentual da referência.
+- Sinaliza intervalos inferiores a 5 dias, sem classificar crescimento como adequado, lento ou rápido e sem aplicar o critério de ΔZ >0,67.
+- Inclui validação automatizada do método, limites das faixas, cronologia, recuperação do peso e interface.
+
 ## 0.5.3 — 22/09/2026
 
 - Exibe as concentrações finais de cálcio em mEq/L e fósforo em mmol/L na NP individualizada e no PDF.

@@ -10,6 +10,7 @@ import {macroReference,formatAlertNumber} from '../alerts.js';
 import {initStandard} from '../standard-ui.js';
 import {initHydration} from '../hydration-ui.js';
 import {initEnteral} from '../enteral-ui.js';
+import {initGrowth} from '../growth-ui.js';
 
 // Executa o app real em um DOM simulado; não substitui a revisão visual em navegador.
 const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
@@ -18,7 +19,7 @@ function openApp() {
   const {document,window}=parseHTML(html);
   window.HTMLElement.prototype.scrollIntoView=function(){};
   const context={document,window:{addEventListener(){},scrollTo(){}},navigator:{},
-    console,URL,Blob,MessageChannel,initAppUpdate,intravenousFromResult,...engine,macroReference,formatAlertNumber,initHydration,initStandard,initEnteral,
+    console,URL,Blob,MessageChannel,initAppUpdate,intravenousFromResult,...engine,macroReference,formatAlertNumber,initHydration,initStandard,initEnteral,initGrowth,
     createReport:async()=>new Uint8Array()};
   vm.runInNewContext(source,context);
   // O DOM simulado não seleciona implicitamente a primeira opção como o navegador.
@@ -160,6 +161,15 @@ test('interface: teclado percorre as cinco abas, incluindo início, fim e retorn
   key('tab-notes','ArrowRight');assert.equal(app.el('parameters').hidden,false);
   key('tab-parameters','ArrowLeft');assert.equal(app.el('notes').hidden,false);
   key('tab-notes','Home');assert.equal(app.el('parameters').hidden,false);
+});
+
+test('interface crescimento: calcula peso médio e mostra cautela antes de recuperar peso de nascimento',()=>{
+ const app=openApp();app.dispatch('tab-growth','click');
+ for(const [id,value] of Object.entries({'gr-sex':'female','gr-birth-weight':1400,'gr-ga-weeks':28,'gr-ga-days':0,'gr-initial-day':10,'gr-initial-weight':1100,'gr-final-day':20,'gr-final-weight':1300}))app.set(id,value);
+ app.dispatch('growth-form','submit');
+ assert.equal(app.el('gr-errors').hidden,true);assert.equal(app.el('gr-result').hidden,false);
+ assert.match(app.el('gr-summary').textContent,/16,7 g\/kg\/dia/);assert.match(app.el('gr-notices').textContent,/ainda não está na fase de crescimento propriamente dita/);
+ assert.doesNotMatch(app.el('gr-notices').textContent,/corresponde a .*%/);
 });
 
 test('interface: NP padrão calcula por taxa, troca para proteína e invalida saída',()=>{

@@ -5,6 +5,7 @@ import {createReport} from './pdf.js';
 import {macroReference,formatAlertNumber} from './alerts.js';
 import {initHydration} from './hydration-ui.js';
 import {initEnteral} from './enteral-ui.js';
+import {initGrowth} from './growth-ui.js';
 import {intravenousFromResult} from './enteral.js';
 const $=id=>document.getElementById(id);
 const f=n=>Number.isFinite(n)?round1(n).toFixed(1).replace('.',','):'—';
@@ -39,7 +40,7 @@ function updateRules(){
   $('timing-oligo').textContent=Number.isFinite(day)&&day<8?'Não será incluído antes do 8º dia de vida.':'A partir do 8º dia de vida';
 }
 function invalidate(){result=null;downloadResult=null;$('calculated-result').hidden=true;$('empty-result').hidden=false;$('empty-result').textContent='Calcule novamente para conferir os parâmetros atuais.';$('pdf-download').hidden=true;$('pdf-status').textContent='';if(pdfUrl){URL.revokeObjectURL(pdfUrl);pdfUrl=null;}}
-const tabNames=['parameters','results','hydration','standard','enteral','notes'];
+const tabNames=['parameters','results','hydration','standard','enteral','growth','notes'];
 function view(name){for(const tab of tabNames){$(tab).hidden=name!==tab;$('tab-'+tab).setAttribute('aria-selected',String(name===tab));$('tab-'+tab).tabIndex=name===tab?0:-1;}window.scrollTo({top:0,behavior:'instant'});}
 for(const name of tabNames)$('tab-'+name).addEventListener('click',()=>view(name));
 $('edit-parameters').addEventListener('click',()=>view('parameters'));
@@ -92,5 +93,6 @@ window.addEventListener('online',checkOffline);window.addEventListener('offline'
 const hydrationUI=initHydration(document);
 const standardUI=initStandard(document);
 const enteralUI=initEnteral(document,source=>intravenousFromResult(source,source==='individual'?result:source==='standard'?standardUI.getResult():source==='hydration'?hydrationUI.getResult():null));
-window.addEventListener('pageshow',e=>{if(e.persisted){$('npp-form').reset();invalidate();updateRules();hydrationUI.reset();standardUI.reset();enteralUI.invalidate();}});
+const growthUI=initGrowth(document);
+window.addEventListener('pageshow',e=>{if(e.persisted){$('npp-form').reset();invalidate();updateRules();hydrationUI.reset();standardUI.reset();enteralUI.invalidate();growthUI.invalidate();}});
 updateRules();

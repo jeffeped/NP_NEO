@@ -36,7 +36,7 @@
         <button id="tab-results" role="tab" aria-controls="results" aria-selected="false" type="button">Resultados</button>
         <button id="tab-hydration" role="tab" aria-controls="hydration" aria-selected="false" type="button" title="Hidratação venosa">HV</button>
         <button id="tab-standard" role="tab" aria-controls="standard" aria-selected="false" type="button">NP padrão</button>
-        <button id="tab-enteral" role="tab" aria-controls="enteral" aria-selected="false" type="button">Enteral</button><button id="tab-notes" role="tab" aria-controls="notes" aria-selected="false" type="button">Notas</button>
+        <button id="tab-enteral" role="tab" aria-controls="enteral" aria-selected="false" type="button">Enteral</button><button id="tab-growth" role="tab" aria-controls="growth" aria-selected="false" type="button">Crescimento</button><button id="tab-notes" role="tab" aria-controls="notes" aria-selected="false" type="button">Notas</button>
       </div>
     </header>
     <main>
@@ -209,8 +209,35 @@
           <p id="en-pn-note" class="help"></p><button id="en-export" class="primary" type="button">Exportar aporte total em PDF</button><p id="en-pdf-status" class="help" role="status"></p><a id="en-pdf-download" class="download-link" hidden>Baixar relatório em PDF</a>
         </section>
       </section>
+      <section id="growth" role="tabpanel" aria-labelledby="tab-growth" hidden>
+        <h2 class="page-title">Velocidade de crescimento</h2>
+        <p class="caption">Peso médio do período · comparação descritiva com Fenton 2025</p>
+        <form id="growth-form" class="section section-inner" autocomplete="off" novalidate>
+          <div class="field-grid">
+            <label class="field full">Sexo para a referência<select id="gr-sex" class="hv-select" required><option value="">Selecione</option><option value="female">Feminino</option><option value="male">Masculino</option></select></label>
+            <label class="field">Peso ao nascer<div class="input-box"><input id="gr-birth-weight" inputmode="decimal" type="text" required><span class="unit">g</span></div></label>
+            <label class="field">IG ao nascer<div class="input-box"><input id="gr-ga-weeks" inputmode="numeric" type="text" required><span class="unit">semanas</span></div></label>
+            <label class="field full">Dias adicionais da IG<div class="input-box"><input id="gr-ga-days" inputmode="numeric" type="text" value="0" required><span class="unit">0–6 dias</span></div></label>
+            <label class="field">Dia de vida inicial<div class="input-box"><input id="gr-initial-day" inputmode="numeric" type="text" required><span class="unit">D</span></div></label>
+            <label class="field">Peso inicial<div class="input-box"><input id="gr-initial-weight" inputmode="decimal" type="text" required><span class="unit">g</span></div></label>
+            <label class="field">Dia de vida final<div class="input-box"><input id="gr-final-day" inputmode="numeric" type="text" required><span class="unit">D</span></div></label>
+            <label class="field">Peso final<div class="input-box"><input id="gr-final-weight" inputmode="decimal" type="text" required><span class="unit">g</span></div></label>
+          </div>
+          <p class="help">D1 corresponde ao dia do nascimento. Prefira intervalos de pelo menos 5–7 dias e pesos obtidos em condições comparáveis.</p>
+          <div id="gr-errors" class="notice danger" role="alert" hidden></div>
+          <button class="primary" type="submit">Calcular velocidade</button>
+        </form>
+        <section id="gr-result" hidden aria-live="polite">
+          <div id="gr-context" class="context"></div><div id="gr-summary" class="summary"></div><div id="gr-notices"></div>
+          <p class="help">A comparação é informativa e não define crescimento adequado, lento ou rápido. Interprete com o estado clínico, balanço hídrico e trajetória antropométrica.</p>
+        </section>
+      </section>
       <section id="notes" role="tabpanel" aria-labelledby="tab-notes" hidden>
         <h2 class="page-title">Notas importantes</h2>
+        <section class="section section-inner"><h3>Crescimento — método e referência</h3>
+        <p>A velocidade de crescimento ponderal usa o peso médio do período: 1.000 × (peso final − peso inicial) ÷ [((peso inicial + peso final) ÷ 2) × dias], com pesos em gramas.</p>
+        <p>A idade pós-menstrual média do intervalo seleciona a mediana específica por sexo da referência Fenton 2025, de 22 a 49 semanas. A comparação é descritiva. O aplicativo não usa mudança de escore Z &gt;0,67 para classificar crescimento rápido e ainda não calcula escore Z.</p>
+        <p>Antes da recuperação do peso de nascimento, o valor é exibido sem percentual da referência. Intervalos inferiores a 5 dias recebem cautela por maior sensibilidade a variações hídricas e de pesagem.</p></section>
         <section class="section section-inner"><h3>Enteral — fase clínica e referências</h3>
         <p>A fase é selecionada pelo médico, sem inferência pelo dia de vida. As diretrizes de NP de 2018 não estabelecem três faixas específicas de oligoanúria, transição e crescimento. Referências de D1 e D2 são informativas, não metas atribuídas automaticamente à fase.</p>
         <p>A comparação de crescimento é restrita à enteral isolada ou HV + enteral, em prematuros estáveis com peso ao nascer &lt;1800 g: 115–140 kcal/kg/dia e 3,5–4,0 g/kg/dia de proteína. Com HV, a energia inclui glicose IV e a proteína provém da dieta. A distância até a referência de alimentação plena não equivale a uma avaliação completa da adequação clínica. Valores são comparados antes do arredondamento. Faixas maiores para situações selecionadas não são metas padrão.</p>
