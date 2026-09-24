@@ -239,8 +239,22 @@ test('interface Enteral: LMO maduro calcula oferta e integra com NP da sessão',
   app.set('en-source','individual');app.set('en-type','lmo');app.dispatch('en-type','change');app.set('en-lactation',14);app.set('en-rate',80);
   app.dispatch('enteral-form','submit');
   assert.equal(app.el('en-result').hidden,false);
-  assert.match(app.el('en-summary').textContent,/55,0/);assert.match(app.el('en-summary').textContent,/1,2/);
+  assert.match(app.el('en-summary').textContent,/55,0/);assert.match(app.el('en-summary').textContent,/1,17/);
   assert.match(app.el('en-total-rows').textContent,/mL\/kg\/dia/);assert.equal(app.el('en-estimated-note').hidden,false);
+});
+test('interface Enteral: FM85 alternado usa média diária e limpa dose ao mudar para fórmula',()=>{
+ const app=openApp();app.dispatch('tab-enteral','click');app.set('en-source','none');app.set('en-type','lhop');app.dispatch('en-type','change');
+ app.set('en-rate',165);app.set('en-fm85','0.5');app.dispatch('enteral-form','submit');
+ assert.match(app.el('en-context').textContent,/73,6 kcal\/100 mL.*1,92 g proteína\/100 mL/);
+ assert.match(app.el('en-summary').textContent,/121,4 kcal\/kg\/dia.*3,17 g\/kg\/dia/);
+ app.set('en-fm85','custom');app.set('en-fm85-custom','0,5');app.dispatch('enteral-form','submit');
+ assert.match(app.el('en-summary').textContent,/121,4 kcal\/kg\/dia.*3,17 g\/kg\/dia/);
+ app.set('en-fm85-custom','');app.dispatch('enteral-form','submit');
+ assert.match(app.el('en-errors').textContent,/Informe a concentração média de FM85 em g\/25 mL/);
+ app.set('en-fm85-custom','0,5');app.dispatch('enteral-form','submit');
+ app.set('en-type','fpt_prenan');app.dispatch('en-type','change');
+ assert.equal(app.el('en-fm85').value,'0');app.dispatch('enteral-form','submit');
+ assert.match(app.el('en-summary').textContent,/133,7 kcal\/kg\/dia.*4,46 g\/kg\/dia/);
 });
 test('interface Enteral: composição analisada substitui estimativa',()=>{
   const app=openApp();app.dispatch('tab-enteral','click');app.set('en-source','none');app.set('en-type','lhop');app.dispatch('en-type','change');
