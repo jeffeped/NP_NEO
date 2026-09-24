@@ -1,6 +1,7 @@
 import {VERSION} from './engine.js';
 import {transitionLines,clinicalReferenceLines} from './enteral.js';
 const fmt=(n,digits=1)=>Number.isFinite(n)?n.toFixed(digits).replace('.',','):'—';
+const fmtDose=n=>Number.isFinite(n)?new Intl.NumberFormat('pt-BR',{maximumFractionDigits:3}).format(n):'—';
 const pma=n=>{const days=Math.round(n*7);return `${Math.floor(days/7)} sem + ${days%7} d`;};
 export async function createEnteralReport({enteral,integrated,clinical,growth}){
  if(!enteral||!integrated)throw new Error('Enteral result is not exportable');
@@ -11,8 +12,8 @@ export async function createEnteralReport({enteral,integrated,clinical,growth}){
  const text=(v,x,y,s=9,f=regular,c=ink)=>page.drawText(String(v),{x,y,size:s,font:f,color:c});
  const right=(v,x,y,s=9,f=regular)=>text(v,x-f.widthOfTextAtSize(String(v),s),y,s,f);
  text('GROW_NEO',L,744,16,bold);text('Avaliação nutricional integrada',L,722,13,bold);text('Versão '+VERSION,L,705,8,regular,muted);
- text(enteral.composition.label,L,674,10,bold);text(`${fmt(enteral.composition.energy)} kcal/100 mL · ${fmt(enteral.composition.protein)} g proteína/100 mL`,L,657,9);
- if(enteral.composition.fm85GramsPer100mL>0)text(`FM85: ${fmt(enteral.composition.fm85GramsPer100mL)} g/100 mL`,L,640,9);
+ text(enteral.composition.label,L,674,10,bold);text(`${fmt(enteral.composition.energy)} kcal/100 mL · ${fmt(enteral.composition.protein,2)} g proteína/100 mL`,L,657,9);
+ if(enteral.composition.fm85GramsPer100mL>0)text(`FM85: ${fmtDose(enteral.composition.fm85GramsPer100mL/4)} g/25 mL (média no volume total)`,L,640,9);
  text(enteral.composition.estimated?'Composição estimada.':'Composição informada/analisada.',L,623,8,regular,muted);
  text('Fonte: '+integrated.sourceLabel,L,602,9,bold);
  let y=570;page.drawRectangle({x:L,y:y-8,width:R-L,height:25,color:shade});

@@ -1,5 +1,13 @@
 # Histórico de versões
 
+## 0.6.3 — em revisão
+
+- Na aba Enteral, oferece a opção de FM85 em dietas alternadas de igual volume: 1 g por 25 mL em metade das dietas equivale, em média, a 0,5 g por 25 mL ou 2 g por 100 mL do leite total.
+- Usa g/25 mL para as opções e o campo personalizado, convertendo internamente para g/100 mL. Explicita que a dose personalizada é a média sobre todo o leite do dia e que a composição analisada deve ser informada antes da adição do FM85; valores já fortificados exigem selecionar “Não”.
+- Exige preenchimento da dose personalizada, sem interpretá-la silenciosamente como ausência de FM85.
+- Limpa a concentração do FM85 ao trocar leite humano por fórmula e impede que o motor acrescente FM85 diretamente a uma fórmula.
+- Mostra proteína enteral com duas casas decimais na tela e no PDF, como na tabela de aportes totais.
+
 ## 0.6.2 — em revisão
 
 - Quando o glicerofosfato de sódio fornece sódio, exibe a dose solicitada e a oferta total efetiva, discriminando a parcela do glicerofosfato e a do NaCl ou acetato após o arredondamento dos volumes.

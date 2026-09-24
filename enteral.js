@@ -25,6 +25,7 @@ export function compositionFor({type, lactationDays, analyzedEnergy, analyzedPro
   let protein=hasAnalyzed?Number(analyzedProtein):base.protein;
   const fortifier=Number(fm85GramsPer100mL)||0;
   if(fortifier<0) throw new Error('Concentração de FM85 inválida.');
+  if(fortifier>0&&!['lmo','lhop'].includes(type)) throw new Error('FM85: selecione LMO ou LHOP; não acrescente o fortificante à fórmula.');
   energy+=fortifier*FM85.energyPerGram;
   protein+=fortifier*FM85.proteinPerGram;
   return {label:base.label,energy,protein,estimated:!hasAnalyzed&&base.estimated,fm85GramsPer100mL:fortifier};

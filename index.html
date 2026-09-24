@@ -185,13 +185,13 @@
             </select></label>
             <label id="en-lactation-field" class="field full" hidden>Dias de lactação<div class="input-box"><input id="en-lactation" inputmode="numeric" type="text"><span class="unit">dias</span></div></label>
             <label class="field full">Taxa de dieta enteral<div class="input-box"><input id="en-rate" inputmode="decimal" type="text" required><span class="unit">mL/kg/dia</span></div></label>
-            <label id="en-fm85-field" class="field full" hidden>FM85<select id="en-fm85" class="hv-select"><option value="0">Não</option><option value="4">Padrão — 1 g/25 mL</option><option value="custom">Outra concentração</option></select></label>
-            <label id="en-fm85-custom-field" class="field full" hidden>FM85<div class="input-box"><input id="en-fm85-custom" inputmode="decimal" type="text"><span class="unit">g/100 mL</span></div></label>
+            <label id="en-fm85-field" class="field full" hidden>FM85<select id="en-fm85" class="hv-select"><option value="0">Não</option><option value="0.5">Dietas alternadas — 1 g/25 mL em metade das dietas (média: 0,5 g/25 mL)</option><option value="1">Padrão — 1 g/25 mL em todas as dietas</option><option value="custom">Outra concentração média</option></select><span class="help">Informe a média sobre todo o leite ofertado: (g de FM85 no dia ÷ mL de leite no dia) × 25. O esquema alternado pressupõe dietas de igual volume.</span></label>
+            <label id="en-fm85-custom-field" class="field full" hidden>FM85 — concentração média no volume total<div class="input-box"><input id="en-fm85-custom" inputmode="decimal" type="text"><span class="unit">g/25 mL</span></div></label>
           </div>
           <details class="section enteral-analyzed"><summary><h2>Composição conhecida/analisada</h2><span aria-hidden="true">⌄</span></summary><div class="section-inner field-grid">
             <label class="field">Energia<div class="input-box"><input id="en-energy" inputmode="decimal" type="text"><span class="unit">kcal/100 mL</span></div></label>
             <label class="field">Proteína<div class="input-box"><input id="en-protein" inputmode="decimal" type="text"><span class="unit">g/100 mL</span></div></label>
-            <p class="help full">Se ambos forem informados, substituem a composição estimada.</p>
+            <p class="help full">Se ambos forem informados, substituem a composição estimada do leite sem FM85; o aplicativo acrescenta o fortificante selecionado. Se os valores já incluem FM85, selecione “Não” para evitar duplicação.</p>
           </div></details>
           <div id="en-errors" class="notice danger" hidden></div>
           <button class="primary" type="submit">Calcular dieta enteral</button>

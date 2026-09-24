@@ -9,7 +9,7 @@ export function initEnteral(doc,getParenteral,getGrowth=()=>null){
  for(const [source,formId] of [['individual','npp-form'],['standard','std-form'],['hydration','hv-form']])for(const event of ['input','change','submit'])$(formId).addEventListener(event,()=>{if($('en-source').value===source)invalidate();});
  for(const event of ['input','change'])$('enteral-form').addEventListener(event,invalidate);
  const type=$('en-type'),lact=$('en-lactation-field'),fmField=$('en-fm85-field'),fm=$('en-fm85'),fmCustom=$('en-fm85-custom-field');
- const sync=()=>{const milk=type.value==='lmo'||type.value==='lhop';lact.hidden=type.value!=='lmo';fmField.hidden=!milk;if(!milk){fmCustom.hidden=true}};
+ const sync=()=>{const milk=type.value==='lmo'||type.value==='lhop';lact.hidden=type.value!=='lmo';fmField.hidden=!milk;if(!milk){for(const option of fm.options)option.removeAttribute('selected');fm.options[0].selected=true;fmCustom.hidden=true;$('en-fm85-custom').value=''}};
  type.addEventListener('change',sync);fm.addEventListener('change',()=>fmCustom.hidden=fm.value!=='custom');sync();
  $('enteral-form').addEventListener('submit',e=>{e.preventDefault();const errors=[];
    const source=$('en-source').value;if(!Object.hasOwn(IV_SOURCES,source))errors.push('Selecione o aporte intravenoso em uso.');
@@ -17,14 +17,17 @@ export function initEnteral(doc,getParenteral,getGrowth=()=>null){
    const rate=num($('en-rate').value);if(rate===null||rate<0)errors.push('Informe uma taxa enteral válida.');
    const ld=num($('en-lactation').value);if(type.value==='lmo'&&(ld===null||ld<0))errors.push('Informe os dias de lactação.');
    const ae=num($('en-energy').value),ap=num($('en-protein').value);if((ae===null)!==(ap===null))errors.push('Para composição analisada, informe energia e proteína.');
-   let fort=fm.value==='custom'?num($('en-fm85-custom').value):num(fm.value);if(fort===null)fort=0;if(fort<0)errors.push('Informe uma concentração válida de FM85.');
+   const fortPer25=fm.value==='custom'?num($('en-fm85-custom').value):num(fm.value);
+   if(fortPer25===null&&fm.value==='custom')errors.push('Informe a concentração média de FM85 em g/25 mL.');
+   if(fortPer25!==null&&fortPer25<0)errors.push('Informe uma concentração válida de FM85.');
+   const fort=(fortPer25??0)*4;
    const clinical={phase:$('en-phase').value,birthWeight:num($('en-birth-weight').value),gestationalAge:num($('en-gestational-age').value)};
    for(const [id,value,max,label] of [['en-birth-weight',clinical.birthWeight,10000,'peso ao nascer'],['en-gestational-age',clinical.gestationalAge,45,'idade gestacional']])if($(id).value.trim()&&(value===null||value<=0||value>max))errors.push(`Informe ${label} válido.`);
    invalidate();$('en-errors').hidden=!errors.length;$('en-errors').textContent=errors.join(' ');if(errors.length)return;
    const opts={type:type.value,rate,lactationDays:ld,fm85GramsPer100mL:fort};if(ae!==null&&ap!==null){opts.analyzedEnergy=ae;opts.analyzedProtein=ap}
    try{const en=calculateEnteral(opts),pn=source==='none'?{}:getParenteral(source),all=integrateNutrition({parenteral:pn,enteral:en,source});last={enteral:en,integrated:all,clinical};
-     $('en-context').innerHTML=`<span>${en.composition.label}</span><span>${fmt(en.composition.energy)} kcal/100 mL</span><span>${fmt(en.composition.protein)} g proteína/100 mL</span>`;
-     $('en-summary').innerHTML=`<div class="summary-row"><span>Taxa enteral</span><strong>${fmt(en.rate)} mL/kg/dia</strong></div><div class="summary-row"><span>Energia enteral</span><strong>${fmt(en.calories)} kcal/kg/dia</strong></div><div class="summary-row"><span>Proteína enteral</span><strong>${fmt(en.protein)} g/kg/dia</strong></div>`;
+     $('en-context').innerHTML=`<span>${en.composition.label}</span><span>${fmt(en.composition.energy)} kcal/100 mL</span><span>${fmt(en.composition.protein,2)} g proteína/100 mL</span>`;
+     $('en-summary').innerHTML=`<div class="summary-row"><span>Taxa enteral</span><strong>${fmt(en.rate)} mL/kg/dia</strong></div><div class="summary-row"><span>Energia enteral</span><strong>${fmt(en.calories)} kcal/kg/dia</strong></div><div class="summary-row"><span>Proteína enteral</span><strong>${fmt(en.protein,2)} g/kg/dia</strong></div>`;
      $('en-estimated-note').hidden=!en.composition.estimated;
      const rows=[['Taxa hídrica',all.parenteral.fluid,all.enteral.fluid,all.total.fluid,'mL/kg/dia'],['Energia',all.parenteral.calories,all.enteral.calories,all.total.calories,'kcal/kg/dia'],['Proteína',all.parenteral.protein,all.enteral.protein,all.total.protein,'g/kg/dia']];
      $('en-total-rows').innerHTML=rows.map(r=>`<tr><td>${r[0]}<span>${r[4]}</span></td><td>${fmt(r[1],r[0]==='Proteína'?2:1)}</td><td>${fmt(r[2],r[0]==='Proteína'?2:1)}</td><td><strong>${fmt(r[3],r[0]==='Proteína'?2:1)}</strong></td></tr>`).join('');
