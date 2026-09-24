@@ -1,5 +1,6 @@
 import {round1,formatVolume} from './engine.js';
 const fmt=n=>Number.isFinite(n)?round1(n).toFixed(1).replace('.',','):'—';
+const fmt2=n=>Number.isFinite(n)?n.toFixed(2).replace('.',','):'—';
 const compact=n=>new Intl.NumberFormat('pt-BR',{maximumFractionDigits:3}).format(n);
 const osm=n=>Number.isFinite(n)?String(Math.round(n)):'—';
 export async function createReport(result){
@@ -46,9 +47,10 @@ export async function createReport(result){
   page.drawRectangle({x:L,y:y-9,width:R-L,height:24,color:shade});text('Parâmetro',L+6,y,9,bold);right('Solicitado',360,y,9,bold);right('Efetivo',R-6,y,9,bold);y-=30;
   for(const o of result.offers){text(o.name,L+6,y,9,bold);text(o.unit,L+6,y-12,8,regular,muted);right(fmt(o.requested),360,y,9);right(fmt(o.actual),R-6,y,9,bold);horizontal(y-18);y-=34;}
   y-=6;
+  if(result.sodiumBreakdown){const s=result.sodiumBreakdown;paragraph(`Sódio total conferido: solicitado ${fmt2(s.requested)} mEq/kg/dia; efetivo ${fmt2(s.actual)} mEq/kg/dia. Glicerofosfato de sódio: ${fmt2(s.phosphate)} mEq/kg/dia; ${s.supplementName}: ${fmt2(s.supplement)} mEq/kg/dia. Valores após arredondar os volumes de preparo.`,9,ink);}
   if(result.rounding.length)paragraph('O arredondamento pode modificar as doses efetivas, especialmente de zinco e selênio. Confira a oferta efetiva antes do uso.');
   if(Math.abs(t.infusion-t.infusionExact)>1e-9)paragraph(`Vazão matemática: ${t.infusionExact.toFixed(4).replace('.',',')} mL/h; exibida: ${fmt(t.infusion)} mL/h. Confira a diferença entre vazão arredondada por 24 horas e volume total.`);
-  for(const a of result.adjustments)paragraph(`Ajuste conferido pelo usuário: ${a.name}, solicitado ${fmt(a.requested)} ${a.unit}, resultante ${fmt(a.actual)} ${a.unit}, por contribuição de ${a.source}. Complemento não acrescentado.`,9,ink);
+  for(const a of result.adjustments.filter(a=>a.id!=='na'||!result.sodiumBreakdown))paragraph(`Ajuste conferido pelo usuário: ${a.name}, solicitado ${fmt(a.requested)} ${a.unit}, resultante ${fmt(a.actual)} ${a.unit}, por contribuição de ${a.source}. Complemento não acrescentado.`,9,ink);
   for(const notice of result.notices)paragraph(notice);
   if(result.alerts?.length){newPage('Orientações e alertas de nutrição parenteral');paragraph('VIG — velocidade de infusão de glicose, em mg/kg/min. Alertas clínicos não bloqueantes: conferir dose solicitada, oferta efetiva, peso e dia de vida.',9,ink);for(const alert of result.alerts)paragraph(alert.message.replaceAll('≥','>='),9,ink);}
   paragraph('Versão de avaliação. Este relatório apresenta cálculos e não substitui a revisão clínica da composição.',8);
