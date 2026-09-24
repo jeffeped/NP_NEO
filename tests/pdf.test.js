@@ -16,6 +16,12 @@ test('PDF com cautela >20%, AA ≥1000 g e teto lipídico continua exportável',
   const pdf=await createReport(result);const doc=await PDFLib.PDFDocument.load(pdf);
   assert.ok(doc.getPageCount()>=3);assert.equal(doc.getAuthor(),'Jefferson Guilherme');
 });
+test('PDF inclui discriminação do sódio aportado pelo glicerofosfato',async()=>{
+  const result=calculate({...base,fluid:150,aa:2,lip:2,vig:5,na:1,p:0.4});
+  assert.equal(result.sodiumBreakdown.phosphate,0.8);
+  const pdf=await createReport(result);const doc=await PDFLib.PDFDocument.load(pdf);
+  assert.ok(doc.getPageCount()>=2);
+});
 test('PDF rejeita o bloqueio periférico já existente',async()=>{
   const result=calculate({...base,access:'peripheral'});
   await assert.rejects(()=>createReport(result),/not exportable/);

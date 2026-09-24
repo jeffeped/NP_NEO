@@ -182,6 +182,25 @@ test('osmolaridade usa concentrações finais, fósforo elementar e sódio total
   const expected=20*8+72*7+30.2*2+(10*30.973761998)*0.2-50;
   assert.ok(Math.abs(r.totals.osmolarity-expected)<1e-9);
 });
+test('sódio: discrimina glicerofosfato e NaCl após arredondamento do preparo',()=>{
+  const r=run({weight:1,na:1,p:0.4,pSalt:'glycero',naSalt:'nacl'});
+  assert.equal(r.volumes.phosphate,0.4);
+  assert.equal(r.volumes.sodium,0.1);
+  assert.equal(r.sodiumBreakdown.requested,1);
+  assert.equal(r.sodiumBreakdown.phosphate,0.8);
+  assert.equal(r.sodiumBreakdown.supplement,0.17);
+  assert.ok(Math.abs(r.sodiumBreakdown.actual-0.97)<1e-9);
+  assert.equal(r.rows.find(row=>row.id==='nacl').perKg,0.17);
+});
+test('sódio: registra contribuição mesmo acima da dose ou sem NaCl adicional',()=>{
+  const r=run({weight:1,na:0,p:0.4,pSalt:'glycero'});
+  assert.equal(r.sodiumBreakdown.phosphate,0.8);
+  assert.equal(r.sodiumBreakdown.supplement,0);
+  assert.equal(r.sodiumBreakdown.actual,0.8);
+  assert.equal(r.adjustments.find(a=>a.id==='na').actual,0.8);
+  assert.equal(run({weight:1,na:1,p:0.4,pSalt:'kphos'}).sodiumBreakdown,null);
+  assert.equal(run({weight:1,na:1,p:0,pSalt:'glycero'}).sodiumBreakdown,null);
+});
 test('osmolaridade acima de 900 orienta acesso central nos dois cenários e não bloqueia',()=>{
   const peripheral=run({weight:1,fluid:100,aa:3,vig:125/14.4,access:'peripheral'});
   assert.ok(peripheral.totals.osmolarity>900);
@@ -199,7 +218,7 @@ test('alertas não removem bloqueio por volume inviável',()=>{
 
 const baseline=JSON.parse(readFileSync(new URL('./fixtures/baseline-0.3.5.json',import.meta.url)));
 for(const {name,input,expected} of baseline.records)test(`regressão 0.3.5: ${name}`,()=>{
-  const actual=calculate(input);delete actual.alerts;delete actual.version;delete actual.totals.osmolarity;delete actual.totals.calciumConcentration;delete actual.totals.phosphorusConcentration;
+  const actual=calculate(input);delete actual.alerts;delete actual.version;delete actual.sodiumBreakdown;delete actual.totals.osmolarity;delete actual.totals.calciumConcentration;delete actual.totals.phosphorusConcentration;
   assert.deepEqual(actual,expected); // Todas as saídas antigas, não só um total.
 });
 test('aplicativo e PDF usam VIG e o cache inclui o novo módulo',()=>{

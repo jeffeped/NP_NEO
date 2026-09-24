@@ -9,6 +9,7 @@ import {initGrowth} from './growth-ui.js';
 import {intravenousFromResult} from './enteral.js';
 const $=id=>document.getElementById(id);
 const f=n=>Number.isFinite(n)?round1(n).toFixed(1).replace('.',','):'—';
+const f2=n=>Number.isFinite(n)?n.toFixed(2).replace('.',','):'—';
 const osm=n=>Number.isFinite(n)?String(Math.round(n)):'—';
 const weightFormat=n=>new Intl.NumberFormat('pt-BR',{maximumFractionDigits:3}).format(n);
 let result=null,pdfUrl=null,downloadResult=null,installPrompt=null,serviceRegistration=null;
@@ -71,7 +72,13 @@ function render(r){
   if(r.rounding.length)$('result-alerts').append(textElement('p','Há volumes arredondados; confira as doses efetivas.','infusion-note'));
   if(Math.abs(t.infusion-t.infusionExact)>1e-9)$('result-alerts').append(textElement('p','A vazão é exibida com uma casa decimal. Vazão × 24 h pode diferir ligeiramente do volume total; confira a programação da infusão.','infusion-note'));
   $('acknowledgements').replaceChildren();
-  for(const a of r.adjustments){const note=document.createElement('div');note.className='notice';note.append(textElement('p',`${a.name}: dose solicitada ${f(a.requested)} ${a.unit}; dose resultante ${f(a.actual)} ${a.unit}, já fornecida por ${a.source}. O sal complementar não foi acrescentado.`));const label=document.createElement('label'),check=document.createElement('input');check.type='checkbox';check.dataset.ack=a.id;check.addEventListener('change',updateExport);label.append(check,textElement('span',`Conferi e aceito a dose resultante de ${a.name.toLowerCase()}.`));note.append(label);$('acknowledgements').append(note);}
+  if(r.sodiumBreakdown){
+    const s=r.sodiumBreakdown,note=document.createElement('div');note.className='notice';
+    note.append(textElement('p',`Sódio total: solicitado ${f2(s.requested)} mEq/kg/dia; efetivo ${f2(s.actual)} mEq/kg/dia. Glicerofosfato de sódio: ${f2(s.phosphate)} mEq/kg/dia; ${s.supplementName}: ${f2(s.supplement)} mEq/kg/dia. Valores efetivos após arredondar os volumes de preparo.`));
+    const label=document.createElement('label'),check=document.createElement('input');check.type='checkbox';check.dataset.ack='na';check.addEventListener('change',updateExport);
+    label.append(check,textElement('span',`Conferi e aceito a dose total de sódio de ${f2(s.actual)} mEq/kg/dia.`));note.append(label);$('acknowledgements').append(note);
+  }
+  for(const a of r.adjustments.filter(a=>a.id!=='na'||!r.sodiumBreakdown)){const note=document.createElement('div');note.className='notice';note.append(textElement('p',`${a.name}: dose solicitada ${f(a.requested)} ${a.unit}; dose resultante ${f(a.actual)} ${a.unit}, já fornecida por ${a.source}. O sal complementar não foi acrescentado.`));const label=document.createElement('label'),check=document.createElement('input');check.type='checkbox';check.dataset.ack=a.id;check.addEventListener('change',updateExport);label.append(check,textElement('span',`Conferi e aceito a dose resultante de ${a.name.toLowerCase()}.`));note.append(label);$('acknowledgements').append(note);}
   updateExport();
 }
 function updateExport(){const accepted=[...document.querySelectorAll('[data-ack]')].every(x=>x.checked);$('export-pdf').disabled=!result?.canExport||!accepted;}

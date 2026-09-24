@@ -1,5 +1,11 @@
 # Histórico de versões
 
+## 0.6.2 — em revisão
+
+- Quando o glicerofosfato de sódio fornece sódio, exibe a dose solicitada e a oferta total efetiva, discriminando a parcela do glicerofosfato e a do NaCl ou acetato após o arredondamento dos volumes.
+- Exige aceite explícito da oferta total de sódio antes da exportação do PDF, inclusive se o fósforo fornecer mais sódio que o solicitado ou se não houver sal complementar. Novo cálculo exige novo aceite.
+- Registra a discriminação do sódio no PDF e conserva os cálculos e aceites já existentes para potássio e demais nutrientes.
+
 ## 0.6.1 — em revisão
 
 - Reforça visualmente os limites das abas, com borda, fundo e relevo próprios de botão, preservando o destaque verde da aba selecionada.

@@ -44,6 +44,28 @@ test('interface: dia 1 na referência, orientação e exportação disponível',
   assert.match(app.el('notes').textContent,/não corresponde à osmolalidade laboratorial medida/);
   assert.match(app.el('notes').textContent,/Pereira-da-Silva/);
 });
+test('interface: contribuição do glicerofosfato exige aceite do sódio total para PDF',()=>{
+  const app=openApp();app.set('weight',1);app.set('na',1);app.set('p','0,4');app.set('salt-p','glycero');app.calculate();
+  const check=app.document.querySelector('[data-ack="na"]');
+  assert.ok(check);
+  assert.match(app.el('acknowledgements').textContent,/solicitado 1,00.*efetivo 0,97.*Glicerofosfato de sódio: 0,80.*cloreto de sódio 10%: 0,17/);
+  assert.match(app.el('acknowledgements').textContent,/Conferi e aceito a dose total de sódio de 0,97/);
+  assert.equal(app.el('export-pdf').disabled,true);
+  check.checked=true;check.dispatchEvent(new app.window.Event('change',{bubbles:true}));
+  assert.equal(app.el('export-pdf').disabled,false);
+  app.set('p','0,5');assert.equal(app.el('calculated-result').hidden,true);app.calculate();
+  assert.ok(!app.document.querySelector('[data-ack="na"]').checked);
+  assert.equal(app.el('export-pdf').disabled,true);
+  app.set('p',0);app.calculate();
+  assert.equal(app.document.querySelector('[data-ack="na"]'),null);
+  assert.equal(app.el('export-pdf').disabled,false);
+});
+test('interface: excesso de sódio pelo glicerofosfato pede apenas um aceite',()=>{
+  const app=openApp();app.set('weight',1);app.set('na',0);app.set('p','0,4');app.set('salt-p','glycero');app.calculate();
+  assert.equal(app.document.querySelectorAll('[data-ack="na"]').length,1);
+  assert.match(app.el('acknowledgements').textContent,/efetivo 0,80.*glicerofosfato de sódio: 0,80/i);
+  assert.equal(app.el('export-pdf').disabled,true);
+});
 test('interface: zinco e selênio seguem prematuridade, não peso de 1.500 g',()=>{
   const app=openApp();
   app.el('omit-zn').checked=false;app.el('omit-se').checked=false;
