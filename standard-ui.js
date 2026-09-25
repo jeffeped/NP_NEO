@@ -4,7 +4,7 @@ export function initStandard(document){
   const $=id=>document.getElementById(id);
   const fmt=formatStandard;
   let result=null,pdfUrl=null;
-  function invalidate(){ result=null;$('std-result').hidden=true;$('std-errors').hidden=true;$('std-export').disabled=true;$('std-pdf-download').hidden=true;$('std-pdf-status').textContent='';if(pdfUrl){URL.revokeObjectURL(pdfUrl);pdfUrl=null;} }
+  function invalidate(){ result=null;$('std-result').hidden=true;$('std-errors').hidden=true;$('std-export').disabled=true;$('std-pdf-download').hidden=true;$('std-pdf-download').removeAttribute('href');$('std-pdf-status').textContent='';if(pdfUrl){URL.revokeObjectURL(pdfUrl);pdfUrl=null;} }
   function mode(){const protein=$('std-mode').value==='protein';$('std-value-label').textContent=protein?'Proteína desejada':'Taxa hídrica destinada ao Numeta';$('std-unit').textContent=protein?'g/kg/dia':'mL/kg/dia';$('std-value').value='';invalidate();}
   $('std-mode').addEventListener('change',mode);
   $('std-form').addEventListener('input',invalidate);$('std-form').addEventListener('change',invalidate);
@@ -34,9 +34,10 @@ export function initStandard(document){
     try{
       const bytes=await createStandardReport(snapshot);if(result!==snapshot)return;
       if(pdfUrl)URL.revokeObjectURL(pdfUrl);pdfUrl=URL.createObjectURL(new Blob([bytes],{type:'application/pdf'}));
-      const link=$('std-pdf-download');link.href=pdfUrl;link.download='GROW_NEO-NP-padrao.pdf';link.hidden=false;link.click();
-      $('std-pdf-status').textContent='PDF gerado. Se necessário, use o link abaixo.';
-    }catch(error){if(result===snapshot)$('std-pdf-status').textContent='Não foi possível gerar o PDF. Tente novamente.';}
+      const link=$('std-pdf-download');link.href=pdfUrl;link.download='GROW_NEO-NP-padrao.pdf';link.hidden=false;
+      $('std-pdf-status').textContent='PDF pronto. Toque em Baixar PDF se o download não começar automaticamente.';
+      try{link.click();}catch(error){console.warn('Automatic PDF download unavailable',error);}link.scrollIntoView?.({block:'nearest'});
+    }catch(error){console.error('Standard PDF generation failed',error);if(result===snapshot)$('std-pdf-status').textContent='Não foi possível gerar o PDF. Tente novamente.';}
     finally{if(result===snapshot)$('std-export').disabled=false;}
   });
 

@@ -1,5 +1,11 @@
 # Histórico de versões
 
+## 0.6.4 — em revisão
+
+- Exibe um botão de download do PDF após a geração, também quando o navegador impede o download automático, em NP individualizada, NP padrão, HV e aporte total enteral.
+- Na NP individualizada, informa quando a exportação aguarda revisão de impedimentos ou aceite das ofertas efetivas. Uma edição invalida o link anterior.
+- Mostra a causa técnica no console do navegador quando a geração falha, sem acrescentar dados do paciente ao registro.
+
 ## 0.6.3 — em revisão
 
 - Na aba Enteral, oferece a opção de FM85 em dietas alternadas de igual volume: 1 g por 25 mL em metade das dietas equivale, em média, a 0,5 g por 25 mL ou 2 g por 100 mL do leite total.

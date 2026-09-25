@@ -56,8 +56,8 @@ export function initHydration(document){
     try{
       const bytes=await createHydrationReport(snapshot);if(resultSnapshot!==snapshot)return;
       if(pdfUrl)URL.revokeObjectURL(pdfUrl);pdfUrl=URL.createObjectURL(new Blob([bytes],{type:'application/pdf'}));downloadSnapshot=snapshot;
-      const link=$('pdf-download');link.href=pdfUrl;link.download='GROW_NEO-hidratacao-venosa.pdf';link.hidden=false;link.click();$('pdf-status').textContent='PDF gerado. Se o download não iniciar, use o link abaixo.';
-    }catch(error){if(resultSnapshot===snapshot)$('pdf-status').textContent='Não foi possível gerar o PDF. Aguarde o carregamento completo do app e tente novamente.';}
+      const link=$('pdf-download');link.href=pdfUrl;link.download='GROW_NEO-hidratacao-venosa.pdf';link.hidden=false;$('pdf-status').textContent='PDF pronto. Toque em Baixar PDF se o download não começar automaticamente.';try{link.click();}catch(error){console.warn('Automatic PDF download unavailable',error);}link.scrollIntoView?.({block:'nearest'});
+    }catch(error){console.error('Hydration PDF generation failed',error);if(resultSnapshot===snapshot)$('pdf-status').textContent='Não foi possível gerar o PDF. Aguarde o carregamento completo do app e tente novamente.';}
     finally{if(resultSnapshot===snapshot)$('export').disabled=!snapshot.canPrepare;}
   });
   $('pdf-download').addEventListener('click',event=>{if(!resultSnapshot?.canPrepare||resultSnapshot!==downloadSnapshot)event.preventDefault();});

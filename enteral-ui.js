@@ -5,7 +5,7 @@ const fmt=(n,digits=1)=>Number.isFinite(n)?n.toFixed(digits).replace('.',','):'�
 export function initEnteral(doc,getParenteral,getGrowth=()=>null){
  let last=null,pdfUrl=null;
  const $=id=>doc.getElementById(id);
- const invalidate=()=>{last=null;$('en-result').hidden=true;$('en-pdf-download').hidden=true;$('en-pdf-status').textContent='';if(pdfUrl){URL.revokeObjectURL(pdfUrl);pdfUrl=null;}};
+ const invalidate=()=>{last=null;$('en-result').hidden=true;$('en-pdf-download').hidden=true;$('en-pdf-download').removeAttribute('href');$('en-pdf-status').textContent='';if(pdfUrl){URL.revokeObjectURL(pdfUrl);pdfUrl=null;}};
  for(const [source,formId] of [['individual','npp-form'],['standard','std-form'],['hydration','hv-form']])for(const event of ['input','change','submit'])$(formId).addEventListener(event,()=>{if($('en-source').value===source)invalidate();});
  for(const event of ['input','change'])$('enteral-form').addEventListener(event,invalidate);
  const type=$('en-type'),lact=$('en-lactation-field'),fmField=$('en-fm85-field'),fm=$('en-fm85'),fmCustom=$('en-fm85-custom-field');
@@ -38,6 +38,6 @@ export function initEnteral(doc,getParenteral,getGrowth=()=>null){
      $('en-result').hidden=false;
    }catch(err){$('en-errors').hidden=false;$('en-errors').textContent=err.message}
  });
-$('en-export').addEventListener('click',async()=>{if(!last)return;const snapshot=last,growth=getGrowth();$('en-export').disabled=true;$('en-pdf-status').textContent='Preparando PDF no aparelho…';try{const bytes=await createEnteralReport({...snapshot,growth});if(last!==snapshot||getGrowth()!==growth)return;const blob=new Blob([bytes],{type:'application/pdf'});if(pdfUrl)URL.revokeObjectURL(pdfUrl);pdfUrl=URL.createObjectURL(blob);const link=$('en-pdf-download');link.href=pdfUrl;link.download='GROW_NEO-aporte-nutricional-total.pdf';link.hidden=false;link.click();$('en-pdf-status').textContent=growth?'PDF gerado com os dados de crescimento.':'PDF gerado. Calcule a aba Crescimento para incluí-la no relatório.';}catch(e){$('en-pdf-status').textContent='Não foi possível gerar o PDF.';}finally{$('en-export').disabled=false;}});
+$('en-export').addEventListener('click',async()=>{if(!last)return;const snapshot=last,growth=getGrowth();$('en-export').disabled=true;$('en-pdf-status').textContent='Preparando PDF no aparelho…';try{const bytes=await createEnteralReport({...snapshot,growth});if(last!==snapshot||getGrowth()!==growth)return;const blob=new Blob([bytes],{type:'application/pdf'});if(pdfUrl)URL.revokeObjectURL(pdfUrl);pdfUrl=URL.createObjectURL(blob);const link=$('en-pdf-download');link.href=pdfUrl;link.download='GROW_NEO-aporte-nutricional-total.pdf';link.hidden=false;$('en-pdf-status').textContent=(growth?'PDF pronto com os dados de crescimento. ':'PDF pronto. Calcule a aba Crescimento para incluí-la. ')+'Toque em Baixar PDF se o download não começar automaticamente.';try{link.click();}catch(error){console.warn('Automatic PDF download unavailable',error);}link.scrollIntoView?.({block:'nearest'});}catch(e){console.error('Enteral PDF generation failed',e);$('en-pdf-status').textContent='Não foi possível gerar o PDF.';}finally{$('en-export').disabled=false;}});
  return {invalidate};
 }

@@ -40,7 +40,7 @@ function updateRules(){
   for(const id of ['va','vb'])$('timing-'+id).textContent=Number.isFinite(day)&&day<3?'Não será incluído antes do 3º dia de vida.':'A partir do 3º dia de vida';
   $('timing-oligo').textContent=Number.isFinite(day)&&day<8?'Não será incluído antes do 8º dia de vida.':'A partir do 8º dia de vida';
 }
-function invalidate(){result=null;downloadResult=null;$('calculated-result').hidden=true;$('empty-result').hidden=false;$('empty-result').textContent='Calcule novamente para conferir os parâmetros atuais.';$('pdf-download').hidden=true;$('pdf-status').textContent='';if(pdfUrl){URL.revokeObjectURL(pdfUrl);pdfUrl=null;}}
+function invalidate(){result=null;downloadResult=null;$('calculated-result').hidden=true;$('empty-result').hidden=false;$('empty-result').textContent='Calcule novamente para conferir os parâmetros atuais.';$('pdf-download').hidden=true;$('pdf-download').removeAttribute('href');$('pdf-status').textContent='';if(pdfUrl){URL.revokeObjectURL(pdfUrl);pdfUrl=null;}}
 const tabNames=['parameters','results','hydration','standard','enteral','growth','notes'];
 function view(name){for(const tab of tabNames){$(tab).hidden=name!==tab;$('tab-'+tab).setAttribute('aria-selected',String(name===tab));$('tab-'+tab).tabIndex=name===tab?0:-1;}window.scrollTo({top:0,behavior:'instant'});}
 for(const name of tabNames)$('tab-'+name).addEventListener('click',()=>view(name));
@@ -81,12 +81,18 @@ function render(r){
   for(const a of r.adjustments.filter(a=>a.id!=='na'||!r.sodiumBreakdown)){const note=document.createElement('div');note.className='notice';note.append(textElement('p',`${a.name}: dose solicitada ${f(a.requested)} ${a.unit}; dose resultante ${f(a.actual)} ${a.unit}, já fornecida por ${a.source}. O sal complementar não foi acrescentado.`));const label=document.createElement('label'),check=document.createElement('input');check.type='checkbox';check.dataset.ack=a.id;check.addEventListener('change',updateExport);label.append(check,textElement('span',`Conferi e aceito a dose resultante de ${a.name.toLowerCase()}.`));note.append(label);$('acknowledgements').append(note);}
   updateExport();
 }
-function updateExport(){const accepted=[...document.querySelectorAll('[data-ack]')].every(x=>x.checked);$('export-pdf').disabled=!result?.canExport||!accepted;}
+function updateExport(){
+  const accepted=[...document.querySelectorAll('[data-ack]')].every(x=>x.checked);
+  $('export-pdf').disabled=!result?.canExport||!accepted;
+  const status=$('pdf-status');
+  if(result&&!pdfUrl&&(!status.textContent||status.textContent.startsWith('Revise os impedimentos')||status.textContent.startsWith('Confirme as doses')))
+    status.textContent=!result.canExport?'Revise os impedimentos acima antes de exportar.':!accepted?'Confirme as doses efetivas acima para habilitar o PDF.':'';
+}
 $('npp-form').addEventListener('submit',e=>{e.preventDefault();$('form-errors').hidden=true;document.querySelectorAll('.invalid').forEach(x=>x.classList.remove('invalid'));const r=calculate(collect());if(!r.ok){invalidate();const list=document.createElement('ul');for(const err of r.errors){list.append(textElement('li',err.message));const id={gaWeeks:'ga',gaDays:'ga-days',naSalt:'salt-na',pSalt:'salt-p'}[err.field]||err.field;const el=$(id);if(el){el.closest('.field,.dose')?.classList.add('invalid');const details=el.closest('details');if(details)details.open=true;}}$('form-errors').replaceChildren(list);$('form-errors').hidden=false;$('form-errors').scrollIntoView({block:'center'});return;}result=r;render(r);view('results');});
 $('export-pdf').addEventListener('click',async()=>{
   if(!result?.canExport||[...document.querySelectorAll('[data-ack]')].some(x=>!x.checked))return;
   const snapshot=result;$('export-pdf').disabled=true;$('pdf-status').textContent='Preparando PDF no aparelho…';
-  try{const bytes=await createReport(snapshot);if(result!==snapshot)return;const blob=new Blob([bytes],{type:'application/pdf'});if(pdfUrl)URL.revokeObjectURL(pdfUrl);pdfUrl=URL.createObjectURL(blob);downloadResult=snapshot;const link=$('pdf-download');link.href=pdfUrl;link.download='GROW_NEO-calculo.pdf';link.hidden=false;link.click();$('pdf-status').textContent='PDF gerado. Se o download não iniciar, use o link abaixo.';}catch(error){console.error('PDF generation failed');$('pdf-status').textContent='Não foi possível gerar o PDF. Aguarde o carregamento completo do app e tente novamente.';}finally{updateExport();}
+  try{const bytes=await createReport(snapshot);if(result!==snapshot)return;const blob=new Blob([bytes],{type:'application/pdf'});if(pdfUrl)URL.revokeObjectURL(pdfUrl);pdfUrl=URL.createObjectURL(blob);downloadResult=snapshot;const link=$('pdf-download');link.href=pdfUrl;link.download='GROW_NEO-calculo.pdf';link.hidden=false;$('pdf-status').textContent='PDF pronto. Toque em Baixar PDF se o download não começar automaticamente.';try{link.click();}catch(error){console.warn('Automatic PDF download unavailable',error);}link.scrollIntoView?.({block:'nearest'});}catch(error){console.error('PDF generation failed',error);$('pdf-status').textContent='Não foi possível gerar o PDF. Aguarde o carregamento completo do app e tente novamente.';}finally{updateExport();}
 });
 $('pdf-download').addEventListener('click',e=>{if(!result||result!==downloadResult)e.preventDefault();});
 $('install-help-button').addEventListener('click',()=>{$('install-help').hidden=!$('install-help').hidden;});

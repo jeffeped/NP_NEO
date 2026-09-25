@@ -60,6 +60,28 @@ test('interface: contribuição do glicerofosfato exige aceite do sódio total p
   assert.equal(app.document.querySelector('[data-ack="na"]'),null);
   assert.equal(app.el('export-pdf').disabled,false);
 });
+test('PDF NP: oferece link visível quando o navegador ignora o download automático',async()=>{
+  const app=openApp();app.calculate();
+  const link=app.el('pdf-download');let attempted=0;link.click=()=>{attempted++;};
+  app.dispatch('export-pdf','click');
+  await new Promise(resolve=>setTimeout(resolve,10));
+  assert.equal(attempted,1);assert.equal(link.hidden,false);
+  assert.match(link.href,/^blob:/);assert.match(link.download,/\.pdf$/);
+  assert.match(app.el('pdf-status').textContent,/Toque em Baixar PDF/);
+  app.set('weight','0,9');assert.equal(link.hidden,true);assert.equal(link.hasAttribute('href'),false);
+});
+test('PDF Enteral: oferece link visível quando o navegador ignora o download automático',async()=>{
+  vm.runInThisContext(readFileSync(new URL('../vendor/pdf-lib.min.js',import.meta.url),'utf8'));
+  const app=openApp();app.set('en-source','none');app.set('en-type','lhop');app.set('en-rate','100');app.dispatch('enteral-form','submit');
+  assert.equal(app.el('en-result').hidden,false);
+  const link=app.el('en-pdf-download');let attempted=0;link.click=()=>{attempted++;};
+  app.dispatch('en-export','click');
+  await new Promise(resolve=>setTimeout(resolve,50));
+  assert.equal(attempted,1);assert.equal(link.hidden,false);
+  assert.match(link.href,/^blob:/);assert.match(link.download,/\.pdf$/);
+  assert.match(app.el('en-pdf-status').textContent,/Toque em Baixar PDF/);
+  app.set('en-rate','110');assert.equal(link.hidden,true);assert.equal(link.hasAttribute('href'),false);
+});
 test('interface: excesso de sódio pelo glicerofosfato pede apenas um aceite',()=>{
   const app=openApp();app.set('weight',1);app.set('na',0);app.set('p','0,4');app.set('salt-p','glycero');app.calculate();
   assert.equal(app.document.querySelectorAll('[data-ack="na"]').length,1);
