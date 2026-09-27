@@ -26,7 +26,7 @@ function openApp() {
   for(const select of document.querySelectorAll('select'))select.firstElementChild.selected=true;
   const set=(id,value)=>{const input=document.getElementById(id);if(input.tagName==='SELECT'){for(const option of input.options)option.removeAttribute('selected');Array.from(input.options).find(option=>option.value===String(value)).selected=true;}else input.value=String(value);input.dispatchEvent(new window.Event('input',{bubbles:true}));};
   const access=value=>{for(const el of document.querySelectorAll('[name="access"]')){el.checked=el.value===value;if(el.checked)el.setAttribute('checked','');else el.removeAttribute('checked');}document.getElementById('npp-form').dispatchEvent(new window.Event('change',{bubbles:true}));};
-  for(const [id,value] of Object.entries({weight:'0,8',day:1,ga:27,'ga-days':0,fluid:200,aa:2,lip:2,vig:5,na:0,k:0,ca:0,mg:0,p:0,seDose:6}))set(id,value);
+  for(const [id,value] of Object.entries({weight:'0,8','birth-weight':'0,8','fluid-phase':'stable',day:1,ga:27,'ga-days':0,fluid:100,aa:2,lip:2,vig:5,na:0,k:0,ca:0,mg:0,p:0,seDose:6}))set(id,value);
   access('central');
   for(const id of ['va','vb','oligo','zn','se'])document.getElementById('omit-'+id).checked=true;
   const calculate=()=>{document.getElementById('npp-form').dispatchEvent(new window.Event('submit',{bubbles:true,cancelable:true}));assert.equal(document.getElementById('form-errors').hidden,true,document.getElementById('form-errors').textContent);};
@@ -87,19 +87,21 @@ test('interface: acima da referência inicial gera cautela sem bloquear',()=>{
   assert.deepEqual(app.alerts().map(a=>a.level),['caution','caution']);
   assert.equal(app.el('export-pdf').disabled,false);
 });
-test('interface: alertas clínicos coexistem com orientação para manter acesso central',()=>{
+test('interface: alertas clínicos coexistem com bloqueios para AA e lipídios',()=>{
   const app=openApp();for(const [id,value] of Object.entries({day:2,fluid:140,aa:3.6,lip:4.1,vig:20}))app.set(id,value);
   app.calculate();
   assert.deepEqual(app.alerts().map(a=>[a.id,a.level]),[['glucose-concentration-high','caution'],['osmolarity-high','caution'],['aa-ceiling','high'],['lip-ceiling','high']]);
   assert.match(app.alerts()[1].text,/Mantenha o acesso venoso central selecionado/);
-  assert.equal(app.el('export-pdf').disabled,false);
+  assert.equal(app.el('export-pdf').disabled,true);
+  assert.match(app.el('prescription-status').textContent,/Prescrição e PDF bloqueados/);
+  assert.match(app.el('result-alerts').textContent,/Aminoácidos acima de 3,5.*Taxa de infusão de lipídios/);
   assert.match(app.alerts()[0].text,/mesmo em acesso venoso central/);
 });
-test('interface: peso ≥1000 g não apresenta teto 3,5 nem na ajuda nem no alerta',()=>{
+test('interface: peso ≥1000 g também apresenta teto 3,5 de aminoácidos',()=>{
   const app=openApp();app.set('weight',1);app.set('day',2);app.set('aa',3.5);app.set('lip',3);app.calculate();
-  assert.doesNotMatch(app.el('reference-aa').textContent,/3,5/);
+  assert.match(app.el('reference-aa').textContent,/Teto: 3,5/);
   assert.equal(app.alerts().find(a=>a.id==='aa-reference').level,'caution');
-  assert.doesNotMatch(app.alerts()[0].text,/teto de 3,5|Teto: 3,5/);
+  app.set('aa',3.6);app.calculate();assert.equal(app.el('export-pdf').disabled,true);
 });
 test('interface: exatamente 20%, acima de 20% e troca de acesso',()=>{
   const app=openApp();app.set('weight',1);app.set('fluid',90);app.set('vig',12.5);app.calculate();
@@ -110,6 +112,30 @@ test('interface: exatamente 20%, acima de 20% e troca de acesso',()=>{
   app.access('peripheral');app.calculate();
   assert.equal(app.el('export-pdf').disabled,true);assert.ok(app.alerts().some(a=>a.id==='glucose-concentration-high'));
   assert.match(app.el('access-alert').textContent,/12,5%/);
+});
+test('interface: bloqueios vermelhos exigem novos parâmetros; VT ajustado é amarelo',()=>{
+  const app=openApp();app.set('weight',1);app.set('aa','3,2');app.set('fluid','79,9');app.calculate();
+  assert.equal(app.el('export-pdf').disabled,true);
+  assert.match(app.el('result-alerts').textContent,/Concentração final de aminoácidos acima de 4%/);
+  app.set('fluid',80);assert.equal(app.el('calculated-result').hidden,true);
+  app.calculate();assert.equal(app.el('export-pdf').disabled,false);
+  app.set('weight','0,8');app.set('fluid',50);app.set('aa',2);app.set('lip',3);app.set('vig',6);app.calculate();
+  assert.equal(app.el('prescription-status').hidden,true);
+  assert.equal(app.el('export-pdf').disabled,false);
+  assert.match(app.el('result-alerts').textContent,/Volume total solicitado.*Água q\.s\.p\.: 0 mL/);
+  assert.match(app.el('result-summary').textContent,/Volume solicitado40,0 mLVolume efetivo41,8 mL/);
+});
+test('interface: máximo hídrico usa peso ao nascer e fase selecionada, sem teto após D30',()=>{
+  const app=openApp();app.set('fluid','100,1');app.calculate();
+  assert.equal(app.el('export-pdf').disabled,true);
+  assert.match(app.el('result-alerts').textContent,/Taxa hídrica da NPP acima de 100/);
+  app.set('day',6);assert.equal(app.el('fluid-phase-field').hidden,false);
+  app.set('fluid-phase','');app.dispatch('npp-form','submit');
+  assert.match(app.el('form-errors').textContent,/selecione fase intermediária/);
+  app.set('fluid-phase','intermediate');app.set('fluid',160);app.calculate();
+  assert.equal(app.el('export-pdf').disabled,false);
+  app.set('day',31);assert.equal(app.el('fluid-phase-field').hidden,true);
+  app.calculate();assert.match(app.el('result-alerts').textContent,/Após o 30º dia/);
 });
 
 function openHydration(){
@@ -266,7 +292,7 @@ test('interface Enteral: composição analisada substitui estimativa',()=>{
 test('interface Enteral: edição da NP exige recálculo, sem recuperar valores antigos',()=>{
  const app=openApp();app.calculate();app.set('en-source','individual');app.set('en-type','lhop');app.set('en-rate',80);app.dispatch('enteral-form','submit');
  assert.equal(app.el('en-result').hidden,false);
- app.set('fluid',180);assert.equal(app.el('en-result').hidden,true);
+ app.set('fluid',90);assert.equal(app.el('en-result').hidden,true);
  app.dispatch('enteral-form','submit');assert.match(app.el('en-errors').textContent,/Calcule novamente/);assert.equal(app.el('en-result').hidden,true);
  app.calculate();app.dispatch('enteral-form','submit');assert.equal(app.el('en-result').hidden,false);
 });

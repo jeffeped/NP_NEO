@@ -16,7 +16,7 @@ export function macroReference(nutrient,weight,day) {
   return {
     dose:day===1?2:3,
     phase:day===1?'inicial no 1º dia de vida':'de progressão após o 1º dia de vida',
-    ceiling:nutrient==='lip'?4:(weight<1?3.5:null)
+    ceiling:nutrient==='lip'?4:3.5
   };
 }
 
@@ -29,7 +29,7 @@ function decimalProduct(values) {
     return [integer*BigInt(whole+fraction),power+Number(exponent)-fraction.length];
   },[1n,0]);
 }
-function compareProducts(left,right) {
+export function compareProducts(left,right) {
   const [a,ap]=decimalProduct(left),[b,bp]=decimalProduct(right);
   const scale=Math.min(ap,bp);
   const delta=a*10n**BigInt(ap-scale)-b*10n**BigInt(bp-scale);
@@ -81,7 +81,7 @@ export function nutritionAlerts(input,{volumes,effective,totalVolume,glucosePerc
     let message=`${name}: ${formatAlertNumber(requested)} g/kg/dia (${relation} da referência ${phase}: ${formatAlertNumber(dose)} g/kg/dia). `;
     if(aboveCeiling) {
       const source=aboveRequested&&aboveEffective?'solicitada e efetiva':aboveRequested?'solicitada':'efetiva após arredondamento dos volumes de preparo';
-      message+=`A dose ${source} ultrapassa o teto de ${formatAlertNumber(ceiling)} g/kg/dia${id==='aa'?' aplicável somente a RN com peso <1000 g':''}. Revise a prescrição. `;
+      message+=`A dose ${source} ultrapassa o teto de ${formatAlertNumber(ceiling)} g/kg/dia. Revise a prescrição. `;
     } else {
       message+=requested===dose?'Dose na referência habitual. ':`Revisar conforme o contexto clínico. `;
     }

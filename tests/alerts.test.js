@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import {calculate,parseNumber,VERSION} from '../engine.js';
 import {nutritionAlerts} from '../alerts.js';
 
-const base={weight:0.8,day:1,gaWeeks:27,gaDays:0,fluid:200,aa:2,lip:2,vig:5,na:0,k:0,ca:0,mg:0,p:0,znDose:400,seDose:2,naSalt:'nacl',pSalt:'glycero',access:'central',omit:{va:true,vb:true,oligo:true,zn:true,se:true}};
+const base={weight:0.8,birthWeight:0.8,fluidPhase:'stable',day:1,gaWeeks:27,gaDays:0,fluid:100,aa:2,lip:2,vig:5,na:0,k:0,ca:0,mg:0,p:0,znDose:400,seDose:2,naSalt:'nacl',pSalt:'glycero',access:'central',omit:{va:true,vb:true,oligo:true,zn:true,se:true}};
 const run=changes=>{const r=calculate({...base,...changes});assert.equal(r.ok,true);return r;};
 const alertFor=(r,id)=>r.alerts.find(a=>a.nutrient===id);
 const above20=r=>!!alertFor(r,'glucose');
@@ -67,20 +67,20 @@ test('glicose: igualdade decimal real não dispara por ruído binário',()=>{
 for(const weight of [0.8,0.999,1,1.2])for(const day of [1,2,8])for(const aa of [0,2,3,3.5,3.6]) {
   test(`aminoácidos · ${weight} kg · dia ${day} · ${aa} g/kg/dia`,()=>{
     const r=run({weight,day,aa});const a=alertFor(r,'aa');
-    const high=weight<1&&(aa>3.5 || (weight===0.999&&aa===3.5)); // 35,0 mL a 999 g aumenta a oferta efetiva.
+    const high=aa>3.5 || (weight===0.999&&aa===3.5); // 35,0 mL a 999 g aumenta a oferta efetiva.
     assert.equal(a.level,high?'high':aa===(day===1?2:3)?'info':'caution');
-    assert.equal(a.blocking,false);assert.equal(r.canExport,true);
+    assert.equal(a.blocking,false);assert.equal(r.canExport,!high);
     assert.equal(a.weightKg,weight);assert.equal(a.day,day);
     assert.doesNotMatch(a.message,/Peso atual:|dia de vida:\s*\d+\s*[.;]/);
     assert.match(a.message,day===1?/inicial no 1º dia de vida.*2,0/:/progressão após o 1º dia de vida.*3,0/);
-    if(weight>=1)assert.doesNotMatch(a.message,/teto de 3,5|Teto: 3,5|teto máximo/);
+    if(high)assert.ok(r.blocks.some(b=>b.includes('Aminoácidos acima de 3,5')));
   });
 }
 for(const day of [1,2,8])for(const lip of [0,2,2.1,3,4,4.1]) {
   test(`lipídios · dia ${day} · ${lip} g/kg/dia`,()=>{
     const r=run({day,lip});const a=alertFor(r,'lip');
     assert.equal(a.level,lip>4?'high':lip===(day===1?2:3)?'info':'caution');
-    assert.equal(r.canExport,true);assert.equal(a.blocking,false);
+    assert.equal(r.canExport,lip<=4);assert.equal(a.blocking,false);
     assert.match(a.message,day===1?/inicial no 1º dia de vida.*2,0/:/progressão após o 1º dia de vida.*3,0/);
     if(lip<=4)assert.doesNotMatch(a.message,/Teto: 4,0|não é uma meta/);
     if(lip===4)assert.doesNotMatch(a.message,/ultrapassa/);
@@ -97,6 +97,7 @@ for(const [field,value] of [['aa',3.5000000000000004],['lip',4.000000000000001]]
 test('arredondamento do volume pode ultrapassar teto lipídico mesmo com solicitação no teto',()=>{
   const r=run({weight:0.999,lip:4});const a=alertFor(r,'lip');
   assert.ok(r.effective.lip>4);assert.equal(a.level,'high');
+  assert.equal(r.canExport,false);
   assert.match(a.message,/efetiva após arredondamento dos volumes de preparo/);
 });
 test('3,5 g/kg/dia exatos em 900 g não disparam teto por erro de ponto flutuante',()=>{
@@ -213,13 +214,47 @@ test('osmolaridade acima de 900 orienta acesso central nos dois cenários e não
 });
 test('alertas não removem bloqueio por volume inviável',()=>{
   const r=run({fluid:20,aa:4,lip:5});assert.equal(r.canExport,false);
-  assert.ok(r.blocks.some(b=>b.includes('ultrapassam o volume total')));
+  assert.ok(r.blocks.some(b=>b.includes('Aminoácidos acima de 3,5')));
+  assert.ok(r.totals.volumeAdjusted);
+});
+
+test('VT menor que os componentes vira cautela e volume efetivo coerente, sem impedir PDF',()=>{
+  const r=run({weight:0.8,fluid:50,aa:2,lip:3,vig:6});
+  assert.equal(r.canExport,true,r.blocks.join(' | '));
+  assert.equal(r.totals.requestedVolume,40);
+  assert.equal(r.totals.totalVolume,r.totals.componentsVolume);
+  assert.equal(r.volumes.water,0);
+  assert.equal(r.totals.fluid,r.totals.totalVolume/0.8);
+  assert.ok(r.notices.some(n=>n.includes('Volume total solicitado')));
+});
+
+test('travas de concentração final e taxa lipídica usam valores efetivos e limites estritos',()=>{
+  const aaEqual=run({weight:1,aa:3.2,lip:2,fluid:80});
+  assert.equal(aaEqual.totals.aminoAcidPercent,4);
+  assert.equal(aaEqual.canExport,true);
+  const aaAbove=run({weight:1,aa:3.2,lip:2,fluid:79.9});
+  assert.equal(aaAbove.canExport,false);
+  assert.ok(aaAbove.blocks.some(b=>b.includes('Concentração final de aminoácidos acima de 4%')));
+  const glucoseEqual=run({weight:1,aa:0,lip:0,fluid:100,vig:50/2.88});
+  assert.equal(glucoseEqual.totals.glucosePercent,25);
+  assert.equal(glucoseEqual.canExport,true);
+  const glucoseAbove=run({weight:1,aa:0,lip:0,fluid:100,vig:50.1/2.88});
+  assert.equal(glucoseAbove.canExport,false);
+  assert.ok(glucoseAbove.blocks.some(b=>b.includes('Concentração final de glicose acima de 25%')));
+  const lipidEqual=run({weight:1,aa:2,lip:4,fluid:100});
+  assert.equal(lipidEqual.totals.lipidRate,4/24);
+  assert.equal(lipidEqual.canExport,true);
+  const lipidAbove=run({weight:0.999,aa:2,lip:4,fluid:100});
+  assert.equal(lipidAbove.canExport,false);
+  assert.ok(lipidAbove.blocks.some(b=>b.includes('Taxa de infusão de lipídios')));
 });
 
 const baseline=JSON.parse(readFileSync(new URL('./fixtures/baseline-0.3.5.json',import.meta.url)));
-for(const {name,input,expected} of baseline.records)test(`regressão 0.3.5: ${name}`,()=>{
-  const actual=calculate(input);delete actual.alerts;delete actual.version;delete actual.sodiumBreakdown;delete actual.totals.osmolarity;delete actual.totals.calciumConcentration;delete actual.totals.phosphorusConcentration;
-  assert.deepEqual(actual,expected); // Todas as saídas antigas, não só um total.
+for(const {name,input,expected} of baseline.records.filter(record=>record.name!=='volume-insuficiente'))test(`regressão 0.3.5: ${name}`,()=>{
+  const actual=calculate({...input,birthWeight:input.weight,fluidPhase:'stable'});
+  delete actual.alerts;delete actual.version;delete actual.sodiumBreakdown;delete actual.fluidReference;delete actual.input.birthWeight;delete actual.input.fluidPhase;delete actual.totals.osmolarity;delete actual.totals.calciumConcentration;delete actual.totals.phosphorusConcentration;delete actual.totals.aminoAcidPercent;delete actual.totals.lipidRate;delete actual.totals.requestedVolume;delete actual.totals.volumeAdjusted;
+  const previous=structuredClone(expected);delete actual.blocks;delete actual.canExport;delete previous.blocks;delete previous.canExport;
+  assert.deepEqual(actual,previous); // Fórmulas e demais saídas antigas, excluindo as novas decisões de segurança.
 });
 test('aplicativo e PDF usam VIG e o cache inclui o novo módulo',()=>{
   for(const file of ['engine.js','alerts.js','app.js','index.html','pdf.js'])assert.doesNotMatch(readFileSync(new URL('../'+file,import.meta.url),'utf8'),/\bGIR\b/i);

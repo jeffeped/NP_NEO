@@ -1,5 +1,6 @@
 import {formatHydrationVolume} from './hydration.js';
 import {parseNumber} from './engine.js';
+import {compareProducts} from './alerts.js';
 // Baxter SmPC, 19 May 2026, sections 2 and 4.2; accessed 2026-09-16.
 export const NUMETA_SOURCE='https://www.medicines.org.uk/emc/product/7400/smpc';
 // Use whole-bag values, not rounded per-100 mL concentrations.
@@ -27,8 +28,8 @@ export function calculateStandard(input){
   if(input.access==='peripheral')blocks.push('Numeta sem diluição exige acesso venoso central. Diluição não está contemplada neste cálculo.');
   if(fluid>127.9+1e-9)blocks.push('Volume acima do máximo de bula: 127,9 mL/kg/dia. Revise a taxa ou a proteína.');
   if(fluid/24>6.4+1e-9)blocks.push('Vazão acima do máximo de bula: 6,4 mL/kg/h.');
+  if(input.mode==='protein'?value>3.5:compareProducts([value,9.4],[300,3.5])>0)blocks.push('Aminoácidos acima de 3,5 g/kg/dia. Revise a taxa ou a proteína e calcule novamente.');
   if(protein>(day===1?2:3)+1e-9)alerts.push('Proteína acima da referência do projeto para este dia de vida: '+(day===1?'2,0':'3,0')+' g/kg/dia.');
-  if(weight<1&&protein>3.5+1e-9)alerts.push('Proteína acima do teto do projeto de 3,5 g/kg/dia para peso <1000 g.');
   const lip=fluid*7.5/300;
   if(lip>(day===1?2:3)+1e-9)alerts.push('Lipídios acima da referência do projeto para este dia de vida: '+(day===1?'2,0':'3,0')+' g/kg/dia.');
   return {ok:true,weight,day,mode:input.mode,fluid,volume,rate,protein,vig,rows,blocks,alerts};

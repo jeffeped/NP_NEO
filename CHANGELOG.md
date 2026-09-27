@@ -1,5 +1,14 @@
 # Histórico de versões
 
+## 0.6.4 — em revisão
+
+- Na NP individualizada, bloqueia a prescrição e o PDF se aminoácidos solicitados ou efetivos ultrapassarem 3,5 g/kg/dia, se a concentração final de aminoácidos ultrapassar 4%, se a concentração final de glicose ultrapassar 25% ou se a infusão lipídica efetiva ultrapassar 4 g/kg/dia em 24 horas (limite horário exato de 4/24 g/kg/h).
+- Aplica o teto de aminoácidos de 3,5 g/kg/dia também à NP padrão, independentemente do peso; preserva os alertas de referência e a cautela de glicose acima de 20%.
+- Se os componentes excederem o volume solicitado, mostra aviso amarelo e usa a soma efetiva dos componentes como volume total, com água q.s.p. zero. Exibe solicitado e efetivo, recalcula vazão, taxa hídrica e concentrações, e permite PDF se as demais regras estiverem atendidas.
+- Mostra na tela e no PDF as concentrações finais de aminoácidos e glicose e a taxa efetiva de lipídios; os bloqueios usam valores internos após o arredondamento de preparo.
+- Aplica o máximo de fluidos da diretriz ESPGHAN/ESPEN nos dias 1–5 conforme prematuridade e peso ao nascer, e em D6–D30 conforme fase intermediária ou estável selecionada pelo médico. Taxa solicitada ou efetiva acima da referência bloqueia; após D30 exibe apenas aviso. Mantém a referência identificada na tela e no PDF.
+
+
 ## 0.6.3 — em revisão
 
 - Na aba Enteral, oferece a opção de FM85 em dietas alternadas de igual volume: 1 g por 25 mL em metade das dietas equivale, em média, a 0,5 g por 25 mL ou 2 g por 100 mL do leite total.

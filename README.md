@@ -36,15 +36,17 @@ Os testes comparam todas as saídas anteriores do motor com amostras congeladas 
 ## Alertas da bolsa individualizada
 
 - VIG: velocidade de infusão de glicose, em mg/kg/min; fórmula preservada.
-- Glicose final >20%: cautela também no acesso central, sem novo bloqueio.
-- Aminoácidos: referência de 2,0 g/kg/dia no dia 1; 3,0 após o dia 1; teto de 3,5 somente para peso atual <1 kg.
+- Glicose final >20%: cautela também no acesso central; acima de 25%, bloqueio em ambos os acessos.
+- Aminoácidos: referência de 2,0 g/kg/dia no dia 1; 3,0 após o dia 1; teto bloqueante de 3,5 g/kg/dia para todos os recém-nascidos, na solicitação ou na oferta efetiva, e de 4% na concentração final da NP individualizada.
 - Lipídios: referência de 2,0 g/kg/dia no dia 1; 3,0 a partir do dia 2; teto de 4,0.
 - Relação Ca:P sempre molar (mmol de Ca ÷ mmol de P). No dia 1, alvo 0,8–1,0:1, com atenção fora da faixa. Após o dia 1, faixa preferencial 0,8–1,2:1, orientação entre 1,2 e 1,3:1 e atenção abaixo de 0,8 ou acima de 1,3:1.
-- Orientação, atenção e ultrapassagem do teto são níveis informativos, sem acrescentar impedimentos à exportação.
+- Orientação e atenção continuam informativas; doses e concentrações acima dos tetos bloqueantes exigem novos parâmetros e recálculo antes da exportação.
 - Doses solicitadas e efetivas são conferidas. Arredondar volumes de preparo pode elevar a oferta efetiva acima do teto, mesmo se a solicitação estiver no limite.
-- Os bloqueios anteriores, incluindo glicose >12,5% em acesso periférico e volume inviável, permanecem.
+- A glicose >12,5% em acesso periférico continua bloqueante. Se os componentes excederem o volume solicitado, o aplicativo sinaliza em amarelo, usa a soma dos componentes como volume efetivo, com água q.s.p. zero, e recalcula a vazão e as concentrações; não imprime um volume fisicamente impossível.
 
-O teto máximo de aminoácidos para peso ≥1 kg não foi definido nas regras recebidas. Acima da referência habitual há cautela, sem aplicar o teto de 3,5 g/kg/dia a esse grupo.
+Na infusão contínua de 24 horas, o limite lipídico bloqueante é 4 g/kg/dia, que corresponde exatamente a 4 ÷ 24 g/kg/h (aproximadamente 0,167 g/kg/h na tela). Uma oferta efetiva ligeiramente acima do limite pode surgir após arredondar o volume de preparo. A diretriz ESPGHAN/ESPEN/ESPR/CSPEN de lipídios recomenda infusão contínua por 24 horas e não ultrapassar 4 g/kg/dia em recém-nascidos (Lapillonne et al., Clin Nutr. 2018;37:2324–2336, doi:10.1016/j.clnu.2018.06.946). Os limites de concentração da bolsa de 4% e 25% são decisões do responsável clínico do projeto.
+
+**Taxa hídrica da NPP:** nos dias 1–5, o máximo da Tabela 1 de Jochum et al. (Clin Nutr. 2018;37:2344–2353; doi:10.1016/j.clnu.2018.06.948) depende do dia, prematuridade e faixa de peso ao nascer. De D6 a D30, a fase intermediária ou estável deve ser selecionada pelo médico (Tabelas 2–3). A taxa solicitada e a efetiva, inclusive após ajuste amarelo do VT, são comparadas ao máximo; ultrapassá-lo bloqueia prescrição e PDF. Após D30 há apenas aviso, pois as tabelas neonatais não fixam teto nessa faixa. A fonte reconhece variações clínicas importantes (recomendação 6.13); o app não integra outras fontes de água para esta trava.
 O app já utiliza **peso atual em kg** e **dia de vida**, com nascimento = dia 1; estes critérios foram preservados.
 
 Após atualizar a versão hospedada, use “Atualização disponível · reiniciar” no app para trocar o cache offline. Os parâmetros do formulário são descartados ao reiniciar.

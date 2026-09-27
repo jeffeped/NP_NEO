@@ -46,8 +46,10 @@
             <h2><span class="number">01</span> Dados para o cálculo</h2>
             <div class="field-grid">
               <label class="field">Peso atual<div class="input-box"><input id="weight" name="weight" inputmode="decimal" type="text" placeholder="0,000" required aria-label="Peso atual em kg"><span class="unit">kg</span></div></label>
+              <label class="field">Peso ao nascer<div class="input-box"><input id="birth-weight" name="birthWeight" inputmode="decimal" type="text" placeholder="0,000" aria-label="Peso ao nascer em kg"><span class="unit">kg</span></div><span class="help">Necessário nos primeiros cinco dias para prematuros.</span></label>
               <label class="field">Dia de vida<div class="input-box"><input id="day" name="day" inputmode="numeric" type="text" placeholder="1" required aria-label="Dia de vida"><span class="unit">dia</span></div></label>
               <div class="field full"><span>Idade gestacional ao nascer</span><div class="input-box"><input id="ga" inputmode="numeric" type="text" placeholder="Semanas" aria-label="Idade gestacional em semanas" required><span class="unit">sem</span><input id="ga-days" inputmode="numeric" type="text" value="0" aria-label="Dias adicionais de gestação"><span class="unit">dias</span></div></div>
+              <label id="fluid-phase-field" class="field full" hidden>Fase clínica para a taxa hídrica (D6–D30)<select id="fluid-phase" class="hv-select" aria-label="Fase clínica da nutrição parenteral"><option value="">Selecione a fase</option><option value="intermediate">Intermediária · antes do crescimento estável</option><option value="stable">Crescimento estável</option></select><span class="help">Selecionada pelo médico; o dia de vida isolado não determina a fase.</span></label>
               <fieldset class="field full access-field"><legend>Acesso venoso</legend><div class="access"><label><input type="radio" name="access" value="central"><span>Central</span></label><label><input type="radio" name="access" value="peripheral"><span>Periférico</span></label></div></fieldset>
             </div><p class="help">O dia do nascimento é o 1º dia de vida.</p>
           </div></section>
@@ -67,6 +69,7 @@
         <div id="empty-result" class="section section-inner">Preencha os parâmetros e selecione <strong>Calcular NPP</strong>.</div>
         <div id="calculated-result" hidden>
           <div id="result-context" class="context"></div>
+          <p id="prescription-status" class="notice danger" role="alert" hidden></p>
           <div id="result-alerts" aria-live="polite"></div>
           <div id="access-alert" class="notice danger" role="alert" hidden></div>
           <div class="table-wrap"><table aria-label="Composição calculada da NPP"><thead><tr><th>Componente / quantidade</th><th>Volume (mL)</th></tr></thead><tbody id="result-rows"></tbody></table></div>
@@ -281,10 +284,15 @@
         <section class="section"><div class="section-inner">
           <h2>Arredondamentos e ofertas efetivas</h2>
           <p>Zinco e selênio são preparados com duas casas decimais; os demais componentes, com uma. A água q.s.p. conserva os centésimos necessários. As ofertas efetivas consideram os volumes arredondados e as contribuições provenientes de outros componentes.</p>
+          <p>Quando a soma dos componentes ultrapassa o volume solicitado, o app define o volume efetivo como a soma dos componentes e água q.s.p. igual a zero. O aviso amarelo identifica os dois volumes. A vazão, a taxa hídrica efetiva e as concentrações são calculadas para o volume efetivo; confira a mudança antes de utilizar o cálculo.</p>
           <p>Fatores energéticos utilizados: aminoácidos 4 kcal/g, lipídeos 9 kcal/g e glicose 4 kcal/g. A relação proteína/caloria considera somente as calorias não proteicas.</p>
         </div></section>
         <section class="section"><div class="section-inner">
           <h2>Segurança do preparo e administração</h2>
+          <p>Na NP individualizada de 24 horas, aminoácidos acima de 3,5 g/kg/dia na dose solicitada ou efetiva, concentração final de aminoácidos acima de 4% ou de glicose acima de 25%, e lipídios efetivos acima de 4 g/kg/dia (4 ÷ 24 g/kg/h), impedem prescrição e PDF até novos parâmetros e recálculo. As comparações usam os volumes efetivos de preparo e o volume final, antes do arredondamento visual. A cautela de glicose acima de 20% permanece.</p>
+          <p>A taxa hídrica da NPP é comparada ao máximo da ESPGHAN/ESPEN para o dia e a faixa de peso ao nascer nos dias 1–5, com idade gestacional ao nascer para distinguir termo de prematuro. De D6 a D30, o médico seleciona fase intermediária ou crescimento estável. Taxa solicitada ou efetiva acima do máximo bloqueia a prescrição e o PDF. Após D30, o app exibe aviso sem atribuir um teto a tabelas neonatais que não cobrem essa idade. A comparação diz respeito à NPP, não à soma de todas as fontes hídricas.</p>
+          <p>Jochum F et al. Fluid and electrolytes. Clin Nutr. 2018;37:2344–2353. <a href="https://doi.org/10.1016/j.clnu.2018.06.948">doi:10.1016/j.clnu.2018.06.948</a>. Tabelas 1–3 e recomendação 6.13: necessidades individuais podem diferir conforme fototerapia, perdas, retenção e condições respiratórias; o bloqueio implementado corresponde ao protocolo deste app e exige revisão clínica dos parâmetros.</p>
+          <p>Referência para os lipídios: Lapillonne A et al. ESPGHAN/ESPEN/ESPR/CSPEN guidelines on pediatric parenteral nutrition: Lipids. Clin Nutr. 2018;37:2324–2336. <a href="https://doi.org/10.1016/j.clnu.2018.06.946">doi:10.1016/j.clnu.2018.06.946</a>. Limites de concentração de 4% e 25% definidos pelo responsável clínico do projeto.</p>
           <p>Conferir compatibilidade, estabilidade, relação Ca/P, osmolaridade, acesso venoso e oferta efetiva antes da utilização. A NP neonatal deve ser protegida da luz durante o preparo e a administração, conforme protocolo institucional e apresentação utilizada.</p>
           <p>Na NP padrão, vitaminas e oligoelementos não estão incluídos no cálculo e devem ser avaliados separadamente.</p>
         </div></section>
