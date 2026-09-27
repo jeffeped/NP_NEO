@@ -33,6 +33,8 @@ test('Crescimento abre plotador Fenton 2025 em outra aba sem enviar parâmetros'
  assert.equal(link.getAttribute('href'),'https://fentongrowth.ca/');
  assert.equal(link.getAttribute('target'),'_blank');
  assert.match(link.getAttribute('rel'),/noopener noreferrer/);
+ assert.equal(link.nextElementSibling.classList.contains('growth-plotter-instruction'),true);
+ assert.match(link.nextElementSibling.textContent,/role até o fim da página.*“Measurements”.*medidas individuais/);
  assert.match(document.querySelector('#growth .growth-plotter-help').textContent,/não são enviados automaticamente/);
 });
 function openApp() {

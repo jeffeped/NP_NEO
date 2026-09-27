@@ -1,5 +1,9 @@
 # Histórico de versões
 
+## 0.6.6 — em revisão
+
+- Orienta, logo abaixo do link do plotador Fenton 2025 na aba Crescimento, a rolar até o bloco “Measurements” para informar medidas individuais.
+
 ## 0.6.5 — em revisão
 
 - Acrescenta à NP padrão a escolha da apresentação Numeta G13%E 2:1 (240 mL, sem fração lipídica), além da 3:1 (300 mL). Calcula proteína, glicose, energia, sódio, fósforo e demais ofertas pelos valores da bolsa inteira correspondente, exibindo também a composição por 100 mL na tela e no PDF.
