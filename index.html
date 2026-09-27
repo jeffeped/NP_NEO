@@ -12,8 +12,8 @@
   <meta name="author" content="Jefferson Guilherme">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; worker-src 'self'">
   <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="icon" href="./assets/icon-192.png">
-  <link rel="apple-touch-icon" href="./assets/icon-192.png">
+  <link rel="icon" href="./assets/grow-neo-icon-192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="./assets/grow-neo-apple-touch-icon.png">
   <link rel="stylesheet" href="./styles.css">
   <title>GROW_NEO by Prof. Jefferson</title>
 </head>
@@ -45,9 +45,11 @@
           <section class="section"><div class="section-inner">
             <h2><span class="number">01</span> Dados para o cálculo</h2>
             <div class="field-grid">
-              <label class="field">Peso atual<div class="input-box"><input id="weight" name="weight" inputmode="decimal" type="text" placeholder="0,000" required aria-label="Peso atual em kg"><span class="unit">kg</span></div></label>
+              <label class="field">Peso atual<div class="input-box"><input id="weight" name="weight" inputmode="decimal" type="text" placeholder="800" required aria-label="Peso atual em gramas"><span class="unit">g</span></div></label>
+              <label class="field">Peso ao nascer<div class="input-box"><input id="birth-weight" name="birthWeight" inputmode="decimal" type="text" placeholder="800" aria-label="Peso ao nascer em gramas"><span class="unit">g</span></div><span class="help">Necessário nos primeiros cinco dias para prematuros.</span></label>
               <label class="field">Dia de vida<div class="input-box"><input id="day" name="day" inputmode="numeric" type="text" placeholder="1" required aria-label="Dia de vida"><span class="unit">dia</span></div></label>
               <div class="field full"><span>Idade gestacional ao nascer</span><div class="input-box"><input id="ga" inputmode="numeric" type="text" placeholder="Semanas" aria-label="Idade gestacional em semanas" required><span class="unit">sem</span><input id="ga-days" inputmode="numeric" type="text" value="0" aria-label="Dias adicionais de gestação"><span class="unit">dias</span></div></div>
+              <label id="fluid-phase-field" class="field full" hidden>Fase clínica para a taxa hídrica (D6–D30)<select id="fluid-phase" class="hv-select" aria-label="Fase clínica da nutrição parenteral"><option value="">Selecione a fase</option><option value="intermediate">Intermediária · antes do crescimento estável</option><option value="stable">Crescimento estável</option></select><span class="help">Selecionada pelo médico; o dia de vida isolado não determina a fase.</span></label>
               <fieldset class="field full access-field"><legend>Acesso venoso</legend><div class="access"><label><input type="radio" name="access" value="central"><span>Central</span></label><label><input type="radio" name="access" value="peripheral"><span>Periférico</span></label></div></fieldset>
             </div><p class="help">O dia do nascimento é o 1º dia de vida.</p>
           </div></section>
@@ -67,6 +69,7 @@
         <div id="empty-result" class="section section-inner">Preencha os parâmetros e selecione <strong>Calcular NPP</strong>.</div>
         <div id="calculated-result" hidden>
           <div id="result-context" class="context"></div>
+          <p id="prescription-status" class="notice danger" role="alert" hidden></p>
           <div id="result-alerts" aria-live="polite"></div>
           <div id="access-alert" class="notice danger" role="alert" hidden></div>
           <div class="table-wrap"><table aria-label="Composição calculada da NPP"><thead><tr><th>Componente / quantidade</th><th>Volume (mL)</th></tr></thead><tbody id="result-rows"></tbody></table></div>
@@ -85,12 +88,12 @@
           <section class="section"><div class="section-inner">
             <h2><span class="number">01</span> Volume e glicose</h2>
             <div class="field-grid">
-              <label class="field">Peso atual<div class="input-box"><input id="hv-weight" inputmode="decimal" type="text" placeholder="0,000" required aria-label="HV: peso atual em kg"><span class="unit">kg</span></div></label>
+              <label class="field">Peso atual<div class="input-box"><input id="hv-weight" inputmode="decimal" type="text" placeholder="800" required aria-label="HV: peso atual em gramas"><span class="unit">g</span></div></label>
               <label class="field">Taxa hídrica<div class="input-box"><input id="hv-fluid" inputmode="decimal" type="text" placeholder="Informe a taxa" required aria-label="HV: taxa hídrica"><span class="unit">mL/kg/dia</span></div></label>
               <label class="field full">VIG desejada<div class="input-box"><input id="hv-vig" inputmode="decimal" type="text" placeholder="Informe a VIG" required aria-label="HV: VIG desejada"><span class="unit">mg/kg/min</span></div></label>
             </div>
             <p class="help">VIG — velocidade de infusão de glicose.</p>
-            <p class="help">VT (mL/24 h) = taxa hídrica × peso (kg).<br>Glicose (g/24 h) = VIG × peso (kg) × 60 × 24 ÷ 1000.</p>
+            <p class="help">O peso informado em g é dividido por 1000 para os cálculos por kg.<br>VT (mL/24 h) = taxa hídrica × (peso em g ÷ 1000).<br>Glicose (g/24 h) = VIG × (peso em g ÷ 1000) × 60 × 24 ÷ 1000.</p>
           </div></section>
           <section class="section"><div class="section-inner">
             <h2><span class="number">02</span> Eletrólitos prescritos</h2>
@@ -139,7 +142,7 @@
         <p class="caption">Numeta G13%E · bolsa de 300 mL · três câmaras ativadas · sem diluição</p>
         <form id="std-form" autocomplete="off" novalidate class="section section-inner">
           <div class="field-grid">
-            <label class="field">Peso atual (kg)<div class="input-box"><input id="std-weight" type="text" inputmode="decimal" required></div></label>
+            <label class="field">Peso atual<div class="input-box"><input id="std-weight" type="text" inputmode="decimal" placeholder="800" aria-label="NP padrão: peso atual em gramas" required><span class="unit">g</span></div></label>
             <label class="field">Dia de vida<div class="input-box"><input id="std-day" type="text" inputmode="numeric" required></div></label>
             <label class="field full">Calcular a partir de<select id="std-mode" class="hv-select"><option value="fluid">Taxa hídrica (mL/kg/dia)</option><option value="protein">Proteína (g/kg/dia)</option></select></label>
             <label class="field full"><span id="std-value-label">Taxa hídrica destinada ao Numeta</span><div class="input-box"><input id="std-value" type="text" inputmode="decimal" required><span id="std-unit" class="unit">mL/kg/dia</span></div></label>
@@ -176,7 +179,7 @@
             </select></label>
             <p class="help full">Escolha uma única fonte. Calcule-a na aba correspondente antes de integrar; após editar os parâmetros, recalcule.</p>
             <label class="field full">Fase clínica<select id="en-phase" class="hv-select"><option value="">Selecione a fase</option><option value="oligoanuria">Fase de oligoanúria</option><option value="transition">Fase de transição</option><option value="growth">Fase de crescimento</option></select></label>
-            <p class="help full">Seleção clínica manual. Crescimento: bebê clinicamente estável em crescimento. A fase de transição clínica é distinta da régua nutricional PN / EN.</p>
+            <p class="help full">Seleção clínica manual. Crescimento: bebê clinicamente estável em crescimento. A fase de transição clínica é distinta das metas nutricionais PN / EN.</p>
             <label class="field">Peso ao nascer<div class="input-box"><input id="en-birth-weight" inputmode="decimal" type="text"><span class="unit">g</span></div></label>
             <label class="field">Idade gestacional ao nascer<div class="input-box"><input id="en-gestational-age" inputmode="decimal" type="text"><span class="unit">semanas</span></div></label>
             <p class="help full">Dados opcionais, necessários para comparar com a referência de crescimento. IG em semanas completas ou decimais (ex.: 32,5).</p>
@@ -202,7 +205,7 @@
           <p id="en-estimated-note" class="help" hidden>Composição estimada — não corresponde à análise individual do leite.</p>
           <h2 class="page-title enteral-total-title">Oferta nutricional total</h2>
           <div class="table-wrap"><table class="enteral-total-table" aria-label="Oferta nutricional total"><thead><tr><th>Indicador</th><th id="en-iv-heading">IV</th><th>Enteral</th><th>Total</th></tr></thead><tbody id="en-total-rows"></tbody></table></div>
-          <h2 class="page-title">Régua de transição PN → EN</h2>
+          <h2 class="page-title">Metas de transição PN → EN</h2>
           <h3>Referências por fase clínica</h3><div id="en-clinical-reference" class="notice" role="status"></div>
           <div id="en-transition" class="notice" role="status"></div>
           <p class="help">Metas avaliadas antes do arredondamento. Consulte os critérios na aba Notas.</p>
@@ -246,11 +249,11 @@
         <p>Embleton ND et al. Enteral Nutrition in Preterm Infants (2022). JPGN. 2023;76:248–268. <a href="https://doi.org/10.1097/MPG.0000000000003642">doi:10.1097/MPG.0000000000003642</a>.</p></section>
         <p class="caption">Bases dos cálculos, limitações e referências</p>
         <section class="section"><div class="section-inner">
-          <h2>Régua de transição PN → EN</h2>
-          <p>A régua fica ativa quando a oferta enteral é maior que 50 mL/kg/dia e há PN no cálculo integrado. Em 50 mL/kg/dia, permanece inativa.</p>
+          <h2>Metas de transição PN → EN</h2>
+          <p>As metas são avaliadas quando a oferta enteral é maior que 50 mL/kg/dia e há PN no cálculo integrado. Em 50 mL/kg/dia, não são avaliadas.</p>
           <p>Na fase ativa, compara os totais PN + EN com as metas mínimas de energia de 110 kcal/kg/dia e proteína de 2,50 g/kg/dia. Cada meta é avaliada separadamente, usando os valores internos antes do arredondamento da apresentação.</p>
-          <p>Estes são os critérios operacionais aprovados para o aplicativo. A régua não determina redução ou suspensão automática da PN. A composição estimada do leite mantém a incerteza dos aportes calculados.</p>
-          <p>A integração soma a enteral a uma única fonte selecionada: NP individualizada, NP padrão (Numeta), HV ou sem aporte intravenoso. Usa o cálculo válido atual da aba correspondente, com precisão interna completa. Alterar a fonte ou seus parâmetros invalida o resultado integrado; recalcule antes de exportar. Não soma cálculos de outras abas automaticamente.</p><p>Na HV, a energia corresponde à glicose (4 kcal/g, fator já utilizado neste app); a proteína intravenosa é zero. Com HV ou sem aporte intravenoso, a régua PN → EN fica inativa. Os totais hídrico, energético e proteico continuam disponíveis.</p>
+          <p>Estes são os critérios operacionais aprovados para o aplicativo. As metas não determinam redução ou suspensão automática da PN. A composição estimada do leite mantém a incerteza dos aportes calculados.</p>
+          <p>A integração soma a enteral a uma única fonte selecionada: NP individualizada, NP padrão (Numeta), HV ou sem aporte intravenoso. Usa o cálculo válido atual da aba correspondente, com precisão interna completa. Alterar a fonte ou seus parâmetros invalida o resultado integrado; recalcule antes de exportar. Não soma cálculos de outras abas automaticamente.</p><p>Na HV, a energia corresponde à glicose (4 kcal/g, fator já utilizado neste app); a proteína intravenosa é zero; por isso, as metas PN → EN não são avaliadas com HV ou sem aporte intravenoso. Os totais hídrico, energético e proteico continuam disponíveis.</p>
         </div></section>
         <section class="section"><div class="section-inner">
           <h2>Finalidade e limites</h2>
@@ -281,10 +284,19 @@
         <section class="section"><div class="section-inner">
           <h2>Arredondamentos e ofertas efetivas</h2>
           <p>Zinco e selênio são preparados com duas casas decimais; os demais componentes, com uma. A água q.s.p. conserva os centésimos necessários. As ofertas efetivas consideram os volumes arredondados e as contribuições provenientes de outros componentes.</p>
+          <p>Quando a soma dos componentes ultrapassa o volume solicitado, o app define o volume efetivo como a soma dos componentes e água q.s.p. igual a zero. O aviso amarelo identifica os dois volumes. A vazão, a taxa hídrica efetiva e as concentrações são calculadas para o volume efetivo; confira a mudança antes de utilizar o cálculo.</p>
           <p>Fatores energéticos utilizados: aminoácidos 4 kcal/g, lipídeos 9 kcal/g e glicose 4 kcal/g. A relação proteína/caloria considera somente as calorias não proteicas.</p>
         </div></section>
         <section class="section"><div class="section-inner">
           <h2>Segurança do preparo e administração</h2>
+          <p>Na NP individualizada de 24 horas, aminoácidos acima de 3,5 g/kg/dia na dose solicitada ou efetiva, concentração final de aminoácidos acima de 4% ou de glicose acima de 25%, VIG solicitada ou efetiva acima de 12 mg/kg/min e lipídios efetivos acima de 4 g/kg/dia (4 ÷ 24 g/kg/h) impedem prescrição e PDF até novos parâmetros e recálculo. As comparações usam os volumes efetivos de preparo e o volume final, antes do arredondamento visual. A cautela de glicose acima de 20% permanece.</p>
+          <p>A taxa hídrica da NPP é comparada ao máximo da ESPGHAN/ESPEN para o dia e a faixa de peso ao nascer nos dias 1–5, com idade gestacional ao nascer para distinguir termo de prematuro. De D6 a D30, o médico seleciona fase intermediária ou crescimento estável. Taxa solicitada ou efetiva acima do máximo bloqueia a prescrição e o PDF. Após D30, o app exibe aviso sem atribuir um teto a tabelas neonatais que não cobrem essa idade. A comparação diz respeito à NPP, não à soma de todas as fontes hídricas.</p>
+          <p>Valores de entrada fora das faixas amplas de conferência (peso atual 100–20.000 g, peso ao nascer 100–10.000 g, idade gestacional ao nascer 18–45 semanas, dia de vida 1–365 ou taxa hídrica acima de 500 mL/kg/dia) são assinalados em vermelho e exigem correção antes de calcular. Essas barreiras buscam erros de digitação ou unidade, não definem metas de tratamento.</p>
+          <p>Quando a taxa hídrica solicitada ou efetiva fica abaixo de 80 mL/kg/dia, um aviso amarelo recomenda considerar glicerofosfato de sódio no lugar de fosfato de potássio se houver cálcio e fósforo na bolsa. O valor de 80 é critério deste projeto; o fosfato orgânico reduz o risco de precipitação, mas ainda é preciso conferir a compatibilidade com a farmácia.</p>
+          <p>Jochum F et al. Fluid and electrolytes. Clin Nutr. 2018;37:2344–2353. <a href="https://doi.org/10.1016/j.clnu.2018.06.948">doi:10.1016/j.clnu.2018.06.948</a>. Tabelas 1–3 e recomendação 6.13: necessidades individuais podem diferir conforme fototerapia, perdas, retenção e condições respiratórias; o bloqueio implementado corresponde ao protocolo deste app e exige revisão clínica dos parâmetros.</p>
+          <p>Referência para os lipídios: Lapillonne A et al. ESPGHAN/ESPEN/ESPR/CSPEN guidelines on pediatric parenteral nutrition: Lipids. Clin Nutr. 2018;37:2324–2336. <a href="https://doi.org/10.1016/j.clnu.2018.06.946">doi:10.1016/j.clnu.2018.06.946</a>. Limites de concentração de 4% e 25% definidos pelo responsável clínico do projeto.</p>
+          <p>Referência para VIG: Mesotten D et al. ESPGHAN/ESPEN/ESPR/CSPEN guidelines on pediatric parenteral nutrition: Carbohydrates. Clin Nutr. 2018;37:2337–2343. <a href="https://doi.org/10.1016/j.clnu.2018.06.947">doi:10.1016/j.clnu.2018.06.947</a>. A diretriz recomenda preferencialmente não ultrapassar 12 mg/kg/min; o bloqueio é decisão do protocolo deste app.</p>
+          <p>Referência para compatibilidade: ESPGHAN/ESPEN/ESPR/CSPEN guidelines on pediatric parenteral nutrition: Complications. <em>Clinical Nutrition</em>. 2018;37:2418–2429. <a href="https://doi.org/10.1016/j.clnu.2018.06.956">doi:10.1016/j.clnu.2018.06.956</a>. Recomendação 14.15: usar fosfato orgânico para reduzir o risco de precipitação cálcio-fósforo. O limiar de taxa hídrica de 80 mL/kg/dia é definido pelo responsável deste projeto.</p>
           <p>Conferir compatibilidade, estabilidade, relação Ca/P, osmolaridade, acesso venoso e oferta efetiva antes da utilização. A NP neonatal deve ser protegida da luz durante o preparo e a administração, conforme protocolo institucional e apresentação utilizada.</p>
           <p>Na NP padrão, vitaminas e oligoelementos não estão incluídos no cálculo e devem ser avaliados separadamente.</p>
         </div></section>
@@ -309,7 +321,7 @@
         <span id="offline-status" role="status">Preparando uso offline…</span>
         <button id="install-app" type="button" class="text-button" hidden>Instalar no celular</button>
         <button id="install-help-button" type="button" class="text-button">Como instalar</button>
-        <p id="install-help" hidden>No iPhone: abra este link no Safari, toque em Compartilhar e em Adicionar à Tela de Início. No Android: abra no Chrome e use Instalar app ou Adicionar à tela inicial.</p>
+        <p id="install-help" hidden>No iPhone: abra este link no Safari, toque em Compartilhar e em Adicionar à Tela de Início. No Android: abra no Chrome e use Instalar app ou Adicionar à tela inicial. Se o atalho instalado continuar com o ícone antigo NP_NEO após a atualização, remova apenas o atalho e adicione o app novamente.</p>
         <details class="privacy"><summary>Privacidade e dados</summary><p>Parâmetros, cálculos e PDFs são processados neste aparelho. O app não cria histórico de casos nem envia esses campos a um servidor. Fechar ou recarregar a página descarta os dados do formulário. O PDF salvo ou compartilhado fica no destino escolhido por você. A hospedagem e o acesso ao link podem gerar registros técnicos do provedor.</p></details>
         <span>GROW_NEO by Prof. Jefferson · versão <span id="app-version"></span></span>
       </footer>

@@ -29,8 +29,9 @@ export async function createReport(result){
   function horizontal(yy){page.drawLine({start:{x:L,y:yy},end:{x:R,y:yy},thickness:.5,color:line});}
   const ctx=result.input,t=result.totals;
   newPage('Cálculo de nutrição parenteral neonatal');
-  text(`Peso atual: ${compact(ctx.weight)} kg`,L,y,9,bold);text(`Dia de vida: ${ctx.day}`,225,y,9);text(`IG ao nascer: ${ctx.gaWeeks} sem + ${ctx.gaDays} d`,373,y,9);y-=17;
+  text(`Peso atual: ${compact(ctx.weight*1000)} g`,L,y,9,bold);text(`Dia de vida: ${ctx.day}`,225,y,9);text(`IG ao nascer: ${ctx.gaWeeks} sem + ${ctx.gaDays} d`,373,y,9);y-=17;
   text(`Acesso: ${ctx.access==='central'?'central':'periférico'}`,L,y,9);text('Infusão: 24 horas',225,y,9);text('Sem identificação do paciente',373,y,9);y-=24;
+  if(ctx.birthWeight){text(`Peso ao nascer: ${compact(ctx.birthWeight*1000)} g`,L,y,9);y-=17;}
   function compositionHead(){page.drawRectangle({x:L,y:y-9,width:R-L,height:24,color:shade});text('Componente',L+6,y,9,bold);right('Total / dia',354,y,9,bold);right('Dose / taxa efetiva',488,y,9,bold);right('mL',R-6,y,9,bold);y-=27;}
   compositionHead();let group=0;
   for(const row of result.rows){
@@ -39,7 +40,7 @@ export async function createReport(result){
     text(row.name,L+6,y,8.8);right(row.id==='water'?'q.s.p.':`${fmt(row.quantity)} ${row.unit}`,354,y,8.1);right(row.perKg===null?'':`${fmt(row.perKg)} ${row.perUnit}`,488,y,7.8);right(formatVolume(row.volume,row.id),R-6,y,9,bold);horizontal(y-7);y-=21;
   }
   y-=8;
-  const summaries=[['Volume total',fmt(t.totalVolume)+' mL'],['Vazão em 24 horas',fmt(t.infusion)+' mL/h'],['Taxa hídrica',fmt(t.fluid)+' mL/kg/dia'],['Taxa calórica',fmt(t.calories)+' kcal/kg/dia'],['Concentração final de glicose',fmt(t.glucosePercent)+'%'],['Concentração final de cálcio',fmt(t.calciumConcentration)+' mEq/L'],['Concentração final de fósforo',fmt(t.phosphorusConcentration)+' mmol/L'],['Osmolaridade estimada',osm(t.osmolarity)+' mOsm/L'],['Proteína / calorias não proteicas',t.proteinRatio===null?'Não calculável (AA = 0)':'1 : '+fmt(t.proteinRatio)],['Relação Ca/P (mmol/mmol)',result.effective.p>0?fmt((result.effective.ca/2)/result.effective.p)+' : 1':'Não calculável (P = 0)']];
+  const summaries=[...(t.volumeAdjusted?[['Volume solicitado',fmt(t.requestedVolume)+' mL']]:[]),[t.volumeAdjusted?'Volume efetivo':'Volume total',fmt(t.totalVolume)+' mL'],['Vazão em 24 horas',fmt(t.infusion)+' mL/h'],['Taxa hídrica efetiva',fmt(t.fluid)+' mL/kg/dia'],...(result.fluidReference.max!==null?[['Máximo hídrico de referência',result.fluidReference.max+' mL/kg/dia']]:[]),['Taxa calórica',fmt(t.calories)+' kcal/kg/dia'],['VIG efetiva',fmt2(result.effective.vig)+' mg/kg/min'],['Concentração final de aminoácidos',fmt2(t.aminoAcidPercent)+'%'],['Concentração final de glicose',fmt(t.glucosePercent)+'%'],['Infusão de lipídios em 24 horas',t.lipidRate.toFixed(3).replace('.',',')+' g/kg/h'],['Concentração final de cálcio',fmt(t.calciumConcentration)+' mEq/L'],['Concentração final de fósforo',fmt(t.phosphorusConcentration)+' mmol/L'],['Osmolaridade estimada',osm(t.osmolarity)+' mOsm/L'],['Proteína / calorias não proteicas',t.proteinRatio===null?'Não calculável (AA = 0)':'1 : '+fmt(t.proteinRatio)],['Relação Ca/P (mmol/mmol)',result.effective.p>0?fmt((result.effective.ca/2)/result.effective.p)+' : 1':'Não calculável (P = 0)']];
   for(const [name,value] of summaries){if(y<95)newPage('Indicadores da NPP');text(name,L+6,y,9,bold);right(value,R-6,y,9,bold);y-=17;}
   if(result.requiresCentral){if(y<91)newPage('Conferência do acesso');text('ACESSO CENTRAL OBRIGATÓRIO: glicose acima de 12,5%.',L+6,y,9,bold,green);y-=15;}
   newPage('Conferência dos parâmetros');
@@ -49,6 +50,7 @@ export async function createReport(result){
   y-=6;
   if(result.sodiumBreakdown){const s=result.sodiumBreakdown;paragraph(`Sódio total conferido: solicitado ${fmt2(s.requested)} mEq/kg/dia; efetivo ${fmt2(s.actual)} mEq/kg/dia. Glicerofosfato de sódio: ${fmt2(s.phosphate)} mEq/kg/dia; ${s.supplementName}: ${fmt2(s.supplement)} mEq/kg/dia. Valores após arredondar os volumes de preparo.`,9,ink);}
   if(result.rounding.length)paragraph('O arredondamento pode modificar as doses efetivas, especialmente de zinco e selênio. Confira a oferta efetiva antes do uso.');
+  if(result.fluidReference.max!==null)paragraph(`Referência de fluidos para a NPP: ${result.fluidReference.reference}; máximo ${result.fluidReference.max} mL/kg/dia. Valor clínico individual pode variar.`,9,ink);
   if(Math.abs(t.infusion-t.infusionExact)>1e-9)paragraph(`Vazão matemática: ${t.infusionExact.toFixed(4).replace('.',',')} mL/h; exibida: ${fmt(t.infusion)} mL/h. Confira a diferença entre vazão arredondada por 24 horas e volume total.`);
   for(const a of result.adjustments.filter(a=>a.id!=='na'||!result.sodiumBreakdown))paragraph(`Ajuste conferido pelo usuário: ${a.name}, solicitado ${fmt(a.requested)} ${a.unit}, resultante ${fmt(a.actual)} ${a.unit}, por contribuição de ${a.source}. Complemento não acrescentado.`,9,ink);
   for(const notice of result.notices)paragraph(notice);

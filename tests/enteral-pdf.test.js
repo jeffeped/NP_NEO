@@ -50,7 +50,9 @@ for(const [rate,energy,protein,active,energyText,proteinText] of [
  try{
   const doc=await PDFLib.PDFDocument.load(await createEnteralReport({enteral:en,integrated}));assert.equal(doc.getPageCount(),1);
  }finally{PDFLib.PDFPage.prototype.drawText=original;}
- assert.ok(lines.some(s=>s.includes(active?'Régua ativa':'Régua inativa')));
+ assert.ok(lines.includes('Metas de transição PN / EN'));
+ assert.ok(!lines.some(s=>s.includes('Régua de transição')));
+ assert.ok(lines.some(s=>s.includes(active?'Metas de transição avaliadas':'Metas de transição não avaliadas')));
  if(active){assert.ok(lines.some(s=>s.startsWith(`Energia total: ${energyText}`)));assert.ok(lines.some(s=>s.startsWith(`Proteína total: ${proteinText}`)));}
  assert.ok(lines.includes(protein.toFixed(2).replace('.',',')));
 });
@@ -62,5 +64,6 @@ for(const [source,label,column] of [['none','Sem aporte intravenoso','IV (zero)'
  PDFLib.PDFPage.prototype.drawText=function(value,opts){lines.push(value);assert.ok(opts.x+opts.font.widthOfTextAtSize(value,opts.size)<=this.getWidth(),value);return original.call(this,value,opts);};
  try{const pdf=await PDFLib.PDFDocument.load(await createEnteralReport({enteral:en,integrated}));assert.equal(pdf.getPageCount(),1);assert.equal(pdf.getAuthor(),'Jefferson P Guilherme');}finally{PDFLib.PDFPage.prototype.drawText=original;}
  assert.ok(lines.includes('Fonte: '+label));assert.ok(lines.includes(column));
- if(source==='hydration'||source==='none'){assert.ok(lines.includes('0,00'));assert.ok(lines.some(x=>x.includes('Régua inativa: sem PN')));}
+ if(source!=='none')assert.ok(lines.some(x=>x.includes('peso 1.000 g')));
+ if(source==='hydration'||source==='none'){assert.ok(lines.includes('0,00'));assert.ok(lines.some(x=>x.includes('Metas de transição não avaliadas: sem PN')));}
 });

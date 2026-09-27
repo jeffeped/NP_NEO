@@ -1,5 +1,6 @@
-import {nutritionAlerts} from './alerts.js';
-export const VERSION = '0.6.3';
+import {nutritionAlerts,compareProducts} from './alerts.js';
+import {fluidGuidance} from './fluid-guidance.js';
+export const VERSION = '0.6.4';
 export const CONCENTRATIONS = Object.freeze({aa:0.1,lip:0.2,glucose:0.5,nacl:1.7,acetate:2,kcl:1.34,calcium:0.5,magnesium:0.8,kphosP:1.1,kphosK:2,glyceroP:1,glyceroNa:2,oligoZn:500,zinc:200,selenium:60});
 export const ENERGY = Object.freeze({aa:4,lip:9,glucose:4});
 export const round1 = n => Math.round((n + Number.EPSILON * Math.max(1, Math.abs(n))) * 10) / 10;
@@ -9,6 +10,10 @@ export function parseNumber(value) {
   if (typeof value === 'number') return Number.isFinite(value) ? value : NaN;
   if (typeof value !== 'string' || !/^\d+(?:[.,]\d+)?$/.test(value.trim())) return NaN;
   return Number(value.trim().replace(',', '.'));
+}
+export function parseWeightGrams(value){
+  if(typeof value==='string'&&/^\d{1,3}(?:\.\d{3})+(?:,\d+)?$/.test(value.trim()))return Number(value.trim().replaceAll('.','').replace(',','.'));
+  return parseNumber(value);
 }
 const doseFields = ['aa','lip','vig','na','k','ca','mg','p'];
 export function calculate(input) {
@@ -22,6 +27,12 @@ export function calculate(input) {
   }
   for(const field of ['weight','day','gaWeeks','fluid']) if(n[field]===0) errors.push({field,message:`${labels[field]} deve ser maior que zero.`});
   for(const field of ['day','gaWeeks','gaDays']) if(Number.isFinite(n[field])&&!Number.isInteger(n[field])) errors.push({field,message:`${labels[field]} deve ser um número inteiro.`});
+  // Faixas amplas de conferência da entrada, para impedir erros evidentes de unidade/digitação.
+  // Não representam metas terapêuticas nem restringem as doses de eletrólitos.
+  if(Number.isFinite(n.weight)&&n.weight>0&&(n.weight<0.1||n.weight>20))errors.push({field:'weight',message:'Peso atual fora da faixa de conferência (100 a 20.000 g). Confira unidade e digitação.'});
+  if(Number.isFinite(n.day)&&n.day>365)errors.push({field:'day',message:'Dia de vida acima de 365. Confira a digitação.'});
+  if(Number.isFinite(n.gaWeeks)&&n.gaWeeks>0&&(n.gaWeeks<18||n.gaWeeks>45))errors.push({field:'gaWeeks',message:'Idade gestacional ao nascer fora da faixa de conferência (18 a 45 semanas). Confira a digitação.'});
+  if(Number.isFinite(n.fluid)&&n.fluid>500)errors.push({field:'fluid',message:'Taxa hídrica acima de 500 mL/kg/dia. Confira unidade e digitação.'});
   if(n.gaDays>6) errors.push({field:'gaDays',message:'Dias adicionais de gestação: use de 0 a 6.'});
   if(!['central','peripheral'].includes(input.access)) errors.push({field:'access',message:'Selecione o acesso venoso.'});
   if(!['nacl','acetate'].includes(input.naSalt)) errors.push({field:'naSalt',message:'Selecione o sal de sódio.'});
@@ -32,6 +43,14 @@ export function calculate(input) {
   if(!omit.se&&(!Number.isFinite(n.seDose)||n.seDose<=0)) errors.push({field:'seDose',message:'Selênio: informe uma dose maior que zero ou marque Não ofertar.'});
   if(!omit.zn&&preterm&&(!Number.isFinite(n.znDose)||n.znDose<400||n.znDose>500)) errors.push({field:'znDose',message:'Para prematuros, informe zinco entre 400 e 500 mcg/kg/dia.'});
   if(!omit.se&&!preterm&&(!Number.isFinite(n.seDose)||n.seDose<2||n.seDose>3)) errors.push({field:'seDose',message:'Para recém-nascidos a termo, informe selênio entre 2 e 3 mcg/kg/dia.'});
+  n.birthWeight=input.birthWeight===''||input.birthWeight==null?null:parseNumber(input.birthWeight);
+  if(n.birthWeight!==null&&(!Number.isFinite(n.birthWeight)||n.birthWeight<=0||n.birthWeight>1e12))errors.push({field:'birthWeight',message:'Peso ao nascer: informe um valor válido e maior que zero.'});
+  if(Number.isFinite(n.birthWeight)&&n.birthWeight>0&&(n.birthWeight<0.1||n.birthWeight>10))errors.push({field:'birthWeight',message:'Peso ao nascer fora da faixa de conferência (100 a 10.000 g). Confira unidade e digitação.'});
+  let fluidReference=null;
+  if(!errors.length){
+    try{fluidReference=fluidGuidance({day:n.day,gaWeeks:n.gaWeeks,birthWeight:n.birthWeight,phase:input.fluidPhase});}
+    catch(error){errors.push({field:n.day<=5?'birthWeight':'fluidPhase',message:error.message});}
+  }
   if(errors.length) return {ok:false,errors};
   const w=n.weight,c=CONCENTRATIONS;
   const blocks=[],notices=[],adjustments=[],rounding=[];
@@ -100,15 +119,37 @@ export function calculate(input) {
   const totalCents=Math.round(round1(n.fluid*w)*100);
   const componentsCents=Object.values(volumes).reduce((s,v)=>s+Math.round(v*100),0);
   if(!Number.isSafeInteger(totalCents)||!Number.isSafeInteger(componentsCents))return {ok:false,errors:[{field:'weight',message:'Os valores ultrapassam a capacidade numérica do cálculo. Revise os parâmetros.'}]};
-  const waterCents=totalCents-componentsCents;
+  const adjustedTotalCents=Math.max(totalCents,componentsCents);
+  const waterCents=adjustedTotalCents-componentsCents;
   if(totalCents<=0) blocks.push('O volume total arredondou para zero. Revise o peso e a taxa hídrica.');
-  if(waterCents<0) blocks.push(`Os componentes somam ${(componentsCents/100).toFixed(2).replace('.',',')} mL e ultrapassam o volume total de ${(totalCents/100).toFixed(1).replace('.',',')} mL. Revise os parâmetros; não há volume disponível para água q.s.p.`);
-  volumes.water=waterCents>=0?waterCents/100:null;
+  if(componentsCents>totalCents) notices.push(`ATENÇÃO — Volume total solicitado: ${(totalCents/100).toFixed(1).replace('.',',')} mL; soma dos componentes e volume efetivo: ${(adjustedTotalCents/100).toFixed(2).replace('.',',')} mL. Água q.s.p.: 0 mL. A taxa hídrica e a vazão foram recalculadas com o volume efetivo; confira o novo aporte.`);
+  if(fluidReference.max===null)notices.push('ATENÇÃO — Após o 30º dia, a tabela neonatal ESPGHAN/ESPEN não define um teto automático de taxa hídrica para esta NP. Confira a prescrição no contexto clínico.');
+  volumes.water=waterCents/100;
   const grams={aa:volumes.aa*c.aa,lip:volumes.lip*c.lip,glucose:volumes.glucose*c.glucose};
   const nonProtein=grams.glucose*ENERGY.glucose+grams.lip*ENERGY.lip;
   const calories=nonProtein+grams.aa*ENERGY.aa;
-  const totalVolume=totalCents/100;
+  const totalVolume=adjustedTotalCents/100;
+  if(n.fluid<80||compareProducts([totalVolume],[w,80])<0){
+    const advice=input.pSalt==='glycero'?'Glicerofosfato de sódio já selecionado.':'Considere selecionar glicerofosfato de sódio no lugar de fosfato de potássio quando houver cálcio e fósforo na bolsa.';
+    notices.push(`ATENÇÃO — Taxa hídrica da NPP abaixo de 80 mL/kg/dia na solicitação ou no volume efetivo. ${advice} A escolha do sal não substitui a conferência farmacêutica da compatibilidade cálcio-fósforo.`);
+  }
   const glucosePercent=totalVolume>0?grams.glucose/totalVolume*100:0;
+  const aminoAcidPercent=totalVolume>0?grams.aa/totalVolume*100:0;
+  const lipidRate=grams.lip/(w*24);
+  // Compara as quantidades efetivamente preparadas antes de arredondar a exibição.
+  // A bolsa individualizada é infundida continuamente em 24 horas.
+  if(n.aa>3.5||compareProducts([volumes.aa,c.aa],[w,3.5])>0)
+    blocks.push('Aminoácidos acima de 3,5 g/kg/dia na dose solicitada ou na oferta efetiva. Revise a dose e calcule novamente.');
+  if(totalVolume>0&&compareProducts([volumes.aa,c.aa,100],[totalVolume,4])>0)
+    blocks.push('Concentração final de aminoácidos acima de 4%. Revise a dose de aminoácidos ou a taxa hídrica e calcule novamente.');
+  if(totalVolume>0&&compareProducts([volumes.glucose,c.glucose,100],[totalVolume,25])>0)
+    blocks.push('Concentração final de glicose acima de 25%. Revise a VIG ou a taxa hídrica e calcule novamente.');
+  if(n.vig>12||compareProducts([volumes.glucose,500],[w,1440,12])>0)
+    blocks.push('VIG acima de 12 mg/kg/min na dose solicitada ou na oferta efetiva. Revise a VIG e calcule novamente.');
+  if(compareProducts([volumes.lip,c.lip],[w,4])>0)
+    blocks.push('Taxa de infusão de lipídios acima do limite de 4 g/kg/dia em 24 horas (aproximadamente 0,167 g/kg/h). Revise a dose de lipídios e calcule novamente.');
+  if(fluidReference.max!==null&&(n.fluid>fluidReference.max||compareProducts([totalVolume],[w,fluidReference.max])>0))
+    blocks.push(`Taxa hídrica da NPP acima de ${fluidReference.max} mL/kg/dia (${fluidReference.reference}). Revise o volume solicitado e o volume efetivo dos componentes; calcule novamente.`);
   const calciumConcentration=totalVolume>0?effective.ca*w*1000/totalVolume:0;
   const phosphorusConcentration=totalVolume>0?effective.p*w*1000/totalVolume:0;
   // Pereira-da-Silva et al. (JPEN, 2004; PMID 14763792).
@@ -121,7 +162,7 @@ export function calculate(input) {
     (effective.na*w*1000/totalVolume)*2+
     (effective.p*w*phosphorusAtomicMass*1000/totalVolume)*0.2-50
   ):null;
-  const requiresCentral=Math.round(volumes.glucose*100)*4>totalCents;
+  const requiresCentral=Math.round(volumes.glucose*100)*4>adjustedTotalCents;
   const accessBlocked=requiresCentral&&input.access==='peripheral';
   if(accessBlocked) blocks.push('Concentração de glicose acima de 12,5%. É obrigatório acesso central. Revise o acesso ou os parâmetros.');
   const rows=[];
@@ -143,6 +184,6 @@ export function calculate(input) {
     ['na','Sódio total',n.na,effective.na,'mEq/kg/dia'],['k','Potássio total',n.k,effective.k,'mEq/kg/dia'],['ca','Cálcio',n.ca,effective.ca,'mEq/kg/dia'],['mg','Magnésio',n.mg,effective.mg,'mEq/kg/dia'],['p','Fósforo',n.p,effective.p,'mmol/kg/dia'],['zn','Zinco total',zincTarget,effective.zn,'mcg/kg/dia'],['se','Selênio',seleniumTarget,effective.se,'mcg/kg/dia']
   ].map(([id,name,requested,actual,unit])=>({id,name,requested,actual,unit}));
   const alerts=nutritionAlerts({...n,access:input.access,pSalt:input.pSalt},{volumes,effective,totalVolume,glucosePercent,osmolarity,calciumConcentration,phosphorusConcentration});
-  return {ok:true,input:{...n,access:input.access,naSalt:input.naSalt,pSalt:input.pSalt,omit},rows,volumes,grams,effective,offers,rounding,adjustments,sodiumBreakdown,notices,alerts,blocks,requiresCentral,accessBlocked,canExport:blocks.length===0,
-    totals:{totalVolume,componentsVolume:componentsCents/100,water:volumes.water,infusion:round1(totalVolume/24),infusionExact:totalVolume/24,fluid:totalVolume/w,calories:calories/w,glucosePercent,calciumConcentration,phosphorusConcentration,osmolarity,nonProtein:nonProtein/w,proteinRatio:grams.aa>0?nonProtein/grams.aa:null},version:VERSION};
+  return {ok:true,input:{...n,fluidPhase:input.fluidPhase,access:input.access,naSalt:input.naSalt,pSalt:input.pSalt,omit},rows,volumes,grams,effective,offers,rounding,adjustments,sodiumBreakdown,notices,alerts,blocks,fluidReference,requiresCentral,accessBlocked,canExport:blocks.length===0,
+    totals:{totalVolume,requestedVolume:totalCents/100,volumeAdjusted:componentsCents>totalCents,componentsVolume:componentsCents/100,water:volumes.water,infusion:round1(totalVolume/24),infusionExact:totalVolume/24,fluid:totalVolume/w,calories:calories/w,aminoAcidPercent,glucosePercent,lipidRate,calciumConcentration,phosphorusConcentration,osmolarity,nonProtein:nonProtein/w,proteinRatio:grams.aa>0?nonProtein/grams.aa:null},version:VERSION};
 }

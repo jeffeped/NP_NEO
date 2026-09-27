@@ -41,9 +41,9 @@ for(const [energy,protein] of [[109.9,2.49],[110,2.5],[109.9,2.5],[110,2.49]])te
 });
 test('interface ativa acima de 50; edição e novo cálculo de PN invalidam resultado',()=>{
  const app=openEnteral({fluid:60,calories:70,protein:1.5});
- app.set('en-rate','50,0');app.dispatch('enteral-form','submit');assert.match(app.el('en-transition').textContent,/Régua inativa/);
+ app.set('en-rate','50,0');app.dispatch('enteral-form','submit');assert.match(app.el('en-transition').textContent,/Metas de transição não avaliadas/);
  app.set('en-rate','50,1');assert.equal(app.el('en-result').hidden,true);
- app.dispatch('enteral-form','submit');assert.match(app.el('en-transition').textContent,/Régua ativa/);
+ app.dispatch('enteral-form','submit');assert.match(app.el('en-transition').textContent,/Metas de transição avaliadas/);
  app.dispatch('npp-form','submit');assert.equal(app.el('en-result').hidden,true);assert.equal(app.el('en-pdf-download').hidden,true);
  app.set('en-rate','inválido');app.dispatch('enteral-form','submit');assert.equal(app.el('en-result').hidden,true);assert.equal(app.el('en-errors').hidden,false);
 });

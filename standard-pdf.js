@@ -19,7 +19,7 @@ export async function createStandardReport(result){
   function row(label,value){room(24);text(label,49,y,10);right(value,546,y,10,bold);y-=24;}
   const f=formatStandard;
   newPage('Prescrição calculada - infusão em 24 horas');
-  paragraph(`Peso: ${f(result.weight)} kg | Dia de vida: ${result.day} | Acesso central | Cálculo por ${result.mode==='protein'?'proteína':'taxa hídrica'}`);
+  paragraph(`Peso: ${f(result.weight*1000)} g | Dia de vida: ${result.day} | Acesso central | Cálculo por ${result.mode==='protein'?'proteína':'taxa hídrica'}`);
   paragraph('Três câmaras ativadas, bolsa de 300 mL, sem diluição.');
   page.drawRectangle({x:42,y:y-8,width:511,height:24,color:shade});text('Componente',49,y,10,bold);right('Volume (mL)',546,y,10,bold);y-=29;
   row('Numeta G13%E',formatStandardVolume(result.volume));y-=8;

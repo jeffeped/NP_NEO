@@ -15,6 +15,19 @@ import {initGrowth} from '../growth-ui.js';
 // Executa o app real em um DOM simulado; não substitui a revisão visual em navegador.
 const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
 const source=readFileSync(new URL('../app.js',import.meta.url),'utf8').replace(/^import .*;\n/gm,'');
+test('ícone instalado usa logo GROW_NEO em todos os tamanhos e no iPhone',()=>{
+  const manifest=JSON.parse(readFileSync(new URL('../manifest.webmanifest',import.meta.url),'utf8'));
+  for(const icon of manifest.icons){
+    assert.match(icon.src,/grow-neo-(icon|maskable)-/);
+    const bytes=readFileSync(new URL('../'+icon.src.replace(/^\.\//,''),import.meta.url));
+    assert.equal(bytes.readUInt32BE(16),Number(icon.sizes.split('x')[0]));
+    assert.equal(bytes.readUInt32BE(20),Number(icon.sizes.split('x')[1]));
+  }
+  const apple='./assets/grow-neo-apple-touch-icon.png';
+  assert.ok(html.includes(`rel="apple-touch-icon" sizes="180x180" href="${apple}"`));
+  assert.equal(readFileSync(new URL('../'+apple.replace(/^\.\//,''),import.meta.url)).readUInt32BE(16),180);
+  assert.doesNotMatch(html+JSON.stringify(manifest),/assets\/icon-(192|512|maskable)/);
+});
 function openApp() {
   const {document,window}=parseHTML(html);
   window.HTMLElement.prototype.scrollIntoView=function(){};
@@ -26,7 +39,7 @@ function openApp() {
   for(const select of document.querySelectorAll('select'))select.firstElementChild.selected=true;
   const set=(id,value)=>{const input=document.getElementById(id);if(input.tagName==='SELECT'){for(const option of input.options)option.removeAttribute('selected');Array.from(input.options).find(option=>option.value===String(value)).selected=true;}else input.value=String(value);input.dispatchEvent(new window.Event('input',{bubbles:true}));};
   const access=value=>{for(const el of document.querySelectorAll('[name="access"]')){el.checked=el.value===value;if(el.checked)el.setAttribute('checked','');else el.removeAttribute('checked');}document.getElementById('npp-form').dispatchEvent(new window.Event('change',{bubbles:true}));};
-  for(const [id,value] of Object.entries({weight:'0,8',day:1,ga:27,'ga-days':0,fluid:200,aa:2,lip:2,vig:5,na:0,k:0,ca:0,mg:0,p:0,seDose:6}))set(id,value);
+  for(const [id,value] of Object.entries({weight:'800','birth-weight':'800','fluid-phase':'stable',day:1,ga:27,'ga-days':0,fluid:100,aa:2,lip:2,vig:5,na:0,k:0,ca:0,mg:0,p:0,seDose:6}))set(id,value);
   access('central');
   for(const id of ['va','vb','oligo','zn','se'])document.getElementById('omit-'+id).checked=true;
   const calculate=()=>{document.getElementById('npp-form').dispatchEvent(new window.Event('submit',{bubbles:true,cancelable:true}));assert.equal(document.getElementById('form-errors').hidden,true,document.getElementById('form-errors').textContent);};
@@ -35,6 +48,7 @@ function openApp() {
 test('interface: dia 1 na referência, orientação e exportação disponível',()=>{
   const app=openApp();app.calculate();
   assert.equal(app.el('calculated-result').hidden,false);assert.equal(app.el('export-pdf').disabled,false);
+  assert.match(app.el('result-context').textContent,/Peso: 800 gPeso ao nascer: 800 g/);
   assert.deepEqual(app.alerts().map(a=>a.level),['info','info']);
   assert.match(app.el('reference-aa').textContent,/2,0 g\/kg\/dia/);
   assert.match(app.el('reference-vig').textContent,/velocidade de infusão de glicose/);
@@ -44,8 +58,32 @@ test('interface: dia 1 na referência, orientação e exportação disponível',
   assert.match(app.el('notes').textContent,/não corresponde à osmolalidade laboratorial medida/);
   assert.match(app.el('notes').textContent,/Pereira-da-Silva/);
 });
+test('pesos de NP individualizada, Numeta e HV são informados em gramas e convertidos para os cálculos',()=>{
+  const app=openApp();
+  for(const id of ['weight','birth-weight','hv-weight','std-weight'])assert.match(app.el(id).getAttribute('aria-label')||app.el(id).closest('label').textContent,/gramas|\bg\b/i);
+  app.set('weight','0,8');app.dispatch('npp-form','submit');
+  assert.match(app.el('form-errors').textContent,/Peso atual fora da faixa de conferência \(100 a 20\.000 g\)/);
+  app.set('weight',800);app.calculate();assert.match(app.el('result-summary').textContent,/Volume total80,0 mL/);
+  app.set('weight','1.000');app.set('birth-weight','1.000');app.calculate();
+  assert.match(app.el('result-context').textContent,/Peso: 1\.000 gPeso ao nascer: 1\.000 g/);
+  assert.match(app.el('result-summary').textContent,/Volume total100,0 mL/);
+  app.set('std-weight',800);app.set('std-day',2);app.set('std-value',100);app.set('std-access','central');app.dispatch('std-form','submit');
+  assert.match(app.el('std-context').textContent,/Peso: 800 g/);
+  assert.match(app.el('std-prescription').textContent,/80,0 mL/);
+  app.set('std-weight','1.000');app.dispatch('std-form','submit');
+  assert.match(app.el('std-prescription').textContent,/100,0 mL/);
+  const hv=openHydration();hv.calculateHydration();
+  assert.match(hv.el('hv-summary').textContent,/2000 g ÷ 1000/);
+  assert.match(hv.el('hv-final-summary').textContent,/200,0 mL/);
+  hv.set('hv-weight','2.000');hv.calculateHydration();
+  assert.match(hv.el('hv-final-summary').textContent,/200,0 mL/);
+  app.set('std-weight','0,8');app.dispatch('std-form','submit');
+  assert.match(app.el('std-errors').textContent,/100 e 20\.000 g/);
+  hv.set('hv-weight','0,8');hv.calculateHydration();
+  assert.match(hv.el('hv-errors').textContent,/100 a 20\.000 g/);
+});
 test('interface: contribuição do glicerofosfato exige aceite do sódio total para PDF',()=>{
-  const app=openApp();app.set('weight',1);app.set('na',1);app.set('p','0,4');app.set('salt-p','glycero');app.calculate();
+  const app=openApp();app.set('weight',1000);app.set('na',1);app.set('p','0,4');app.set('salt-p','glycero');app.calculate();
   const check=app.document.querySelector('[data-ack="na"]');
   assert.ok(check);
   assert.match(app.el('acknowledgements').textContent,/solicitado 1,00.*efetivo 0,97.*Glicerofosfato de sódio: 0,80.*cloreto de sódio 10%: 0,17/);
@@ -61,7 +99,7 @@ test('interface: contribuição do glicerofosfato exige aceite do sódio total p
   assert.equal(app.el('export-pdf').disabled,false);
 });
 test('interface: excesso de sódio pelo glicerofosfato pede apenas um aceite',()=>{
-  const app=openApp();app.set('weight',1);app.set('na',0);app.set('p','0,4');app.set('salt-p','glycero');app.calculate();
+  const app=openApp();app.set('weight',1000);app.set('na',0);app.set('p','0,4');app.set('salt-p','glycero');app.calculate();
   assert.equal(app.document.querySelectorAll('[data-ack="na"]').length,1);
   assert.match(app.el('acknowledgements').textContent,/efetivo 0,80.*glicerofosfato de sódio: 0,80/i);
   assert.equal(app.el('export-pdf').disabled,true);
@@ -70,7 +108,7 @@ test('interface: zinco e selênio seguem prematuridade, não peso de 1.500 g',()
   const app=openApp();
   app.el('omit-zn').checked=false;app.el('omit-se').checked=false;
   app.dispatch('omit-zn','change');app.dispatch('omit-se','change');
-  app.set('weight','1,8');app.set('ga',36);app.set('ga-days',6);app.set('znDose',500);
+  app.set('weight','1800');app.set('ga',36);app.set('ga-days',6);app.set('znDose',500);
   assert.match(app.el('rule-zn').textContent,/400 a 500/);
   assert.match(app.el('rule-se').textContent,/7 mcg/);
   assert.equal(app.el('znDose').disabled,false);assert.equal(app.el('seDose').disabled,false);
@@ -87,36 +125,86 @@ test('interface: acima da referência inicial gera cautela sem bloquear',()=>{
   assert.deepEqual(app.alerts().map(a=>a.level),['caution','caution']);
   assert.equal(app.el('export-pdf').disabled,false);
 });
-test('interface: alertas clínicos coexistem com orientação para manter acesso central',()=>{
+test('interface: alertas clínicos coexistem com bloqueios para AA e lipídios',()=>{
   const app=openApp();for(const [id,value] of Object.entries({day:2,fluid:140,aa:3.6,lip:4.1,vig:20}))app.set(id,value);
   app.calculate();
   assert.deepEqual(app.alerts().map(a=>[a.id,a.level]),[['glucose-concentration-high','caution'],['osmolarity-high','caution'],['aa-ceiling','high'],['lip-ceiling','high']]);
   assert.match(app.alerts()[1].text,/Mantenha o acesso venoso central selecionado/);
-  assert.equal(app.el('export-pdf').disabled,false);
+  assert.equal(app.el('export-pdf').disabled,true);
+  assert.match(app.el('prescription-status').textContent,/Prescrição e PDF bloqueados/);
+  assert.match(app.el('result-alerts').textContent,/Aminoácidos acima de 3,5.*Taxa de infusão de lipídios/);
   assert.match(app.alerts()[0].text,/mesmo em acesso venoso central/);
 });
-test('interface: peso ≥1000 g não apresenta teto 3,5 nem na ajuda nem no alerta',()=>{
-  const app=openApp();app.set('weight',1);app.set('day',2);app.set('aa',3.5);app.set('lip',3);app.calculate();
-  assert.doesNotMatch(app.el('reference-aa').textContent,/3,5/);
+test('interface: peso ≥1000 g também apresenta teto 3,5 de aminoácidos',()=>{
+  const app=openApp();app.set('weight',1000);app.set('day',2);app.set('aa',3.5);app.set('lip',3);app.calculate();
+  assert.match(app.el('reference-aa').textContent,/Teto: 3,5/);
   assert.equal(app.alerts().find(a=>a.id==='aa-reference').level,'caution');
-  assert.doesNotMatch(app.alerts()[0].text,/teto de 3,5|Teto: 3,5/);
+  app.set('aa',3.6);app.calculate();assert.equal(app.el('export-pdf').disabled,true);
 });
 test('interface: exatamente 20%, acima de 20% e troca de acesso',()=>{
-  const app=openApp();app.set('weight',1);app.set('fluid',90);app.set('vig',12.5);app.calculate();
+  const app=openApp();app.set('weight',625);app.set('birth-weight',625);app.set('fluid',86.4);app.set('vig',12);app.calculate();
   assert.equal(app.alerts().some(a=>a.id==='glucose-concentration-high'),false);
-  app.set('fluid',89.9);assert.equal(app.el('calculated-result').hidden,true);app.calculate();
+  app.set('fluid',86.3);assert.equal(app.el('calculated-result').hidden,true);app.calculate();
   assert.ok(app.alerts().some(a=>a.id==='glucose-concentration-high'));
   assert.equal(app.el('export-pdf').disabled,false);
   app.access('peripheral');app.calculate();
   assert.equal(app.el('export-pdf').disabled,true);assert.ok(app.alerts().some(a=>a.id==='glucose-concentration-high'));
   assert.match(app.el('access-alert').textContent,/12,5%/);
 });
+test('interface: VIG acima de 12 ou arredondada acima do teto impede PDF até correção',()=>{
+  const app=openApp();app.set('weight',625);app.set('birth-weight',625);app.set('vig','12,01');app.calculate();
+  assert.equal(app.el('export-pdf').disabled,true);
+  assert.match(app.el('result-alerts').textContent,/VIG acima de 12 mg\/kg\/min/);
+  app.set('vig',12);app.calculate();assert.equal(app.el('export-pdf').disabled,false);
+  app.set('weight',1000);app.set('birth-weight',1000);app.calculate();
+  assert.equal(app.el('export-pdf').disabled,true);
+  assert.match(app.el('result-summary').textContent,/VIG efetiva12,01 mg\/kg\/min/);
+});
+test('interface: peso com erro de unidade fica vermelho, invalida resultado e exige correção',()=>{
+  const app=openApp();app.calculate();assert.equal(app.el('export-pdf').disabled,false);
+  app.set('weight',800000);app.dispatch('npp-form','submit');
+  assert.equal(app.el('calculated-result').hidden,true);
+  assert.equal(app.el('export-pdf').disabled,true);
+  assert.equal(app.el('form-errors').hidden,false);
+  assert.match(app.el('form-errors').textContent,/Peso atual fora da faixa de conferência/);
+  assert.ok(app.el('form-errors').classList.contains('danger'));
+  app.set('weight','800');app.calculate();assert.equal(app.el('export-pdf').disabled,false);
+});
+test('interface: taxa abaixo de 80 exibe bandeira amarela e permite PDF',()=>{
+  const app=openApp();app.set('fluid','79,9');app.set('salt-p','kphos');app.calculate();
+  assert.equal(app.el('export-pdf').disabled,false);
+  assert.match(app.el('result-alerts').textContent,/Taxa hídrica da NPP abaixo de 80.*Considere selecionar glicerofosfato de sódio/);
+});
+test('interface: bloqueios vermelhos exigem novos parâmetros; VT ajustado é amarelo',()=>{
+  const app=openApp();app.set('weight',1000);app.set('aa','3,2');app.set('fluid','79,9');app.calculate();
+  assert.equal(app.el('export-pdf').disabled,true);
+  assert.match(app.el('result-alerts').textContent,/Concentração final de aminoácidos acima de 4%/);
+  app.set('fluid',80);assert.equal(app.el('calculated-result').hidden,true);
+  app.calculate();assert.equal(app.el('export-pdf').disabled,false);
+  app.set('weight','800');app.set('fluid',50);app.set('aa',2);app.set('lip',3);app.set('vig',6);app.calculate();
+  assert.equal(app.el('prescription-status').hidden,true);
+  assert.equal(app.el('export-pdf').disabled,false);
+  assert.match(app.el('result-alerts').textContent,/Volume total solicitado.*Água q\.s\.p\.: 0 mL/);
+  assert.match(app.el('result-summary').textContent,/Volume solicitado40,0 mLVolume efetivo41,8 mL/);
+});
+test('interface: máximo hídrico usa peso ao nascer e fase selecionada, sem teto após D30',()=>{
+  const app=openApp();app.set('fluid','100,1');app.calculate();
+  assert.equal(app.el('export-pdf').disabled,true);
+  assert.match(app.el('result-alerts').textContent,/Taxa hídrica da NPP acima de 100/);
+  app.set('day',6);assert.equal(app.el('fluid-phase-field').hidden,false);
+  app.set('fluid-phase','');app.dispatch('npp-form','submit');
+  assert.match(app.el('form-errors').textContent,/selecione fase intermediária/);
+  app.set('fluid-phase','intermediate');app.set('fluid',160);app.calculate();
+  assert.equal(app.el('export-pdf').disabled,false);
+  app.set('day',31);assert.equal(app.el('fluid-phase-field').hidden,true);
+  app.calculate();assert.match(app.el('result-alerts').textContent,/Após o 30º dia/);
+});
 
 function openHydration(){
   const app=openApp();
   const unit=value=>{app.el('hv-doseUnit').querySelector(`option[value="${value}"]`).selected=true;app.dispatch('hv-doseUnit','change');};
   unit('perKgDay');
-  for(const [id,value] of Object.entries({weight:2,fluid:100,vig:5,na:1.7,k:1.34,ca:0.5,mg:0.8}))app.set('hv-'+id,value);
+  for(const [id,value] of Object.entries({weight:2000,fluid:100,vig:5,na:1.7,k:1.34,ca:0.5,mg:0.8}))app.set('hv-'+id,value);
   app.dispatch('tab-hydration','click');
   return {...app,unit,calculateHydration:()=>app.dispatch('hv-form','submit')};
 }
@@ -170,7 +258,7 @@ test('interface HV: mudar equivalência do rótulo exige recálculo',()=>{
 test('interface HV: formulário independente preserva resultado e exportação da NP',()=>{
   const app=openHydration();app.calculate();
   const npResult=app.el('result-summary').textContent;
-  app.dispatch('tab-hydration','click');app.calculateHydration();app.set('hv-weight',3);
+  app.dispatch('tab-hydration','click');app.calculateHydration();app.set('hv-weight',3000);
   app.dispatch('tab-results','click');
   assert.equal(app.el('calculated-result').hidden,false);assert.equal(app.el('export-pdf').disabled,false);
   assert.equal(app.el('result-summary').textContent,npResult);
@@ -197,7 +285,7 @@ test('interface crescimento: calcula peso médio e mostra cautela antes de recup
 
 test('interface: NP padrão calcula por taxa, troca para proteína e invalida saída',()=>{
  const app=openApp();app.dispatch('tab-standard','click');
- for(const [id,value] of Object.entries({'std-weight':'0,8','std-day':2,'std-value':100,'std-access':'central'}))app.set(id,value);
+ for(const [id,value] of Object.entries({'std-weight':'800','std-day':2,'std-value':100,'std-access':'central'}))app.set(id,value);
  app.dispatch('std-form','submit');assert.equal(app.el('std-errors').hidden,true);assert.equal(app.el('std-result').hidden,false);
  assert.match(app.el('std-prescription').textContent,/80,0 mL/);assert.equal(app.el('std-export').disabled,false);assert.match(app.el('std-summary').textContent,/Concentração de glicose13,3%/);
  app.set('std-mode','protein');app.dispatch('std-mode','change');assert.equal(app.el('std-result').hidden,true);assert.equal(app.el('std-value').value,'');assert.equal(app.el('std-export').disabled,true);assert.equal(app.el('std-pdf-download').hidden,true);
@@ -217,7 +305,7 @@ test('prescrição: Ca/P molar após P/cal usa ofertas efetivas, incluindo arred
     assert.equal(rows[index+1].lastChild.textContent,'1,0 : 1');
   }
   app.set('ca',1);app.set('p',0.14);app.calculate();
-  // Peso 0,8 kg: Ca = 0,4 mmol; fosfato de potássio = 0,11 mmol após arredondar o volume.
+  // Peso informado: 800 g (0,8 kg): Ca = 0,4 mmol; fosfato de potássio = 0,11 mmol após arredondar o volume.
   assert.equal(app.el('result-summary').lastChild.lastChild.textContent,'3,6 : 1');
   app.set('ca',0);app.calculate();
   assert.equal(app.el('result-summary').lastChild.lastChild.textContent,'0,0 : 1');
@@ -226,7 +314,7 @@ test('prescrição: Ca/P molar após P/cal usa ofertas efetivas, incluindo arred
 });
 
 test('interface: mostra concentrações finais de cálcio e fósforo',()=>{
-  const app=openApp();app.set('weight',1);app.set('fluid',100);app.set('ca',5);app.set('p',2.5);app.set('salt-p','glycero');app.calculate();
+  const app=openApp();app.set('weight',1000);app.set('fluid',100);app.set('ca',5);app.set('p',2.5);app.set('salt-p','glycero');app.calculate();
   assert.match(app.el('result-summary').textContent,/Concentração final de cálcio50,0 mEq\/L/);
   assert.match(app.el('result-summary').textContent,/Concentração final de fósforo25,0 mmol\/L/);
   assert.doesNotMatch(app.el('result-alerts').textContent,/composição estudada/);
@@ -266,7 +354,7 @@ test('interface Enteral: composição analisada substitui estimativa',()=>{
 test('interface Enteral: edição da NP exige recálculo, sem recuperar valores antigos',()=>{
  const app=openApp();app.calculate();app.set('en-source','individual');app.set('en-type','lhop');app.set('en-rate',80);app.dispatch('enteral-form','submit');
  assert.equal(app.el('en-result').hidden,false);
- app.set('fluid',180);assert.equal(app.el('en-result').hidden,true);
+ app.set('fluid',90);assert.equal(app.el('en-result').hidden,true);
  app.dispatch('enteral-form','submit');assert.match(app.el('en-errors').textContent,/Calcule novamente/);assert.equal(app.el('en-result').hidden,true);
  app.calculate();app.dispatch('enteral-form','submit');assert.equal(app.el('en-result').hidden,false);
 });
@@ -276,11 +364,11 @@ test('interface Enteral: tabela total usa classe responsiva dedicada',()=>{
 
 function enteralSetup(app,source){app.set('en-source',source);app.set('en-type','lhop');app.set('en-rate',80);app.dispatch('enteral-form','submit');}
 function standardSetup(app,mode='fluid',value=60,access='central'){
- for(const [id,v] of Object.entries({'std-weight':1,'std-day':2,'std-mode':mode,'std-value':value,'std-access':access}))app.set(id,v);
+ for(const [id,v] of Object.entries({'std-weight':1000,'std-day':2,'std-mode':mode,'std-value':value,'std-access':access}))app.set(id,v);
  app.dispatch('std-form','submit');
 }
 function hydrationSetup(app,vig=5){
- for(const [id,v] of Object.entries({'hv-weight':1,'hv-fluid':60,'hv-vig':vig,'hv-doseUnit':'perKgDay','hv-na':0,'hv-k':0,'hv-ca':0,'hv-mg':0}))app.set(id,v);
+ for(const [id,v] of Object.entries({'hv-weight':1000,'hv-fluid':60,'hv-vig':vig,'hv-doseUnit':'perKgDay','hv-na':0,'hv-k':0,'hv-ca':0,'hv-mg':0}))app.set(id,v);
  app.dispatch('hv-form','submit');
 }
 function totalCells(app){return Array.from(app.el('en-total-rows').children).map(row=>Array.from(row.children).slice(1).map(cell=>cell.textContent));}
@@ -288,7 +376,7 @@ test('integração real: Numeta + enteral, seleção exclusiva mesmo com outras 
  const app=openApp();app.calculate();hydrationSetup(app);standardSetup(app);
  enteralSetup(app,'standard');assert.equal(app.el('en-errors').hidden,true);
  assert.deepEqual(totalCells(app),[['60,0','80,0','140,0'],['54,6','52,0','106,6'],['1,88','0,96','2,84']]);
- assert.match(app.el('en-pn-note').textContent,/NP padrão \(Numeta\)/);assert.match(app.el('en-transition').textContent,/Régua ativa/);
+ assert.match(app.el('en-pn-note').textContent,/NP padrão \(Numeta\)/);assert.match(app.el('en-transition').textContent,/Metas de transição avaliadas/);
  assert.match(app.el('en-transition').textContent,/Energia total: abaixo da meta/);assert.match(app.el('en-transition').textContent,/Proteína total: meta atingida/);
 });
 test('integração real: Numeta pelo modo proteína produz os mesmos totais',()=>{

@@ -15,8 +15,13 @@ test('Numeta: protein mode inverts fluid mode and weight scales totals only',()=
  const other=calc({value:r.fluid,weight:1.6});near(other.volume,2*r.volume);near(other.vig,r.vig);
 });
 test('Numeta: daily maximum and peripheral access block prescription',()=>{
- assert.equal(calc({value:127.9}).blocks.length,0);assert.ok(calc({value:127.9001}).blocks.length);
+ assert.equal(calc({value:127.9}).blocks.some(x=>x.includes('máximo de bula')),false);assert.ok(calc({value:127.9001}).blocks.some(x=>x.includes('máximo de bula')));
  assert.ok(calc({access:'peripheral'}).blocks.length);assert.ok(calc({value:160}).blocks.some(x=>x.includes('Vazão')));
+});
+test('Numeta: AA acima de 3,5 g/kg/dia bloqueia ambos os modos, inclusive peso ≥1 kg',()=>{
+ assert.equal(calc({weight:2,mode:'protein',value:3.5}).blocks.length,0);
+ assert.ok(calc({weight:2,mode:'protein',value:3.5001}).blocks.some(x=>x.includes('Aminoácidos acima de 3,5')));
+ assert.ok(calc({weight:2,value:112}).blocks.some(x=>x.includes('Aminoácidos acima de 3,5')));
 });
 test('Numeta: invalid inputs cannot produce a prescription',()=>{
  for(const changes of [{weight:0},{weight:'abc'},{value:-1},{value:''},{value:Infinity},{mode:'other'},{day:0},{day:1.5},{access:''}])assert.equal(calc(changes).ok,false);

@@ -1,5 +1,20 @@
 # Histórico de versões
 
+## 0.6.4 — em revisão
+
+- Padroniza a entrada e a exibição dos pesos em gramas na NP individualizada, NP padrão, HV e integração enteral, mantendo conversão interna para kg nas fórmulas e limites por peso; PDFs também usam gramas para os pesos. Entradas de peso fora de 100–20.000 g são rejeitadas nas três modalidades intravenosas para evitar interpretação de valores antigos em kg.
+- Renomeia a régua nutricional como “Metas de transição PN / EN” na tela e no PDF, sem alterar seus critérios.
+- Substitui os ícones de instalação NP_NEO pela logo atual GROW_NEO, inclusive no atalho do iPhone e na variante maskable do Android; arquivos com novos nomes evitam ícones antigos em cache.
+- Bloqueia a NP individualizada e o PDF se a VIG solicitada ou efetiva após arredondar SG 50% ultrapassar 12 mg/kg/min; mostra a VIG efetiva na tela e no PDF.
+- Rejeita erros evidentes de unidade ou digitação em peso atual (0,1–20 kg), peso ao nascer (0,1–10 kg), idade gestacional (18–45 semanas), dia de vida (1–365) e taxa hídrica acima de 500 mL/kg/dia. Destaca o campo em vermelho e exige recálculo; essas faixas são barreiras amplas de entrada, não metas clínicas.
+- Abaixo de 80 mL/kg/dia solicitados ou efetivos, mostra aviso amarelo sobre considerar glicerofosfato de sódio no lugar de fosfato de potássio quando houver cálcio e fósforo. Não bloqueia PDF e solicita conferência farmacêutica da compatibilidade.
+- Na NP individualizada, bloqueia a prescrição e o PDF se aminoácidos solicitados ou efetivos ultrapassarem 3,5 g/kg/dia, se a concentração final de aminoácidos ultrapassar 4%, se a concentração final de glicose ultrapassar 25% ou se a infusão lipídica efetiva ultrapassar 4 g/kg/dia em 24 horas (limite horário exato de 4/24 g/kg/h).
+- Aplica o teto de aminoácidos de 3,5 g/kg/dia também à NP padrão, independentemente do peso; preserva os alertas de referência e a cautela de glicose acima de 20%.
+- Se os componentes excederem o volume solicitado, mostra aviso amarelo e usa a soma efetiva dos componentes como volume total, com água q.s.p. zero. Exibe solicitado e efetivo, recalcula vazão, taxa hídrica e concentrações, e permite PDF se as demais regras estiverem atendidas.
+- Mostra na tela e no PDF as concentrações finais de aminoácidos e glicose e a taxa efetiva de lipídios; os bloqueios usam valores internos após o arredondamento de preparo.
+- Aplica o máximo de fluidos da diretriz ESPGHAN/ESPEN nos dias 1–5 conforme prematuridade e peso ao nascer, e em D6–D30 conforme fase intermediária ou estável selecionada pelo médico. Taxa solicitada ou efetiva acima da referência bloqueia; após D30 exibe apenas aviso. Mantém a referência identificada na tela e no PDF.
+
+
 ## 0.6.3 — em revisão
 
 - Na aba Enteral, oferece a opção de FM85 em dietas alternadas de igual volume: 1 g por 25 mL em metade das dietas equivale, em média, a 0,5 g por 25 mL ou 2 g por 100 mL do leite total.

@@ -1,5 +1,6 @@
 import {formatHydrationVolume} from './hydration.js';
 import {parseNumber} from './engine.js';
+import {compareProducts} from './alerts.js';
 // Baxter SmPC, 19 May 2026, sections 2 and 4.2; accessed 2026-09-16.
 export const NUMETA_SOURCE='https://www.medicines.org.uk/emc/product/7400/smpc';
 // Use whole-bag values, not rounded per-100 mL concentrations.
@@ -13,7 +14,7 @@ export const NUTRIENTS=Object.freeze([
 export function calculateStandard(input){
   const weight=parseNumber(input.weight),value=parseNumber(input.value),day=parseNumber(input.day);
   const errors=[];
-  if(!Number.isFinite(weight)||weight<=0||weight>20)errors.push('Informe peso maior que zero e até 20 kg.');
+  if(!Number.isFinite(weight)||weight<0.1||weight>20)errors.push('Informe peso atual entre 100 e 20.000 g.');
   if(!Number.isFinite(value)||value<=0||value>10000)errors.push('Informe uma taxa ou dose maior que zero e até 10.000.');
   if(!Number.isInteger(day)||day<1||day>365)errors.push('Informe dia de vida inteiro entre 1 e 365.');
   if(!['fluid','protein'].includes(input.mode))errors.push('Selecione taxa hídrica ou proteína.');
@@ -27,8 +28,8 @@ export function calculateStandard(input){
   if(input.access==='peripheral')blocks.push('Numeta sem diluição exige acesso venoso central. Diluição não está contemplada neste cálculo.');
   if(fluid>127.9+1e-9)blocks.push('Volume acima do máximo de bula: 127,9 mL/kg/dia. Revise a taxa ou a proteína.');
   if(fluid/24>6.4+1e-9)blocks.push('Vazão acima do máximo de bula: 6,4 mL/kg/h.');
+  if(input.mode==='protein'?value>3.5:compareProducts([value,9.4],[300,3.5])>0)blocks.push('Aminoácidos acima de 3,5 g/kg/dia. Revise a taxa ou a proteína e calcule novamente.');
   if(protein>(day===1?2:3)+1e-9)alerts.push('Proteína acima da referência do projeto para este dia de vida: '+(day===1?'2,0':'3,0')+' g/kg/dia.');
-  if(weight<1&&protein>3.5+1e-9)alerts.push('Proteína acima do teto do projeto de 3,5 g/kg/dia para peso <1000 g.');
   const lip=fluid*7.5/300;
   if(lip>(day===1?2:3)+1e-9)alerts.push('Lipídios acima da referência do projeto para este dia de vida: '+(day===1?'2,0':'3,0')+' g/kg/dia.');
   return {ok:true,weight,day,mode:input.mode,fluid,volume,rate,protein,vig,rows,blocks,alerts};

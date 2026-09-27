@@ -1,6 +1,6 @@
 import {initAppUpdate} from './app-update.js';
 import {initStandard} from './standard-ui.js';
-import {calculate,parseNumber,round1,formatVolume,VERSION} from './engine.js';
+import {calculate,parseNumber,parseWeightGrams,round1,formatVolume,VERSION} from './engine.js';
 import {createReport} from './pdf.js';
 import {macroReference,formatAlertNumber} from './alerts.js';
 import {initHydration} from './hydration-ui.js';
@@ -11,7 +11,7 @@ const $=id=>document.getElementById(id);
 const f=n=>Number.isFinite(n)?round1(n).toFixed(1).replace('.',','):'—';
 const f2=n=>Number.isFinite(n)?n.toFixed(2).replace('.',','):'—';
 const osm=n=>Number.isFinite(n)?String(Math.round(n)):'—';
-const weightFormat=n=>new Intl.NumberFormat('pt-BR',{maximumFractionDigits:3}).format(n);
+const weightFormat=n=>new Intl.NumberFormat('pt-BR',{maximumFractionDigits:3}).format(n*1000);
 let result=null,pdfUrl=null,downloadResult=null,installPrompt=null,serviceRegistration=null;
 const macros=[{id:'aa',name:'Aminoped 10%',unit:'g/kg/dia'},{id:'lip',name:'Lipídeos 20%',unit:'g/kg/dia'},{id:'vig',name:'Glicose 50% · VIG',unit:'mg/kg/min'}];
 const salts=[{id:'na',name:'Sódio',unit:'mEq/kg/dia',options:[['nacl','Cloreto de sódio 10%'],['acetate','Acetato de sódio']]},{id:'k',name:'Potássio',unit:'mEq/kg/dia',salt:'Cloreto de potássio 10%'},{id:'ca',name:'Cálcio',unit:'mEq/kg/dia',salt:'Gluconato de cálcio 10%'},{id:'mg',name:'Magnésio',unit:'mEq/kg/dia',salt:'Sulfato de magnésio 10%'},{id:'p',name:'Fósforo',unit:'mmol/kg/dia',options:[['kphos','Fosfato de potássio'],['glycero','Glicerofosfato de sódio']]}];
@@ -19,16 +19,17 @@ const omitHTML=(id,name)=>`<label class="omit"><input id="omit-${id}" type="chec
 function doseHTML(d){return `<div class="dose" data-dose="${d.id}"><div class="dose-top"><label class="dose-name" for="${d.id}">${d.name}</label>${omitHTML(d.id,d.name)}</div><div class="dose-controls">${d.options?`<select id="salt-${d.id}" aria-label="Sal de ${d.name}">${d.options.map(([v,s])=>`<option value="${v}">${s}</option>`).join('')}</select>`:d.salt?`<p class="help">${d.salt}</p>`:''}<div class="input-box"><input id="${d.id}" type="text" inputmode="decimal" placeholder="0,0" aria-label="Dose de ${d.name}"><span class="unit">${d.unit}</span></div></div></div>`;}
 $('macros').innerHTML=macros.map(doseHTML).join('');$('electrolytes').innerHTML=salts.map(doseHTML).join('');
 for(const id of ['aa','lip','vig']){const help=document.createElement('p');help.className='help';help.id='reference-'+id;$(id).closest('.dose-controls').append(help);$(id).setAttribute('aria-describedby',help.id);}
-$('reference-vig').textContent='VIG — velocidade de infusão de glicose, em mg/kg/min. Concentração final >20%: cautela, inclusive em acesso central.';
+$('reference-vig').textContent='VIG — velocidade de infusão de glicose, em mg/kg/min. Teto: 12 mg/kg/min na dose solicitada e na oferta efetiva. Concentração final >20%: cautela, inclusive em acesso central.';
 const micros=[{id:'va',name:'Polivit A Ped',rule:'2 mL/kg · máximo 5 mL',time:'A partir do 3º dia de vida'},{id:'vb',name:'Polivit B Ped',rule:'2 mL/kg · máximo 5 mL',time:'A partir do 3º dia de vida'},{id:'oligo',name:'Solução de oligoelementos',rule:'0,2 mL/kg/dia',time:'A partir do 8º dia de vida'},{id:'zn',name:'Sulfato de zinco',rule:'Dose conforme a idade gestacional',time:'Desconta o zinco já ofertado pelos oligoelementos'},{id:'se',name:'Selênio',rule:'Dose conforme a idade gestacional',time:'Desde o 1º dia de vida'}];
 $('micros').innerHTML=micros.map(d=>`<div class="dose" data-dose="${d.id}"><div class="dose-top"><span class="dose-name">${d.name}</span>${omitHTML(d.id,d.name)}</div><div class="dose-controls"><span class="auto" id="rule-${d.id}">${d.rule}</span><p class="help" id="timing-${d.id}">${d.time}</p>${['zn','se'].includes(d.id)?`<div class="input-box"><input id="${d.id}Dose" inputmode="decimal" type="text" value="${d.id==='zn'?'400':'7'}" aria-label="Dose de ${d.id==='zn'?'zinco':'selênio'}"><span class="unit">mcg/kg/dia</span></div>`:''}</div></div>`).join('');
 $('app-version').textContent=VERSION;
 function updateRules(){
-  const w=parseNumber($('weight').value),day=parseNumber($('day').value),ga=parseNumber($('ga').value);
+  const w=parseWeightGrams($('weight').value)/1000,day=parseNumber($('day').value),ga=parseNumber($('ga').value);
+  $('fluid-phase-field').hidden=!(Number.isInteger(day)&&day>=6&&day<=30);
   for(const id of ['aa','lip']){
     if(!Number.isFinite(w)||w<=0||!Number.isInteger(day)||day<1){$('reference-'+id).textContent='Informe peso e dia de vida para exibir a referência de dose.';continue;}
     const ref=macroReference(id,w,day);
-    $('reference-'+id).textContent=`Referência ${ref.phase}: ${formatAlertNumber(ref.dose)} g/kg/dia. `+(ref.ceiling===null?'Progressão habitual: 3,0 g/kg/dia; teto máximo não definido para peso ≥1000 g.':`Teto: ${formatAlertNumber(ref.ceiling)} g/kg/dia${id==='aa'?' somente para peso <1000 g':''}; não é uma meta de oferta.`);
+    $('reference-'+id).textContent=`Referência ${ref.phase}: ${formatAlertNumber(ref.dose)} g/kg/dia. Teto: ${formatAlertNumber(ref.ceiling)} g/kg/dia; não é uma meta de oferta.`;
   }
   const preterm=Number.isFinite(ga)&&ga<37;
   $('rule-zn').textContent=Number.isFinite(ga)?(preterm?'Prematuro: escolha de 400 a 500 mcg/kg/dia':'Termo: 250 mcg/kg/dia'):'Dose conforme a idade gestacional';
@@ -40,7 +41,7 @@ function updateRules(){
   for(const id of ['va','vb'])$('timing-'+id).textContent=Number.isFinite(day)&&day<3?'Não será incluído antes do 3º dia de vida.':'A partir do 3º dia de vida';
   $('timing-oligo').textContent=Number.isFinite(day)&&day<8?'Não será incluído antes do 8º dia de vida.':'A partir do 8º dia de vida';
 }
-function invalidate(){result=null;downloadResult=null;$('calculated-result').hidden=true;$('empty-result').hidden=false;$('empty-result').textContent='Calcule novamente para conferir os parâmetros atuais.';$('pdf-download').hidden=true;$('pdf-status').textContent='';if(pdfUrl){URL.revokeObjectURL(pdfUrl);pdfUrl=null;}}
+function invalidate(){result=null;downloadResult=null;$('export-pdf').disabled=true;$('calculated-result').hidden=true;$('empty-result').hidden=false;$('empty-result').textContent='Calcule novamente para conferir os parâmetros atuais.';$('pdf-download').hidden=true;$('pdf-status').textContent='';if(pdfUrl){URL.revokeObjectURL(pdfUrl);pdfUrl=null;}}
 const tabNames=['parameters','results','hydration','standard','enteral','growth','notes'];
 function view(name){for(const tab of tabNames){$(tab).hidden=name!==tab;$('tab-'+tab).setAttribute('aria-selected',String(name===tab));$('tab-'+tab).tabIndex=name===tab?0:-1;}window.scrollTo({top:0,behavior:'instant'});}
 for(const name of tabNames)$('tab-'+name).addEventListener('click',()=>view(name));
@@ -49,21 +50,24 @@ document.querySelectorAll('.tabs button').forEach((button,index)=>button.addEven
 for(const name of tabNames.slice(1))$('tab-'+name).tabIndex=-1;
 document.querySelectorAll('[data-omit]').forEach(c=>c.addEventListener('change',()=>{const row=c.closest('[data-dose]');row.classList.toggle('disabled',c.checked);row.querySelectorAll('.dose-controls input,.dose-controls select').forEach(x=>x.disabled=c.checked);updateRules();}));
 $('npp-form').addEventListener('input',()=>{invalidate();updateRules();});$('npp-form').addEventListener('change',()=>{invalidate();updateRules();});
-function collect(){const input={};for(const id of ['weight','day','fluid','aa','lip','vig','na','k','ca','mg','p','znDose','seDose'])input[id]=$(id).value;input.gaWeeks=$('ga').value;input.gaDays=$('ga-days').value;input.access=document.querySelector('[name="access"]:checked')?.value;input.naSalt=$('salt-na').value;input.pSalt=$('salt-p').value;input.omit={};document.querySelectorAll('[data-omit]').forEach(c=>input.omit[c.dataset.omit]=c.checked);return input;}
+function collect(){const input={};for(const id of ['day','fluid','aa','lip','vig','na','k','ca','mg','p','znDose','seDose'])input[id]=$(id).value;input.weight=parseWeightGrams($('weight').value)/1000;input.birthWeight=$('birth-weight').value.trim()===''?'':parseWeightGrams($('birth-weight').value)/1000;input.fluidPhase=$('fluid-phase').value;input.gaWeeks=$('ga').value;input.gaDays=$('ga-days').value;input.access=document.querySelector('[name="access"]:checked')?.value;input.naSalt=$('salt-na').value;input.pSalt=$('salt-p').value;input.omit={};document.querySelectorAll('[data-omit]').forEach(c=>input.omit[c.dataset.omit]=c.checked);return input;}
 function textElement(tag,text,cls){const e=document.createElement(tag);e.textContent=text;if(cls)e.className=cls;return e;}
 function summaryRow(label,value,highlight=false){const row=document.createElement('div');row.className='summary-row'+(highlight?' highlight':'');row.append(textElement('span',label),textElement('strong',value));return row;}
 function render(r){
   $('empty-result').hidden=true;$('calculated-result').hidden=false;
-  $('result-context').replaceChildren(...[`Peso: ${weightFormat(r.input.weight)} kg`,`Dia de vida: ${r.input.day}`,`IG: ${r.input.gaWeeks} sem + ${r.input.gaDays} d`,`Acesso: ${r.input.access==='central'?'central':'periférico'}`].map(t=>textElement('span',t)));
+  $('result-context').replaceChildren(...[`Peso: ${weightFormat(r.input.weight)} g`,...(r.input.birthWeight?[`Peso ao nascer: ${weightFormat(r.input.birthWeight)} g`]:[]),`Dia de vida: ${r.input.day}`,`IG: ${r.input.gaWeeks} sem + ${r.input.gaDays} d`,`Acesso: ${r.input.access==='central'?'central':'periférico'}`].map(t=>textElement('span',t)));
   const tbody=$('result-rows');tbody.replaceChildren();let group=0;
   for(const item of r.rows){if(item.group!==group&&item.group<3){const spacer=document.createElement('tr');spacer.className='spacer';spacer.setAttribute('aria-hidden','true');const cell=document.createElement('td');cell.colSpan=2;spacer.append(cell);tbody.append(spacer);}group=item.group;const tr=document.createElement('tr');tr.dataset.component=item.id;if(item.volume===0)tr.className='inactive';const name=textElement('td',item.name);name.append(textElement('span',item.id==='water'?'q.s.p. o volume total':`${f(item.quantity)} ${item.unit} · ${f(item.perKg)} ${item.perUnit}`));if(item.status)name.append(textElement('span',item.status));tr.append(name,textElement('td',item.volume===null?'Rever':formatVolume(item.volume,item.id)));tbody.append(tr);}
   const t=r.totals;$('result-summary').replaceChildren(
-    summaryRow('Volume total',f(t.totalVolume)+' mL'),summaryRow('Vazão · 24 h',f(t.infusion)+' mL/h'),summaryRow('Taxa hídrica',f(t.fluid)+' mL/kg/dia'),summaryRow('Taxa calórica',f(t.calories)+' kcal/kg/dia'),summaryRow('Concentração de glicose',f(t.glucosePercent)+'%',r.requiresCentral),summaryRow('Concentração final de cálcio',f(t.calciumConcentration)+' mEq/L'),summaryRow('Concentração final de fósforo',f(t.phosphorusConcentration)+' mmol/L'),summaryRow('Osmolaridade estimada',osm(t.osmolarity)+' mOsm/L',r.input.access==='peripheral'&&t.osmolarity>900),summaryRow('Proteína / calorias não proteicas',t.proteinRatio===null?'Não calculável':'1 : '+f(t.proteinRatio)),summaryRow('Relação Ca/P (mmol/mmol)',r.effective.p>0?f((r.effective.ca/2)/r.effective.p)+' : 1':'Não calculável (P = 0)')
+    ...(t.volumeAdjusted?[summaryRow('Volume solicitado',f(t.requestedVolume)+' mL')]:[]),summaryRow(t.volumeAdjusted?'Volume efetivo':'Volume total',f(t.totalVolume)+' mL'),summaryRow('Vazão · 24 h',f(t.infusion)+' mL/h'),summaryRow('Taxa hídrica efetiva',f(t.fluid)+' mL/kg/dia'),...(r.fluidReference.max!==null?[summaryRow('Máximo de referência da NPP',r.fluidReference.max+' mL/kg/dia')]:[]),summaryRow('Taxa calórica',f(t.calories)+' kcal/kg/dia'),summaryRow('VIG efetiva',f2(r.effective.vig)+' mg/kg/min'),summaryRow('Concentração final de aminoácidos',f2(t.aminoAcidPercent)+'%'),summaryRow('Concentração de glicose',f(t.glucosePercent)+'%',r.requiresCentral),summaryRow('Infusão de lipídios · 24 h',t.lipidRate.toFixed(3).replace('.',',')+' g/kg/h'),summaryRow('Concentração final de cálcio',f(t.calciumConcentration)+' mEq/L'),summaryRow('Concentração final de fósforo',f(t.phosphorusConcentration)+' mmol/L'),summaryRow('Osmolaridade estimada',osm(t.osmolarity)+' mOsm/L',r.input.access==='peripheral'&&t.osmolarity>900),summaryRow('Proteína / calorias não proteicas',t.proteinRatio===null?'Não calculável':'1 : '+f(t.proteinRatio)),summaryRow('Relação Ca/P (mmol/mmol)',r.effective.p>0?f((r.effective.ca/2)/r.effective.p)+' : 1':'Não calculável (P = 0)')
   );
+  $('prescription-status').hidden=r.canExport;
+  $('prescription-status').textContent=r.canExport?'':'Prescrição e PDF bloqueados. Revise os parâmetros indicados e calcule novamente.';
   $('result-alerts').replaceChildren();
   if(r.notices.length){const note=textElement('div',r.notices.join(' '),'notice');$('result-alerts').append(note);}
-  for(const alert of r.alerts){const note=textElement('div',alert.message,'notice clinical-alert '+(alert.level==='info'?'info':alert.level==='high'?'danger':'caution'));note.dataset.alertId=alert.id;note.dataset.level=alert.level;$('result-alerts').append(note);}
-  for(const block of r.blocks.filter(b=>!b.startsWith('Concentração de glicose')))$('result-alerts').append(textElement('div',block,'notice danger'));
+  if(r.fluidReference.max!==null)$('result-alerts').append(textElement('div',`Referência hídrica: ${r.fluidReference.reference}; máximo ${r.fluidReference.max} mL/kg/dia para a NPP.`, 'notice info'));
+  for(const alert of r.alerts){const note=textElement('div',alert.message,'notice clinical-alert '+(alert.level==='info'?'info':'caution'));note.dataset.alertId=alert.id;note.dataset.level=alert.level;$('result-alerts').append(note);}
+  for(const block of r.blocks.filter(b=>!b.startsWith('Concentração de glicose acima de 12,5%')))$('result-alerts').append(textElement('div',block,'notice danger'));
   $('access-alert').hidden=!r.requiresCentral;
   if(r.requiresCentral)$('access-alert').textContent=r.accessBlocked?'Concentração de glicose acima de 12,5%. É obrigatório acesso central. Revise o acesso ou os parâmetros.':'Concentração de glicose acima de 12,5%: acesso central obrigatório. Acesso central selecionado.';
   const offers=document.createElement('details');offers.className='section offers';offers.innerHTML='<summary>Conferir doses solicitadas e efetivas <span aria-hidden="true">⌄</span></summary><table><thead><tr><th>Nutriente</th><th>Solicitada</th><th>Efetiva</th></tr></thead><tbody></tbody></table>';
@@ -82,7 +86,7 @@ function render(r){
   updateExport();
 }
 function updateExport(){const accepted=[...document.querySelectorAll('[data-ack]')].every(x=>x.checked);$('export-pdf').disabled=!result?.canExport||!accepted;}
-$('npp-form').addEventListener('submit',e=>{e.preventDefault();$('form-errors').hidden=true;document.querySelectorAll('.invalid').forEach(x=>x.classList.remove('invalid'));const r=calculate(collect());if(!r.ok){invalidate();const list=document.createElement('ul');for(const err of r.errors){list.append(textElement('li',err.message));const id={gaWeeks:'ga',gaDays:'ga-days',naSalt:'salt-na',pSalt:'salt-p'}[err.field]||err.field;const el=$(id);if(el){el.closest('.field,.dose')?.classList.add('invalid');const details=el.closest('details');if(details)details.open=true;}}$('form-errors').replaceChildren(list);$('form-errors').hidden=false;$('form-errors').scrollIntoView({block:'center'});return;}result=r;render(r);view('results');});
+$('npp-form').addEventListener('submit',e=>{e.preventDefault();$('form-errors').hidden=true;document.querySelectorAll('.invalid').forEach(x=>x.classList.remove('invalid'));const r=calculate(collect());if(!r.ok){invalidate();const list=document.createElement('ul');for(const err of r.errors){list.append(textElement('li',err.message));const id={gaWeeks:'ga',gaDays:'ga-days',birthWeight:'birth-weight',fluidPhase:'fluid-phase',naSalt:'salt-na',pSalt:'salt-p'}[err.field]||err.field;const el=$(id);if(el){el.closest('.field,.dose')?.classList.add('invalid');const details=el.closest('details');if(details)details.open=true;}}$('form-errors').replaceChildren(list);$('form-errors').hidden=false;$('form-errors').scrollIntoView({block:'center'});return;}result=r;render(r);view('results');});
 $('export-pdf').addEventListener('click',async()=>{
   if(!result?.canExport||[...document.querySelectorAll('[data-ack]')].some(x=>!x.checked))return;
   const snapshot=result;$('export-pdf').disabled=true;$('pdf-status').textContent='Preparando PDF no aparelho…';
