@@ -11,6 +11,10 @@ export function parseNumber(value) {
   if (typeof value !== 'string' || !/^\d+(?:[.,]\d+)?$/.test(value.trim())) return NaN;
   return Number(value.trim().replace(',', '.'));
 }
+export function parseWeightGrams(value){
+  if(typeof value==='string'&&/^\d{1,3}(?:\.\d{3})+(?:,\d+)?$/.test(value.trim()))return Number(value.trim().replaceAll('.','').replace(',','.'));
+  return parseNumber(value);
+}
 const doseFields = ['aa','lip','vig','na','k','ca','mg','p'];
 export function calculate(input) {
   const errors=[];
@@ -25,7 +29,7 @@ export function calculate(input) {
   for(const field of ['day','gaWeeks','gaDays']) if(Number.isFinite(n[field])&&!Number.isInteger(n[field])) errors.push({field,message:`${labels[field]} deve ser um número inteiro.`});
   // Faixas amplas de conferência da entrada, para impedir erros evidentes de unidade/digitação.
   // Não representam metas terapêuticas nem restringem as doses de eletrólitos.
-  if(Number.isFinite(n.weight)&&n.weight>0&&(n.weight<0.1||n.weight>20))errors.push({field:'weight',message:'Peso atual fora da faixa de conferência (0,1 a 20 kg). Confira unidade e digitação.'});
+  if(Number.isFinite(n.weight)&&n.weight>0&&(n.weight<0.1||n.weight>20))errors.push({field:'weight',message:'Peso atual fora da faixa de conferência (100 a 20.000 g). Confira unidade e digitação.'});
   if(Number.isFinite(n.day)&&n.day>365)errors.push({field:'day',message:'Dia de vida acima de 365. Confira a digitação.'});
   if(Number.isFinite(n.gaWeeks)&&n.gaWeeks>0&&(n.gaWeeks<18||n.gaWeeks>45))errors.push({field:'gaWeeks',message:'Idade gestacional ao nascer fora da faixa de conferência (18 a 45 semanas). Confira a digitação.'});
   if(Number.isFinite(n.fluid)&&n.fluid>500)errors.push({field:'fluid',message:'Taxa hídrica acima de 500 mL/kg/dia. Confira unidade e digitação.'});
@@ -41,7 +45,7 @@ export function calculate(input) {
   if(!omit.se&&!preterm&&(!Number.isFinite(n.seDose)||n.seDose<2||n.seDose>3)) errors.push({field:'seDose',message:'Para recém-nascidos a termo, informe selênio entre 2 e 3 mcg/kg/dia.'});
   n.birthWeight=input.birthWeight===''||input.birthWeight==null?null:parseNumber(input.birthWeight);
   if(n.birthWeight!==null&&(!Number.isFinite(n.birthWeight)||n.birthWeight<=0||n.birthWeight>1e12))errors.push({field:'birthWeight',message:'Peso ao nascer: informe um valor válido e maior que zero.'});
-  if(Number.isFinite(n.birthWeight)&&n.birthWeight>0&&(n.birthWeight<0.1||n.birthWeight>10))errors.push({field:'birthWeight',message:'Peso ao nascer fora da faixa de conferência (0,1 a 10 kg). Confira unidade e digitação.'});
+  if(Number.isFinite(n.birthWeight)&&n.birthWeight>0&&(n.birthWeight<0.1||n.birthWeight>10))errors.push({field:'birthWeight',message:'Peso ao nascer fora da faixa de conferência (100 a 10.000 g). Confira unidade e digitação.'});
   let fluidReference=null;
   if(!errors.length){
     try{fluidReference=fluidGuidance({day:n.day,gaWeeks:n.gaWeeks,birthWeight:n.birthWeight,phase:input.fluidPhase});}

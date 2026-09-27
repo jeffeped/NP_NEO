@@ -1,6 +1,6 @@
 import {initAppUpdate} from './app-update.js';
 import {initStandard} from './standard-ui.js';
-import {calculate,parseNumber,round1,formatVolume,VERSION} from './engine.js';
+import {calculate,parseNumber,parseWeightGrams,round1,formatVolume,VERSION} from './engine.js';
 import {createReport} from './pdf.js';
 import {macroReference,formatAlertNumber} from './alerts.js';
 import {initHydration} from './hydration-ui.js';
@@ -11,7 +11,7 @@ const $=id=>document.getElementById(id);
 const f=n=>Number.isFinite(n)?round1(n).toFixed(1).replace('.',','):'—';
 const f2=n=>Number.isFinite(n)?n.toFixed(2).replace('.',','):'—';
 const osm=n=>Number.isFinite(n)?String(Math.round(n)):'—';
-const weightFormat=n=>new Intl.NumberFormat('pt-BR',{maximumFractionDigits:3}).format(n);
+const weightFormat=n=>new Intl.NumberFormat('pt-BR',{maximumFractionDigits:3}).format(n*1000);
 let result=null,pdfUrl=null,downloadResult=null,installPrompt=null,serviceRegistration=null;
 const macros=[{id:'aa',name:'Aminoped 10%',unit:'g/kg/dia'},{id:'lip',name:'Lipídeos 20%',unit:'g/kg/dia'},{id:'vig',name:'Glicose 50% · VIG',unit:'mg/kg/min'}];
 const salts=[{id:'na',name:'Sódio',unit:'mEq/kg/dia',options:[['nacl','Cloreto de sódio 10%'],['acetate','Acetato de sódio']]},{id:'k',name:'Potássio',unit:'mEq/kg/dia',salt:'Cloreto de potássio 10%'},{id:'ca',name:'Cálcio',unit:'mEq/kg/dia',salt:'Gluconato de cálcio 10%'},{id:'mg',name:'Magnésio',unit:'mEq/kg/dia',salt:'Sulfato de magnésio 10%'},{id:'p',name:'Fósforo',unit:'mmol/kg/dia',options:[['kphos','Fosfato de potássio'],['glycero','Glicerofosfato de sódio']]}];
@@ -24,7 +24,7 @@ const micros=[{id:'va',name:'Polivit A Ped',rule:'2 mL/kg · máximo 5 mL',time:
 $('micros').innerHTML=micros.map(d=>`<div class="dose" data-dose="${d.id}"><div class="dose-top"><span class="dose-name">${d.name}</span>${omitHTML(d.id,d.name)}</div><div class="dose-controls"><span class="auto" id="rule-${d.id}">${d.rule}</span><p class="help" id="timing-${d.id}">${d.time}</p>${['zn','se'].includes(d.id)?`<div class="input-box"><input id="${d.id}Dose" inputmode="decimal" type="text" value="${d.id==='zn'?'400':'7'}" aria-label="Dose de ${d.id==='zn'?'zinco':'selênio'}"><span class="unit">mcg/kg/dia</span></div>`:''}</div></div>`).join('');
 $('app-version').textContent=VERSION;
 function updateRules(){
-  const w=parseNumber($('weight').value),day=parseNumber($('day').value),ga=parseNumber($('ga').value);
+  const w=parseWeightGrams($('weight').value)/1000,day=parseNumber($('day').value),ga=parseNumber($('ga').value);
   $('fluid-phase-field').hidden=!(Number.isInteger(day)&&day>=6&&day<=30);
   for(const id of ['aa','lip']){
     if(!Number.isFinite(w)||w<=0||!Number.isInteger(day)||day<1){$('reference-'+id).textContent='Informe peso e dia de vida para exibir a referência de dose.';continue;}
@@ -50,12 +50,12 @@ document.querySelectorAll('.tabs button').forEach((button,index)=>button.addEven
 for(const name of tabNames.slice(1))$('tab-'+name).tabIndex=-1;
 document.querySelectorAll('[data-omit]').forEach(c=>c.addEventListener('change',()=>{const row=c.closest('[data-dose]');row.classList.toggle('disabled',c.checked);row.querySelectorAll('.dose-controls input,.dose-controls select').forEach(x=>x.disabled=c.checked);updateRules();}));
 $('npp-form').addEventListener('input',()=>{invalidate();updateRules();});$('npp-form').addEventListener('change',()=>{invalidate();updateRules();});
-function collect(){const input={};for(const id of ['weight','day','fluid','aa','lip','vig','na','k','ca','mg','p','znDose','seDose'])input[id]=$(id).value;input.birthWeight=$('birth-weight').value;input.fluidPhase=$('fluid-phase').value;input.gaWeeks=$('ga').value;input.gaDays=$('ga-days').value;input.access=document.querySelector('[name="access"]:checked')?.value;input.naSalt=$('salt-na').value;input.pSalt=$('salt-p').value;input.omit={};document.querySelectorAll('[data-omit]').forEach(c=>input.omit[c.dataset.omit]=c.checked);return input;}
+function collect(){const input={};for(const id of ['day','fluid','aa','lip','vig','na','k','ca','mg','p','znDose','seDose'])input[id]=$(id).value;input.weight=parseWeightGrams($('weight').value)/1000;input.birthWeight=$('birth-weight').value.trim()===''?'':parseWeightGrams($('birth-weight').value)/1000;input.fluidPhase=$('fluid-phase').value;input.gaWeeks=$('ga').value;input.gaDays=$('ga-days').value;input.access=document.querySelector('[name="access"]:checked')?.value;input.naSalt=$('salt-na').value;input.pSalt=$('salt-p').value;input.omit={};document.querySelectorAll('[data-omit]').forEach(c=>input.omit[c.dataset.omit]=c.checked);return input;}
 function textElement(tag,text,cls){const e=document.createElement(tag);e.textContent=text;if(cls)e.className=cls;return e;}
 function summaryRow(label,value,highlight=false){const row=document.createElement('div');row.className='summary-row'+(highlight?' highlight':'');row.append(textElement('span',label),textElement('strong',value));return row;}
 function render(r){
   $('empty-result').hidden=true;$('calculated-result').hidden=false;
-  $('result-context').replaceChildren(...[`Peso: ${weightFormat(r.input.weight)} kg`,...(r.input.birthWeight?[`Peso ao nascer: ${weightFormat(r.input.birthWeight)} kg`]:[]),`Dia de vida: ${r.input.day}`,`IG: ${r.input.gaWeeks} sem + ${r.input.gaDays} d`,`Acesso: ${r.input.access==='central'?'central':'periférico'}`].map(t=>textElement('span',t)));
+  $('result-context').replaceChildren(...[`Peso: ${weightFormat(r.input.weight)} g`,...(r.input.birthWeight?[`Peso ao nascer: ${weightFormat(r.input.birthWeight)} g`]:[]),`Dia de vida: ${r.input.day}`,`IG: ${r.input.gaWeeks} sem + ${r.input.gaDays} d`,`Acesso: ${r.input.access==='central'?'central':'periférico'}`].map(t=>textElement('span',t)));
   const tbody=$('result-rows');tbody.replaceChildren();let group=0;
   for(const item of r.rows){if(item.group!==group&&item.group<3){const spacer=document.createElement('tr');spacer.className='spacer';spacer.setAttribute('aria-hidden','true');const cell=document.createElement('td');cell.colSpan=2;spacer.append(cell);tbody.append(spacer);}group=item.group;const tr=document.createElement('tr');tr.dataset.component=item.id;if(item.volume===0)tr.className='inactive';const name=textElement('td',item.name);name.append(textElement('span',item.id==='water'?'q.s.p. o volume total':`${f(item.quantity)} ${item.unit} · ${f(item.perKg)} ${item.perUnit}`));if(item.status)name.append(textElement('span',item.status));tr.append(name,textElement('td',item.volume===null?'Rever':formatVolume(item.volume,item.id)));tbody.append(tr);}
   const t=r.totals;$('result-summary').replaceChildren(

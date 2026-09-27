@@ -14,7 +14,7 @@ export const NUTRIENTS=Object.freeze([
 export function calculateStandard(input){
   const weight=parseNumber(input.weight),value=parseNumber(input.value),day=parseNumber(input.day);
   const errors=[];
-  if(!Number.isFinite(weight)||weight<=0||weight>20)errors.push('Informe peso maior que zero e até 20 kg.');
+  if(!Number.isFinite(weight)||weight<0.1||weight>20)errors.push('Informe peso atual entre 100 e 20.000 g.');
   if(!Number.isFinite(value)||value<=0||value>10000)errors.push('Informe uma taxa ou dose maior que zero e até 10.000.');
   if(!Number.isInteger(day)||day<1||day>365)errors.push('Informe dia de vida inteiro entre 1 e 365.');
   if(!['fluid','protein'].includes(input.mode))errors.push('Selecione taxa hídrica ou proteína.');

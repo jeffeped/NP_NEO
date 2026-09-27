@@ -1,5 +1,6 @@
 import {calculateHydration,HYDRATION_COMPONENTS,HYDRATION_GLUCOSE_OSMOLARITY,formatHydrationNumber as f,formatHydrationVolume as fv} from './hydration.js';
 import {createHydrationReport} from './hydration-pdf.js';
+import {parseWeightGrams} from './engine.js';
 
 export function initHydration(document){
   const $=id=>document.getElementById('hv-'+id);
@@ -25,6 +26,7 @@ export function initHydration(document){
     event.preventDefault();invalidate();form.querySelectorAll('.invalid').forEach(el=>el.classList.remove('invalid'));
     const input={doseUnit:$('doseUnit').value,concentrations:{},glucoseOsmolarity:{sg5:$('osm-sg5').value,sg50:$('osm-sg50').value}};
     for(const id of ['weight','fluid','vig','na','k','ca','mg'])input[id]=$(id).value;
+    input.weight=parseWeightGrams($('weight').value)/1000;
     for(const c of HYDRATION_COMPONENTS)input.concentrations[c.id]=$('concentration-'+c.id).value;
     const result=calculateHydration(input);
     if(!result.ok){
@@ -33,7 +35,7 @@ export function initHydration(document){
       $('errors').replaceChildren(list);$('errors').hidden=false;$('errors').scrollIntoView({block:'center'});return;
     }
     resultSnapshot=result;$('empty').hidden=true;$('result').hidden=false;
-    $('summary').replaceChildren(summary('VT = taxa hídrica × peso',`${f(result.input.fluid)} × ${f(result.input.weight)} = ${fv(result.totals.totalVolume)} mL/24 h`),summary('Glicose necessária = VIG × peso × 60 × 24 ÷ 1000',`${f(result.input.vig)} × ${f(result.input.weight)} × 60 × 24 ÷ 1000 = ${f(result.totals.glucoseGrams)} g/24 h`),summary('Volume dos eletrólitos',`${fv(result.totals.electrolytesVolume)} mL`),summary('VR = VT − volume dos eletrólitos',`${fv(result.totals.totalVolume)} − ${fv(result.totals.electrolytesVolume)} = ${fv(result.totals.glucoseSolutionsVolume)} mL`),summary('Vazão em 24 horas',`${fv(result.totals.infusion)} mL/h`));
+    $('summary').replaceChildren(summary('VT = taxa hídrica × (peso em g ÷ 1000)',`${f(result.input.fluid)} × (${f(result.input.weight*1000)} g ÷ 1000) = ${fv(result.totals.totalVolume)} mL/24 h`),summary('Glicose necessária = VIG × (peso em g ÷ 1000) × 60 × 24 ÷ 1000',`${f(result.input.vig)} × (${f(result.input.weight*1000)} g ÷ 1000) × 60 × 24 ÷ 1000 = ${f(result.totals.glucoseGrams)} g/24 h`),summary('Volume dos eletrólitos',`${fv(result.totals.electrolytesVolume)} mL`),summary('VR = VT − volume dos eletrólitos',`${fv(result.totals.totalVolume)} − ${fv(result.totals.electrolytesVolume)} = ${fv(result.totals.glucoseSolutionsVolume)} mL`),summary('Vazão em 24 horas',`${fv(result.totals.infusion)} mL/h`));
     $('blocks').replaceChildren(...result.blocks.map(message=>text('div',message,'notice danger')));
     $('composition').hidden=!result.canPrepare;
     $('rows').replaceChildren();

@@ -62,6 +62,7 @@ export function calculateHydration(input){
     if(!Number.isFinite(n[field])||n[field]<0||n[field]>1e12)errors.push({field,message:`${labels[field]}: informe um número válido, maior ou igual a zero, dentro da capacidade numérica do cálculo.`});
   }
   for(const field of ['weight','fluid'])if(n[field]===0)errors.push({field,message:`${labels[field]} deve ser maior que zero.`});
+  if(Number.isFinite(n.weight)&&n.weight>0&&(n.weight<0.1||n.weight>20))errors.push({field:'weight',message:'Peso atual fora da faixa de conferência (100 a 20.000 g). Confira unidade e digitação.'});
   if(!['perKgDay','totalDay'].includes(input.doseUnit))errors.push({field:'doseUnit',message:'Selecione a unidade dos eletrólitos: mEq/kg/dia ou mEq totais em 24 horas.'});
   for(const c of HYDRATION_COMPONENTS){
     concentrations[c.id]=parseNumber(input.concentrations?.[c.id]);

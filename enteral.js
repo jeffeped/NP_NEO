@@ -64,7 +64,7 @@ export function integrateNutrition({parenteral={},enteral,source='individual'}){
     total:{fluid:p.fluid+(e.rate||0),calories:p.calories+(e.calories||0),protein:p.protein+(e.protein||0)}};
 }
 
-// Régua aprovada em 19/09/2026. Comparar valores internos, sem arredondar.
+// Metas aprovadas em 19/09/2026. Comparar valores internos, sem arredondar.
 export function assessTransition(integrated){
   const {parenteral,enteral,total}=integrated;
   const hasPN=['individual','standard'].includes(integrated.source)&&parenteral.fluid>0;
@@ -77,9 +77,9 @@ export function assessTransition(integrated){
 export function transitionLines(integrated){
   const assessment=assessTransition(integrated);
   if(!assessment.active)return [assessment.reason==='no-pn'
-    ?'Régua inativa: sem PN no cálculo integrado.'
-    :'Régua inativa: oferta enteral menor ou igual a 50 mL/kg/dia.'];
-  return ['Régua ativa: enteral >50 mL/kg/dia com PN presente.',
+    ?'Metas de transição não avaliadas: sem PN no cálculo integrado.'
+    :'Metas de transição não avaliadas: oferta enteral menor ou igual a 50 mL/kg/dia.'];
+  return ['Metas de transição avaliadas: enteral >50 mL/kg/dia com PN presente.',
     `Energia total: ${assessment.energyMet?'meta atingida':'abaixo da meta'} (mínimo 110 kcal/kg/dia).`,
     `Proteína total: ${assessment.proteinMet?'meta atingida':'abaixo da meta'} (mínimo 2,50 g/kg/dia).`];
 }
@@ -103,7 +103,7 @@ export function clinicalReferenceLines(integrated,{phase='',birthWeight=null,ges
  if(birthWeight>=1800||gestationalAge>=37)return [...lines,'Referência não aplicada: população de prematuros com peso ao nascer <1800 g.'];
  lines.push('Para prematuros clinicamente estáveis em crescimento:',
  'Energia: 115–140 kcal/kg/dia. Proteína enteral: 3,5–4,0 g/kg/dia.');
- if(!['none','hydration'].includes(integrated.source))return [...lines,'Comparação enteral não aplicada à oferta mista com NP; consulte a régua PN / EN.'];
+ if(!['none','hydration'].includes(integrated.source))return [...lines,'Comparação enteral não aplicada à oferta mista com NP; consulte as metas de transição PN / EN.'];
  const fmt=n=>n.toFixed(2).replace('.',',');
  for(const [label,key,low,high,unit] of [['Energia','calories',115,140,'kcal/kg/dia'],['Proteína','protein',3.5,4,'g/kg/dia']]){
   const value=integrated.total[key];

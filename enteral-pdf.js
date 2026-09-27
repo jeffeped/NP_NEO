@@ -20,11 +20,11 @@ export async function createEnteralReport({enteral,integrated,clinical,growth}){
  text('Indicador',L+6,y,9,bold);right(integrated.source==='hydration'?'HV':integrated.source==='none'?'IV (zero)':'PN',300,y,9,bold);right('Enteral',430,y,9,bold);right('Total',R-6,y,9,bold);y-=30;
  const rows=[['Taxa hídrica','mL/kg/dia','fluid'],['Energia','kcal/kg/dia','calories'],['Proteína','g/kg/dia','protein']];
  for(const [name,unit,key] of rows){text(name,L+6,y,9,bold);text(unit,L+6,y-12,7.5,regular,muted);right(fmt(integrated.parenteral[key],key==='protein'?2:1),300,y,9);right(fmt(integrated.enteral[key],key==='protein'?2:1),430,y,9);right(fmt(integrated.total[key],key==='protein'?2:1),R-6,y,9,bold);y-=34;}
- y-=14;text('Régua de transição PN / EN',L,y,11,bold);y-=22;
+ y-=14;text('Metas de transição PN / EN',L,y,11,bold);y-=22;
  for(const line of transitionLines(integrated)){text(line,L,y,9);y-=18;}
  y-=8;text('Metas avaliadas sobre os totais PN + EN, antes do arredondamento.',L,y,8,regular,muted);
- y-=16;text('A régua não determina redução ou suspensão automática da PN.',L,y,8,regular,muted);
- y-=16;text(integrated.source==='none'?'Totais somente da dieta enteral.':`Fonte calculada nesta sessão: ${integrated.sourceLabel}${Number.isFinite(integrated.weight)?' · peso '+String(integrated.weight).replace('.',',')+' kg':''}.`,L,y,8,regular,muted);
+ y-=16;text('As metas não determinam redução ou suspensão automática da PN.',L,y,8,regular,muted);
+ y-=16;text(integrated.source==='none'?'Totais somente da dieta enteral.':`Fonte calculada nesta sessão: ${integrated.sourceLabel}${Number.isFinite(integrated.weight)?' · peso '+fmtDose(integrated.weight*1000)+' g':''}.`,L,y,8,regular,muted);
  if(growth){
   y-=30;text('Crescimento ponderal',L,y,11,bold);y-=20;
   text(`${growth.input.sex==='female'?'Feminino':'Masculino'} · intervalo ${growth.intervalDays} dias · IPM média ${pma(growth.midpointPmaWeeks)}`,L,y,9);y-=17;

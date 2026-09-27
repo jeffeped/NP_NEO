@@ -29,9 +29,9 @@ export async function createReport(result){
   function horizontal(yy){page.drawLine({start:{x:L,y:yy},end:{x:R,y:yy},thickness:.5,color:line});}
   const ctx=result.input,t=result.totals;
   newPage('Cálculo de nutrição parenteral neonatal');
-  text(`Peso atual: ${compact(ctx.weight)} kg`,L,y,9,bold);text(`Dia de vida: ${ctx.day}`,225,y,9);text(`IG ao nascer: ${ctx.gaWeeks} sem + ${ctx.gaDays} d`,373,y,9);y-=17;
+  text(`Peso atual: ${compact(ctx.weight*1000)} g`,L,y,9,bold);text(`Dia de vida: ${ctx.day}`,225,y,9);text(`IG ao nascer: ${ctx.gaWeeks} sem + ${ctx.gaDays} d`,373,y,9);y-=17;
   text(`Acesso: ${ctx.access==='central'?'central':'periférico'}`,L,y,9);text('Infusão: 24 horas',225,y,9);text('Sem identificação do paciente',373,y,9);y-=24;
-  if(ctx.birthWeight){text(`Peso ao nascer: ${compact(ctx.birthWeight)} kg`,L,y,9);y-=17;}
+  if(ctx.birthWeight){text(`Peso ao nascer: ${compact(ctx.birthWeight*1000)} g`,L,y,9);y-=17;}
   function compositionHead(){page.drawRectangle({x:L,y:y-9,width:R-L,height:24,color:shade});text('Componente',L+6,y,9,bold);right('Total / dia',354,y,9,bold);right('Dose / taxa efetiva',488,y,9,bold);right('mL',R-6,y,9,bold);y-=27;}
   compositionHead();let group=0;
   for(const row of result.rows){
