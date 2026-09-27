@@ -1,6 +1,6 @@
 # GROW_NEO by Prof. Jefferson
 
-Instrumento de apoio à terapia nutricional neonatal, com nutrição parenteral, hidratação venosa e avaliação da dieta enteral. Versão de avaliação 0.6.4 em revisão.
+Instrumento de apoio à terapia nutricional neonatal, com nutrição parenteral, hidratação venosa e avaliação da dieta enteral. Versão de avaliação 0.6.5 em revisão.
 
 As mudanças de cada versão estão documentadas em [CHANGELOG.md](CHANGELOG.md), além do histórico auditável de commits do repositório.
 
@@ -14,6 +14,10 @@ O médico informa os parâmetros; o app calcula volumes, avalia a oferta enteral
 - Após a atualização do aplicativo, se o atalho ainda mostrar NP_NEO, remova o atalho instalado e adicione o app novamente para receber o ícone GROW_NEO.
 
 Esta versão passou por verificações técnicas locais; não foi realizada validação clínica formal. Confira os resultados antes do uso assistencial.
+
+Na aba Crescimento há um link para o plotador oficial Fenton 2025
+(https://fentongrowth.ca/), aberto em nova aba. A calculadora de velocidade do
+GROW_NEO continua local; nenhum parâmetro é enviado automaticamente ao site externo.
 
 Responsável pelas definições: Jefferson Guilherme. O registro metodológico e as fontes de desenvolvimento são mantidos no projeto local.
 
@@ -83,22 +87,37 @@ Não há composição quando os eletrólitos consomem todo o VT ou quando a VIG 
 
 Verificação local: 177 testes aprovados, incluindo os 124 anteriores, 46 testes novos do motor de HV e 7 novos fluxos de interface simulada. Consulte `RELATORIO_HIDRATACAO_VENOSA.md` para o registro da entrega.
 
-### NP padrão (0.3.1)
+### NP padrão (0.6.5)
 
-A quarta aba usa Numeta G13%E, três câmaras ativadas (300 mL), sem diluição.
-Entradas: peso, dia de vida, acesso e taxa destinada ao Numeta (mL/kg/dia)
-ou proteína (g/kg/dia). No segundo modo, taxa = proteína × 300 / 9,4.
+A quarta aba usa Numeta G13%E sem diluição, com escolha explícita entre
+três câmaras ativadas (3:1, 300 mL) e duas câmaras ativadas (2:1, 240 mL;
+câmara lipídica fechada). Entradas: peso, dia de vida, acesso, apresentação
+e taxa destinada ao Numeta (mL/kg/dia) ou proteína (g/kg/dia). No segundo modo,
+taxa = proteína × volume da apresentação / 9,4.
 As ofertas são calculadas a partir dos valores por bolsa inteira; não se usa
-3,1 g/100 mL arredondado para inverter a dose. Volume = taxa × peso;
+concentração por 100 mL arredondada para inverter a dose. Na apresentação 2:1,
+o total de 240 mL fornece 9,4 g de aminoácidos, 40 g de glicose, zero lipídios,
+198 kcal (160 kcal não proteicas), Na 6,4 mEq e P 3,2 mmol. Na 3:1, o total
+de 300 mL fornece 9,4 g de aminoácidos, 40 g de glicose, 7,5 g de lipídios,
+273 kcal (235 kcal não proteicas), Na 6,6 mEq e P 3,8 mmol. A diferença de
+fósforo na 3:1 inclui fosfolipídios da emulsão. A tela e o PDF apresentam a
+composição por 100 mL derivada dos totais completos, além da oferta diária.
+Volume = taxa × peso;
 vazão média = volume / 24. Resultados têm precisão interna completa e uma
-casa decimal na exibição. Volume e vazão são arredondados para cima, como na HV.
+casa decimal na oferta diária (até duas na composição por 100 mL). Volume e
+vazão são arredondados para cima, como na HV.
 
 A apresentação acompanha a NP individualizada: composição, contexto,
 resumo e detalhamento de ofertas. A exportação PDF inclui composição, indicadores fixos e variáveis, ofertas
 e alertas. Entradas alteradas invalidam o PDF e bloqueios impedem exportar. Vitaminas, oligoelementos, diluição e outros aportes não são calculados.
-Acesso periférico e volume acima do máximo de bula impedem apresentar o texto
-de prescrição, mantendo os cálculos visíveis para revisão. Os alertas do projeto
-sobre proteína e lipídios são sinalizados separadamente dos limites de bula.
+Acesso periférico e volume acima do máximo de bula da apresentação selecionada
+(2:1: 102,3 mL/kg/dia e 5,1 mL/kg/h; 3:1: 127,9 mL/kg/dia e 6,4 mL/kg/h)
+impedem apresentar o texto de prescrição, mantendo os cálculos visíveis para
+revisão. Os alertas do projeto sobre proteína e lipídios são sinalizados
+separadamente dos limites de bula; para 2:1, lipídios da bolsa são zero.
+A solução 2:1 sem diluição tem osmolaridade aproximada de 1.400 mOsm/L,
+contra 1.150 mOsm/L da 3:1. Lipídios infundidos por outra via não entram nas
+ofertas da bolsa nem no total integrado PN + enteral e exigem cálculo separado.
 
 Fonte da composição e limites: Baxter, SmPC Numeta G13%E, atualizado em
 19/05/2026, seções 2 e 4.2; consulta em 16/09/2026:

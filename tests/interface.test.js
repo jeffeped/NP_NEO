@@ -28,6 +28,13 @@ test('ícone instalado usa logo GROW_NEO em todos os tamanhos e no iPhone',()=>{
   assert.equal(readFileSync(new URL('../'+apple.replace(/^\.\//,''),import.meta.url)).readUInt32BE(16),180);
   assert.doesNotMatch(html+JSON.stringify(manifest),/assets\/icon-(192|512|maskable)/);
 });
+test('Crescimento abre plotador Fenton 2025 em outra aba sem enviar parâmetros',()=>{
+ const {document}=parseHTML(html),link=document.querySelector('#growth a.growth-plotter');
+ assert.equal(link.getAttribute('href'),'https://fentongrowth.ca/');
+ assert.equal(link.getAttribute('target'),'_blank');
+ assert.match(link.getAttribute('rel'),/noopener noreferrer/);
+ assert.match(document.querySelector('#growth .growth-plotter-help').textContent,/não são enviados automaticamente/);
+});
 function openApp() {
   const {document,window}=parseHTML(html);
   window.HTMLElement.prototype.scrollIntoView=function(){};
@@ -81,6 +88,20 @@ test('pesos de NP individualizada, Numeta e HV são informados em gramas e conve
   assert.match(app.el('std-errors').textContent,/100 e 20\.000 g/);
   hv.set('hv-weight','0,8');hv.calculateHydration();
   assert.match(hv.el('hv-errors').textContent,/100 a 20\.000 g/);
+});
+test('Numeta troca entre 3:1 e 2:1, apresenta composição por 100 mL e invalida PDF anterior',()=>{
+ const app=openApp();app.set('std-weight',1000);app.set('std-day',2);app.set('std-value',80);app.set('std-access','central');app.dispatch('std-form','submit');
+ assert.match(app.el('std-prescription').textContent,/3:1.*80,0 mL/);
+ assert.match(app.el('std-rows').textContent,/Lipídios2,5 g/);
+ app.set('std-formulation','2in1');
+ assert.equal(app.el('std-result').hidden,true);assert.equal(app.el('std-export').disabled,true);
+ app.dispatch('std-form','submit');
+ assert.match(app.el('std-prescription').textContent,/2:1.*80,0 mL/);
+ assert.match(app.el('std-rows').textContent,/Proteína \(aminoácidos\)3,92 g/);
+ assert.match(app.el('std-rows').textContent,/Lipídios0,0 g/);
+ assert.match(app.el('std-summary').textContent,/Concentração de glicose16,7%/);
+ assert.match(app.el('std-alerts').textContent,/Lipídios infundidos à parte/);
+ assert.equal(app.el('std-export').disabled,false);
 });
 test('interface: contribuição do glicerofosfato exige aceite do sódio total para PDF',()=>{
   const app=openApp();app.set('weight',1000);app.set('na',1);app.set('p','0,4');app.set('salt-p','glycero');app.calculate();

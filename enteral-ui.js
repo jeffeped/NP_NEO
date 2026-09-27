@@ -32,7 +32,7 @@ export function initEnteral(doc,getParenteral,getGrowth=()=>null){
      const rows=[['Taxa hídrica',all.parenteral.fluid,all.enteral.fluid,all.total.fluid,'mL/kg/dia'],['Energia',all.parenteral.calories,all.enteral.calories,all.total.calories,'kcal/kg/dia'],['Proteína',all.parenteral.protein,all.enteral.protein,all.total.protein,'g/kg/dia']];
      $('en-total-rows').innerHTML=rows.map(r=>`<tr><td>${r[0]}<span>${r[4]}</span></td><td>${fmt(r[1],r[0]==='Proteína'?2:1)}</td><td>${fmt(r[2],r[0]==='Proteína'?2:1)}</td><td><strong>${fmt(r[3],r[0]==='Proteína'?2:1)}</strong></td></tr>`).join('');
      $('en-iv-heading').textContent=source==='hydration'?'HV':source==='none'?'IV (zero)':'PN';
-     $('en-pn-note').textContent=`Fonte: ${all.sourceLabel}. ${source==='none'?'Totais somente da dieta enteral.':`Cálculo atual da aba correspondente${Number.isFinite(all.weight)?' · peso '+new Intl.NumberFormat('pt-BR',{maximumFractionDigits:3}).format(all.weight*1000)+' g':''}.`}`;
+     $('en-pn-note').textContent=`Fonte: ${all.sourceLabel}. ${source==='none'?'Totais somente da dieta enteral.':`Cálculo atual da aba correspondente${Number.isFinite(all.weight)?' · peso '+new Intl.NumberFormat('pt-BR',{maximumFractionDigits:3}).format(all.weight*1000)+' g':''}.`}${pn.formulation==='2in1'?' Lipídios infundidos à parte não estão incluídos neste total.':''}`;
      $('en-transition').replaceChildren(...transitionLines(all).map(line=>{const p=doc.createElement('p');p.textContent=line;return p;}));
      $('en-clinical-reference').replaceChildren(...clinicalReferenceLines(all,clinical).map(line=>{const p=doc.createElement('p');p.textContent=line;return p;}));
      $('en-result').hidden=false;

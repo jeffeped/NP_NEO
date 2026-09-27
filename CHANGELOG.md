@@ -1,5 +1,12 @@
 # Histórico de versões
 
+## 0.6.5 — em revisão
+
+- Acrescenta à NP padrão a escolha da apresentação Numeta G13%E 2:1 (240 mL, sem fração lipídica), além da 3:1 (300 mL). Calcula proteína, glicose, energia, sódio, fósforo e demais ofertas pelos valores da bolsa inteira correspondente, exibindo também a composição por 100 mL na tela e no PDF.
+- Aplica os limites próprios da bula para volume, vazão e osmolaridade de cada apresentação; mantém teto do projeto de 3,5 g/kg/dia de aminoácidos. A 2:1 não calcula oferta de lipídios, alerta que lipídios administrados à parte ficam fora dos totais e atualiza a energia integrada à enteral.
+- Referência: Baxter, SmPC Numeta G13%E Preterm, seções 2 e 4.2, atualizado em 19/05/2026. Conferir correspondência da apresentação com o produto local antes do uso clínico.
+- Disponibiliza na aba Crescimento o link externo para o plotador oficial Fenton 2025 (fentongrowth.ca), sem transferência automática dos parâmetros do app.
+
 ## 0.6.4 — em revisão
 
 - Padroniza a entrada e a exibição dos pesos em gramas na NP individualizada, NP padrão, HV e integração enteral, mantendo conversão interna para kg nas fórmulas e limites por peso; PDFs também usam gramas para os pesos. Entradas de peso fora de 100–20.000 g são rejeitadas nas três modalidades intravenosas para evitar interpretação de valores antigos em kg.
