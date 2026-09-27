@@ -1,4 +1,4 @@
-import {calculateStandard,standardSummary,formatStandard,formatStandardVolume} from './standard.js';
+import {calculateStandard,standardSummary,formatStandard,formatStandardPer100,formatStandardVolume,STANDARD_FORMULATIONS} from './standard.js';
 import {createStandardReport} from './standard-pdf.js';
 import {parseWeightGrams} from './engine.js';
 export function initStandard(document){
@@ -11,23 +11,24 @@ export function initStandard(document){
   $('std-form').addEventListener('input',invalidate);$('std-form').addEventListener('change',invalidate);
   $('std-form').addEventListener('submit',event=>{
     event.preventDefault();invalidate();
-    const r=calculateStandard({weight:parseWeightGrams($('std-weight').value)/1000,day:$('std-day').value,mode:$('std-mode').value,value:$('std-value').value,access:$('std-access').value});
+    const r=calculateStandard({weight:parseWeightGrams($('std-weight').value)/1000,day:$('std-day').value,mode:$('std-mode').value,value:$('std-value').value,access:$('std-access').value,formulation:$('std-formulation').value});
     if(!r.ok){$('std-errors').textContent=r.errors.join(' ');$('std-errors').hidden=false;return;}
+    const bag=STANDARD_FORMULATIONS[r.formulation];
     result=r;$('std-export').disabled=Boolean(r.blocks.length);
     $('std-result').hidden=false;
-    $('std-status').textContent=r.blocks.length?'Cálculo para revisão — prescrição bloqueada':'Prescrição calculada de Numeta · 24 horas';
-    $('std-prescription').textContent=r.blocks.length?'Revise os impedimentos abaixo.':`Numeta G13%E, três câmaras ativadas, sem diluição: ${formatStandardVolume(r.volume)} mL em 24 horas, por acesso central. Vazão média calculada: ${formatStandardVolume(r.rate)} mL/h.`;
+    $('std-status').textContent=r.blocks.length?'Cálculo para revisão — prescrição bloqueada':`Prescrição calculada de Numeta ${bag.label} · 24 horas`;
+    $('std-prescription').textContent=r.blocks.length?'Revise os impedimentos abaixo.':`Numeta G13%E ${bag.label}, ${bag.chambers.toLowerCase()}, sem diluição: ${formatStandardVolume(r.volume)} mL em 24 horas, por acesso central. Vazão média calculada: ${formatStandardVolume(r.rate)} mL/h.`;
     const element=(tag,text)=>{const el=document.createElement(tag);el.textContent=text;return el;};
     $('std-context').replaceChildren(...[`Peso: ${new Intl.NumberFormat('pt-BR',{maximumFractionDigits:3}).format(r.weight*1000)} g`,`Dia de vida: ${r.day}`,`Acesso: ${$('std-access').value==='central'?'central':'periférico'}`].map(x=>element('span',x)));
     const prescriptionRow=document.createElement('tr');
-    const component=element('td','Numeta G13%E');component.append(element('span','Três câmaras ativadas · sem diluição'));
+    const component=element('td',`Numeta G13%E ${bag.label}`);component.append(element('span',`${bag.chambers} · sem diluição`));
     prescriptionRow.append(component,element('td',formatStandardVolume(r.volume)));$('std-prescription-rows').replaceChildren(prescriptionRow);
     const summaries=standardSummary(r);
     $('std-summary').replaceChildren(...summaries.map(([name,value])=>{const row=document.createElement('div');row.className='summary-row';row.append(element('span',name),element('strong',value));return row;}));
     $('std-alerts').replaceChildren();
     for(const [text,danger] of [...r.blocks.map(x=>[x,true]),...r.alerts.map(x=>[x,false])]){const p=document.createElement('p');p.className='notice'+(danger?' danger':'');p.textContent=text;$('std-alerts').append(p);}
     $('std-rows').replaceChildren();
-    for(const row of r.rows){const tr=document.createElement('tr');for(const text of [row.label,`${fmt(row.perKg)} ${row.unit}/kg/dia`,`${fmt(row.total)} ${row.unit}/dia`]){const td=document.createElement('td');td.textContent=text;tr.append(td);}$('std-rows').append(tr);}
+    for(const row of r.rows){const tr=document.createElement('tr');for(const text of [row.label,`${formatStandardPer100(row.per100)} ${row.unit}`,`${fmt(row.perKg)} ${row.unit}/kg/dia`,`${fmt(row.total)} ${row.unit}/dia`]){const td=document.createElement('td');td.textContent=text;tr.append(td);}$('std-rows').append(tr);}
   });
   $('std-export').addEventListener('click',async()=>{
     const snapshot=result;if(!snapshot||snapshot.blocks.length)return;

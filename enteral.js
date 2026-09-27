@@ -47,7 +47,7 @@ export function intravenousFromResult(source,result){
     values={fluid:result.totals.fluid,calories:result.totals.calories,protein:result.effective.aa,weight:result.input.weight};
   }else if(source==='standard'){
     if(result.blocks.length)throw new Error('Revise os impedimentos da NP padrão antes de integrar.');
-    values={fluid:result.fluid,calories:result.rows.find(r=>r.label==='Energia total').perKg,protein:result.protein,weight:result.weight};
+    values={fluid:result.fluid,calories:result.rows.find(r=>r.label==='Energia total').perKg,protein:result.protein,weight:result.weight,formulation:result.formulation??'3in1'};
   }else{
     if(!result.canPrepare)throw new Error('Revise os impedimentos da HV antes de integrar.');
     // Fator da glicose já utilizado no app: 4 kcal/g.
@@ -60,7 +60,8 @@ export function integrateNutrition({parenteral={},enteral,source='individual'}){
   if(!Object.hasOwn(IV_SOURCES,source))throw new Error('Selecione o aporte intravenoso em uso.');
   const p=source==='none'?{fluid:0,calories:0,protein:0}:{fluid:Number(parenteral.fluid)||0,calories:Number(parenteral.calories)||0,protein:source==='hydration'?0:Number(parenteral.protein)||0};
   const e=enteral||{rate:0,calories:0,protein:0};
-  return {source,sourceLabel:IV_SOURCES[source],weight:source==='none'?null:parenteral.weight,parenteral:p,enteral:{fluid:e.rate||0,calories:e.calories||0,protein:e.protein||0},
+  const twoChamber=source==='standard'&&parenteral.formulation==='2in1';
+  return {source,sourceLabel:twoChamber?'NP padrão (Numeta 2:1, sem lipídios)':IV_SOURCES[source],weight:source==='none'?null:parenteral.weight,parenteral:p,enteral:{fluid:e.rate||0,calories:e.calories||0,protein:e.protein||0},
     total:{fluid:p.fluid+(e.rate||0),calories:p.calories+(e.calories||0),protein:p.protein+(e.protein||0)}};
 }
 

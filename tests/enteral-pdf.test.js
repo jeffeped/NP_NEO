@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {calculateEnteral,integrateNutrition} from '../enteral.js';
+import {intravenousFromResult} from '../enteral.js';
+import {calculateStandard} from '../standard.js';
 import {createEnteralReport} from '../enteral-pdf.js';
 import {calculateGrowth} from '../growth.js';
 
@@ -30,6 +32,16 @@ test('PDF Enteral: inclui o cálculo válido de crescimento',async()=>{
  assert.ok(lines.includes('Crescimento ponderal'));
  assert.ok(lines.some(line=>line.includes('Velocidade pelo peso médio: 16,7 g/kg/dia')));
  assert.ok(lines.some(line=>line.includes('Fenton 2025 · 28–31 sem · P50 16,6 g/kg/dia · 100% da referência')));
+});
+test('PDF integrado 2:1 identifica ausência de lipídios na bolsa e no total',async()=>{
+ const standard=calculateStandard({weight:1,day:2,formulation:'2in1',mode:'protein',value:3,access:'central'});
+ const enteral=calculateEnteral({type:'lhop',rate:60});
+ const integrated=integrateNutrition({source:'standard',parenteral:intravenousFromResult('standard',standard),enteral});
+ const original=PDFLib.PDFPage.prototype.drawText,lines=[];
+ PDFLib.PDFPage.prototype.drawText=function(value,opts){lines.push(value);assert.ok(opts.y>=0);return original.call(this,value,opts);};
+ try{await createEnteralReport({enteral,integrated});}finally{PDFLib.PDFPage.prototype.drawText=original;}
+ assert.ok(lines.some(x=>x.includes('Numeta 2:1, sem lipídios')));
+ assert.ok(lines.some(x=>x.includes('Lipídios infundidos à parte não integram estes totais')));
 });
 
 for(const [rate,energy,protein,active,energyText,proteinText] of [

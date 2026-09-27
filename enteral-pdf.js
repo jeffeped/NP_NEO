@@ -16,7 +16,8 @@ export async function createEnteralReport({enteral,integrated,clinical,growth}){
  if(enteral.composition.fm85GramsPer100mL>0)text(`FM85: ${fmtDose(enteral.composition.fm85GramsPer100mL/4)} g/25 mL (média no volume total)`,L,640,9);
  text(enteral.composition.estimated?'Composição estimada.':'Composição informada/analisada.',L,623,8,regular,muted);
  text('Fonte: '+integrated.sourceLabel,L,602,9,bold);
- let y=570;page.drawRectangle({x:L,y:y-8,width:R-L,height:25,color:shade});
+ if(integrated.sourceLabel.includes('2:1'))text('Lipídios infundidos à parte não integram estes totais.',L,585,8,regular,muted);
+ let y=integrated.sourceLabel.includes('2:1')?550:570;page.drawRectangle({x:L,y:y-8,width:R-L,height:25,color:shade});
  text('Indicador',L+6,y,9,bold);right(integrated.source==='hydration'?'HV':integrated.source==='none'?'IV (zero)':'PN',300,y,9,bold);right('Enteral',430,y,9,bold);right('Total',R-6,y,9,bold);y-=30;
  const rows=[['Taxa hídrica','mL/kg/dia','fluid'],['Energia','kcal/kg/dia','calories'],['Proteína','g/kg/dia','protein']];
  for(const [name,unit,key] of rows){text(name,L+6,y,9,bold);text(unit,L+6,y-12,7.5,regular,muted);right(fmt(integrated.parenteral[key],key==='protein'?2:1),300,y,9);right(fmt(integrated.enteral[key],key==='protein'?2:1),430,y,9);right(fmt(integrated.total[key],key==='protein'?2:1),R-6,y,9,bold);y-=34;}

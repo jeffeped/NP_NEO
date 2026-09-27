@@ -16,4 +16,11 @@ test('Numeta transfere valores internos sem usar volumes arredondados da tela',(
  const r=calculateStandard({weight:.8,day:2,mode:'protein',value:2.49,access:'central'});
  const iv=intravenousFromResult('standard',r);assert.equal(iv.fluid,r.fluid);assert.equal(iv.calories,273*r.fluid/300);assert.equal(iv.protein,r.protein);
 });
+test('Numeta 2:1 integra só energia da bolsa sem lipídios separados e identifica fonte',()=>{
+ const r=calculateStandard({weight:.8,day:2,formulation:'2in1',mode:'protein',value:3,access:'central'});
+ const iv=intravenousFromResult('standard',r),all=integrateNutrition({source:'standard',parenteral:iv,enteral:{rate:60,calories:42,protein:1}});
+ assert.equal(iv.calories,r.rows.find(row=>row.label==='Energia total').perKg);
+ assert.equal(iv.formulation,'2in1');assert.match(all.sourceLabel,/2:1, sem lipídios/);
+ assert.ok(Math.abs(all.total.calories-(3*198/9.4+42))<1e-12);
+});
 test('fonte desconhecida é rejeitada',()=>assert.throws(()=>intravenousFromResult('other',null),/Selecione/));
