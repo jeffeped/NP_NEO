@@ -12,7 +12,7 @@ globalThis.fetch=async url=>({ok:true,arrayBuffer:async()=>{
 }});
 const base={weight:1,birthWeight:1,fluidPhase:'stable',day:2,gaWeeks:30,gaDays:0,fluid:100,aa:3.5,lip:4.1,vig:14,na:0,k:0,ca:0,mg:0,p:0,seDose:6,naSalt:'nacl',pSalt:'glycero',access:'central',omit:{va:true,vb:true,oligo:true,zn:true,se:true}};
 test('PDF com cautela >20% e lipídios dentro do teto é exportável',async()=>{
-  const result=calculate({...base,lip:3});assert.equal(result.canExport,true);
+  const result=calculate({...base,aa:2,lip:2,fluid:80,vig:11.5});assert.equal(result.canExport,true);
   const pdf=await createReport(result);const doc=await PDFLib.PDFDocument.load(pdf);
   assert.ok(doc.getPageCount()>=3);assert.equal(doc.getAuthor(),'Jefferson Guilherme');
 });
@@ -27,7 +27,7 @@ test('PDF rejeita o bloqueio periférico já existente',async()=>{
   await assert.rejects(()=>createReport(result),/not exportable/);
 });
 test('PDF recusa as novas travas mesmo que solicitado diretamente',async()=>{
- for(const input of [{aa:3.6},{aa:3.5,fluid:87.4},{vig:18,fluid:100,aa:0,lip:0},{lip:4.1}]){
+ for(const input of [{aa:3.6},{aa:3.5,fluid:87.4},{vig:18,fluid:100,aa:0,lip:0},{vig:12,weight:1,birthWeight:1},{lip:4.1}]){
    const result=calculate({...base,lip:2,aa:2,vig:5,...input});
    assert.equal(result.canExport,false,result.blocks.join(' | '));
    await assert.rejects(()=>createReport(result),/not exportable/);

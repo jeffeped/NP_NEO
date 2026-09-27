@@ -35,7 +35,7 @@ Os testes comparam todas as saídas anteriores do motor com amostras congeladas 
 
 ## Alertas da bolsa individualizada
 
-- VIG: velocidade de infusão de glicose, em mg/kg/min; fórmula preservada.
+- VIG: velocidade de infusão de glicose, em mg/kg/min; fórmula preservada. Acima de 12 mg/kg/min na dose solicitada ou efetiva, bloqueia prescrição e PDF.
 - Glicose final >20%: cautela também no acesso central; acima de 25%, bloqueio em ambos os acessos.
 - Aminoácidos: referência de 2,0 g/kg/dia no dia 1; 3,0 após o dia 1; teto bloqueante de 3,5 g/kg/dia para todos os recém-nascidos, na solicitação ou na oferta efetiva, e de 4% na concentração final da NP individualizada.
 - Lipídios: referência de 2,0 g/kg/dia no dia 1; 3,0 a partir do dia 2; teto de 4,0.
@@ -46,7 +46,12 @@ Os testes comparam todas as saídas anteriores do motor com amostras congeladas 
 
 Na infusão contínua de 24 horas, o limite lipídico bloqueante é 4 g/kg/dia, que corresponde exatamente a 4 ÷ 24 g/kg/h (aproximadamente 0,167 g/kg/h na tela). Uma oferta efetiva ligeiramente acima do limite pode surgir após arredondar o volume de preparo. A diretriz ESPGHAN/ESPEN/ESPR/CSPEN de lipídios recomenda infusão contínua por 24 horas e não ultrapassar 4 g/kg/dia em recém-nascidos (Lapillonne et al., Clin Nutr. 2018;37:2324–2336, doi:10.1016/j.clnu.2018.06.946). Os limites de concentração da bolsa de 4% e 25% são decisões do responsável clínico do projeto.
 
+O teto bloqueante de VIG de 12 mg/kg/min segue o máximo preferencial para carboidratos parenterais da diretriz ESPGHAN/ESPEN/ESPR/CSPEN (Mesotten et al., Clin Nutr. 2018;37:2337–2343, doi:10.1016/j.clnu.2018.06.947). A solicitação e a oferta real após arredondar SG 50% são verificadas; o protocolo deste app transforma a recomendação preferencial em bloqueio.
+
 **Taxa hídrica da NPP:** nos dias 1–5, o máximo da Tabela 1 de Jochum et al. (Clin Nutr. 2018;37:2344–2353; doi:10.1016/j.clnu.2018.06.948) depende do dia, prematuridade e faixa de peso ao nascer. De D6 a D30, a fase intermediária ou estável deve ser selecionada pelo médico (Tabelas 2–3). A taxa solicitada e a efetiva, inclusive após ajuste amarelo do VT, são comparadas ao máximo; ultrapassá-lo bloqueia prescrição e PDF. Após D30 há apenas aviso, pois as tabelas neonatais não fixam teto nessa faixa. A fonte reconhece variações clínicas importantes (recomendação 6.13); o app não integra outras fontes de água para esta trava.
+**Erros evidentes de entrada:** peso atual fora de 0,1–20 kg, peso ao nascer fora de 0,1–10 kg, idade gestacional ao nascer fora de 18–45 semanas, dia de vida acima de 365 e taxa hídrica acima de 500 mL/kg/dia exigem revisão antes do cálculo. Essas faixas largas verificam digitação e unidade; não são valores recomendados de prescrição. As doses de eletrólitos permanecem para revisão clínica específica.
+
+**Abaixo de 80 mL/kg/dia:** a taxa solicitada ou efetiva aciona aviso amarelo para considerar glicerofosfato de sódio quando houver cálcio e fósforo, em lugar de fosfato de potássio. O limiar de 80 é uma decisão do protocolo do projeto, não um ponto de corte da diretriz. Fosfato orgânico reduz o risco de precipitação cálcio-fósforo, segundo ESPGHAN/ESPEN/ESPR/CSPEN (Complications, Clin Nutr. 2018;37:2418–2429, recomendação 14.15); a compatibilidade da mistura exige conferência farmacêutica individual.
 O app já utiliza **peso atual em kg** e **dia de vida**, com nascimento = dia 1; estes critérios foram preservados.
 
 Após atualizar a versão hospedada, use “Atualização disponível · reiniciar” no app para trocar o cache offline. Os parâmetros do formulário são descartados ao reiniciar.

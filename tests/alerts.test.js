@@ -34,22 +34,33 @@ test('oligoelementos: termo 37+0 usa zinco 250 e selênio 2–3',()=>{
 });
 test('oligoelementos: tetos absolutos limitam zinco a 5 mg e selênio a 100 mcg',()=>{
   const omit={...base.omit,zn:false,se:false};
-  const r=run({weight:40,gaWeeks:37,gaDays:0,seDose:3,omit});
+  const r=run({weight:20,day:8,gaWeeks:36,gaDays:0,znDose:500,seDose:7,omit});
   assert.equal(r.rows.find(row=>row.id==='zinc').quantity,5000);
   assert.ok(r.rows.find(row=>row.id==='selenium').quantity<=100);
   assert.ok(r.notices.some(n=>n.includes('5 mg/dia')));
 });
+test('validação: erros grosseiros de entrada impedem cálculo sem restringir doses de eletrólitos',()=>{
+  const cases=[
+    [{weight:0.001},'weight'],[{weight:0.099},'weight'],[{weight:20.01},'weight'],
+    [{birthWeight:0.099},'birthWeight'],[{birthWeight:10.01},'birthWeight'],
+    [{gaWeeks:17},'gaWeeks'],[{gaWeeks:46},'gaWeeks'],
+    [{day:366},'day'],[{fluid:500.01},'fluid']
+  ];
+  for(const [changes,field] of cases){const r=calculate({...base,...changes});assert.equal(r.ok,false,JSON.stringify(changes));assert.ok(r.errors.some(e=>e.field===field));}
+  const boundary=run({weight:20,birthWeight:10,gaWeeks:45,day:365,fluid:500,aa:0,lip:0,vig:0});
+  assert.equal(boundary.ok,true);
+});
 
 for(const access of ['peripheral','central']) {
-  for(const [fluid,expected,name] of [[90.1,false,'abaixo'],[90,false,'exatamente'],[89.9,true,'imediatamente acima na precisão do preparo']]) {
+  for(const [fluid,expected,name] of [[86.5,false,'abaixo'],[86.4,false,'exatamente'],[86.3,true,'imediatamente acima na precisão do preparo']]) {
     test(`glicose ${name} de 20% · ${access}`,()=>{
-      const r=run({weight:1,fluid,vig:12.5,access});
+      const r=run({weight:.625,birthWeight:.625,fluid,vig:12,access});
       assert.equal(above20(r),expected);
       assert.equal(r.accessBlocked,access==='peripheral'); // Regra antiga de 12,5%.
       assert.equal(r.canExport,access==='central');
       if(expected){assert.equal(alertFor(r,'glucose').level,'caution');assert.equal(alertFor(r,'glucose').blocking,false);assert.match(alertFor(r,'glucose').message,/mesmo em acesso venoso central/);}
-      if(fluid===90)assert.equal(r.totals.glucosePercent,20);
-      if(fluid===89.9)assert.equal(r.totals.glucosePercent.toFixed(1),'20.0');
+      if(fluid===86.4)assert.equal(r.totals.glucosePercent,20);
+      if(fluid===86.3)assert.equal(r.totals.glucosePercent.toFixed(1),'20.0');
     });
   }
 }
@@ -167,6 +178,19 @@ test('VIG mantém conversão mg/kg/min para glicose 50% em 24 horas',()=>{
   assert.equal(r.volumes.glucose,18);assert.equal(r.grams.glucose,9);
   assert.equal(r.effective.vig,5);assert.equal(r.offers.find(o=>o.id==='vig').unit,'mg/kg/min');
 });
+test('VIG: teto 12 estrito na solicitação e na oferta efetiva após arredondar SG 50%',()=>{
+  const exact=run({weight:.625,birthWeight:.625,vig:12});
+  assert.equal(exact.effective.vig,12);
+  assert.equal(exact.canExport,true);
+  const requested=run({weight:.625,birthWeight:.625,vig:12.01});
+  assert.equal(requested.effective.vig,12);
+  assert.equal(requested.canExport,false);
+  assert.ok(requested.blocks.some(b=>b.includes('VIG acima de 12')));
+  const rounded=run({weight:1,birthWeight:1,vig:12});
+  assert.ok(rounded.effective.vig>12);
+  assert.equal(rounded.canExport,false);
+  assert.ok(rounded.blocks.some(b=>b.includes('VIG acima de 12')));
+});
 for(const changes of [{weight:0},{weight:-1},{weight:'NaN'},{day:0},{day:1.5},{aa:-2},{aa:Infinity},{lip:'3x'},{vig:'1e309'},{access:'unknown'}]) {
   test(`entrada inválida mantém bloqueio: ${JSON.stringify(changes)}`,()=>assert.equal(calculate({...base,...changes}).ok,false));
 }
@@ -227,6 +251,18 @@ test('VT menor que os componentes vira cautela e volume efetivo coerente, sem im
   assert.equal(r.totals.fluid,r.totals.totalVolume/0.8);
   assert.ok(r.notices.some(n=>n.includes('Volume total solicitado')));
 });
+test('taxa hídrica abaixo de 80 avisa sobre glicerofosfato sem impedir PDF',()=>{
+  const baseline=run({weight:1,birthWeight:1,fluid:80,ca:1,p:1,pSalt:'kphos'});
+  assert.equal(baseline.notices.some(n=>n.includes('abaixo de 80')),false);
+  const low=run({weight:1,birthWeight:1,fluid:79.9,ca:1,p:1,pSalt:'kphos'});
+  assert.equal(low.canExport,true,low.blocks.join(' | '));
+  assert.ok(low.notices.some(n=>n.includes('Considere selecionar glicerofosfato de sódio')));
+  const alreadySelected=run({weight:1,birthWeight:1,fluid:79.9,ca:1,p:1,pSalt:'glycero'});
+  assert.ok(alreadySelected.notices.some(n=>n.includes('Glicerofosfato de sódio já selecionado')));
+  const effectiveLow=run({weight:.999,birthWeight:.999,fluid:80,aa:0,lip:0,vig:0});
+  assert.ok(effectiveLow.totals.fluid<80);
+  assert.ok(effectiveLow.notices.some(n=>n.includes('abaixo de 80')));
+});
 
 test('travas de concentração final e taxa lipídica usam valores efetivos e limites estritos',()=>{
   const aaEqual=run({weight:1,aa:3.2,lip:2,fluid:80});
@@ -237,7 +273,8 @@ test('travas de concentração final e taxa lipídica usam valores efetivos e li
   assert.ok(aaAbove.blocks.some(b=>b.includes('Concentração final de aminoácidos acima de 4%')));
   const glucoseEqual=run({weight:1,aa:0,lip:0,fluid:100,vig:50/2.88});
   assert.equal(glucoseEqual.totals.glucosePercent,25);
-  assert.equal(glucoseEqual.canExport,true);
+  assert.ok(glucoseEqual.blocks.some(b=>b.includes('VIG acima de 12')));
+  assert.ok(!glucoseEqual.blocks.some(b=>b.includes('Concentração final de glicose acima de 25%')));
   const glucoseAbove=run({weight:1,aa:0,lip:0,fluid:100,vig:50.1/2.88});
   assert.equal(glucoseAbove.canExport,false);
   assert.ok(glucoseAbove.blocks.some(b=>b.includes('Concentração final de glicose acima de 25%')));
@@ -250,7 +287,7 @@ test('travas de concentração final e taxa lipídica usam valores efetivos e li
 });
 
 const baseline=JSON.parse(readFileSync(new URL('./fixtures/baseline-0.3.5.json',import.meta.url)));
-for(const {name,input,expected} of baseline.records.filter(record=>record.name!=='volume-insuficiente'))test(`regressão 0.3.5: ${name}`,()=>{
+for(const {name,input,expected} of baseline.records.filter(record=>!['volume-insuficiente','volume-traco-zero'].includes(record.name)))test(`regressão 0.3.5: ${name}`,()=>{
   const actual=calculate({...input,birthWeight:input.weight,fluidPhase:'stable'});
   delete actual.alerts;delete actual.version;delete actual.sodiumBreakdown;delete actual.fluidReference;delete actual.input.birthWeight;delete actual.input.fluidPhase;delete actual.totals.osmolarity;delete actual.totals.calciumConcentration;delete actual.totals.phosphorusConcentration;delete actual.totals.aminoAcidPercent;delete actual.totals.lipidRate;delete actual.totals.requestedVolume;delete actual.totals.volumeAdjusted;
   const previous=structuredClone(expected);delete actual.blocks;delete actual.canExport;delete previous.blocks;delete previous.canExport;

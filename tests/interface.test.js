@@ -104,14 +104,38 @@ test('interface: peso ≥1000 g também apresenta teto 3,5 de aminoácidos',()=>
   app.set('aa',3.6);app.calculate();assert.equal(app.el('export-pdf').disabled,true);
 });
 test('interface: exatamente 20%, acima de 20% e troca de acesso',()=>{
-  const app=openApp();app.set('weight',1);app.set('fluid',90);app.set('vig',12.5);app.calculate();
+  const app=openApp();app.set('weight',.625);app.set('birth-weight',.625);app.set('fluid',86.4);app.set('vig',12);app.calculate();
   assert.equal(app.alerts().some(a=>a.id==='glucose-concentration-high'),false);
-  app.set('fluid',89.9);assert.equal(app.el('calculated-result').hidden,true);app.calculate();
+  app.set('fluid',86.3);assert.equal(app.el('calculated-result').hidden,true);app.calculate();
   assert.ok(app.alerts().some(a=>a.id==='glucose-concentration-high'));
   assert.equal(app.el('export-pdf').disabled,false);
   app.access('peripheral');app.calculate();
   assert.equal(app.el('export-pdf').disabled,true);assert.ok(app.alerts().some(a=>a.id==='glucose-concentration-high'));
   assert.match(app.el('access-alert').textContent,/12,5%/);
+});
+test('interface: VIG acima de 12 ou arredondada acima do teto impede PDF até correção',()=>{
+  const app=openApp();app.set('weight',.625);app.set('birth-weight',.625);app.set('vig','12,01');app.calculate();
+  assert.equal(app.el('export-pdf').disabled,true);
+  assert.match(app.el('result-alerts').textContent,/VIG acima de 12 mg\/kg\/min/);
+  app.set('vig',12);app.calculate();assert.equal(app.el('export-pdf').disabled,false);
+  app.set('weight',1);app.set('birth-weight',1);app.calculate();
+  assert.equal(app.el('export-pdf').disabled,true);
+  assert.match(app.el('result-summary').textContent,/VIG efetiva12,01 mg\/kg\/min/);
+});
+test('interface: peso com erro de unidade fica vermelho, invalida resultado e exige correção',()=>{
+  const app=openApp();app.calculate();assert.equal(app.el('export-pdf').disabled,false);
+  app.set('weight',800);app.dispatch('npp-form','submit');
+  assert.equal(app.el('calculated-result').hidden,true);
+  assert.equal(app.el('export-pdf').disabled,true);
+  assert.equal(app.el('form-errors').hidden,false);
+  assert.match(app.el('form-errors').textContent,/Peso atual fora da faixa de conferência/);
+  assert.ok(app.el('form-errors').classList.contains('danger'));
+  app.set('weight','0,8');app.calculate();assert.equal(app.el('export-pdf').disabled,false);
+});
+test('interface: taxa abaixo de 80 exibe bandeira amarela e permite PDF',()=>{
+  const app=openApp();app.set('fluid','79,9');app.set('salt-p','kphos');app.calculate();
+  assert.equal(app.el('export-pdf').disabled,false);
+  assert.match(app.el('result-alerts').textContent,/Taxa hídrica da NPP abaixo de 80.*Considere selecionar glicerofosfato de sódio/);
 });
 test('interface: bloqueios vermelhos exigem novos parâmetros; VT ajustado é amarelo',()=>{
   const app=openApp();app.set('weight',1);app.set('aa','3,2');app.set('fluid','79,9');app.calculate();

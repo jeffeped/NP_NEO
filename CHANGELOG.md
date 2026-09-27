@@ -2,6 +2,9 @@
 
 ## 0.6.4 — em revisão
 
+- Bloqueia a NP individualizada e o PDF se a VIG solicitada ou efetiva após arredondar SG 50% ultrapassar 12 mg/kg/min; mostra a VIG efetiva na tela e no PDF.
+- Rejeita erros evidentes de unidade ou digitação em peso atual (0,1–20 kg), peso ao nascer (0,1–10 kg), idade gestacional (18–45 semanas), dia de vida (1–365) e taxa hídrica acima de 500 mL/kg/dia. Destaca o campo em vermelho e exige recálculo; essas faixas são barreiras amplas de entrada, não metas clínicas.
+- Abaixo de 80 mL/kg/dia solicitados ou efetivos, mostra aviso amarelo sobre considerar glicerofosfato de sódio no lugar de fosfato de potássio quando houver cálcio e fósforo. Não bloqueia PDF e solicita conferência farmacêutica da compatibilidade.
 - Na NP individualizada, bloqueia a prescrição e o PDF se aminoácidos solicitados ou efetivos ultrapassarem 3,5 g/kg/dia, se a concentração final de aminoácidos ultrapassar 4%, se a concentração final de glicose ultrapassar 25% ou se a infusão lipídica efetiva ultrapassar 4 g/kg/dia em 24 horas (limite horário exato de 4/24 g/kg/h).
 - Aplica o teto de aminoácidos de 3,5 g/kg/dia também à NP padrão, independentemente do peso; preserva os alertas de referência e a cautela de glicose acima de 20%.
 - Se os componentes excederem o volume solicitado, mostra aviso amarelo e usa a soma efetiva dos componentes como volume total, com água q.s.p. zero. Exibe solicitado e efetivo, recalcula vazão, taxa hídrica e concentrações, e permite PDF se as demais regras estiverem atendidas.

@@ -23,6 +23,12 @@ export function calculate(input) {
   }
   for(const field of ['weight','day','gaWeeks','fluid']) if(n[field]===0) errors.push({field,message:`${labels[field]} deve ser maior que zero.`});
   for(const field of ['day','gaWeeks','gaDays']) if(Number.isFinite(n[field])&&!Number.isInteger(n[field])) errors.push({field,message:`${labels[field]} deve ser um número inteiro.`});
+  // Faixas amplas de conferência da entrada, para impedir erros evidentes de unidade/digitação.
+  // Não representam metas terapêuticas nem restringem as doses de eletrólitos.
+  if(Number.isFinite(n.weight)&&n.weight>0&&(n.weight<0.1||n.weight>20))errors.push({field:'weight',message:'Peso atual fora da faixa de conferência (0,1 a 20 kg). Confira unidade e digitação.'});
+  if(Number.isFinite(n.day)&&n.day>365)errors.push({field:'day',message:'Dia de vida acima de 365. Confira a digitação.'});
+  if(Number.isFinite(n.gaWeeks)&&n.gaWeeks>0&&(n.gaWeeks<18||n.gaWeeks>45))errors.push({field:'gaWeeks',message:'Idade gestacional ao nascer fora da faixa de conferência (18 a 45 semanas). Confira a digitação.'});
+  if(Number.isFinite(n.fluid)&&n.fluid>500)errors.push({field:'fluid',message:'Taxa hídrica acima de 500 mL/kg/dia. Confira unidade e digitação.'});
   if(n.gaDays>6) errors.push({field:'gaDays',message:'Dias adicionais de gestação: use de 0 a 6.'});
   if(!['central','peripheral'].includes(input.access)) errors.push({field:'access',message:'Selecione o acesso venoso.'});
   if(!['nacl','acetate'].includes(input.naSalt)) errors.push({field:'naSalt',message:'Selecione o sal de sódio.'});
@@ -35,6 +41,7 @@ export function calculate(input) {
   if(!omit.se&&!preterm&&(!Number.isFinite(n.seDose)||n.seDose<2||n.seDose>3)) errors.push({field:'seDose',message:'Para recém-nascidos a termo, informe selênio entre 2 e 3 mcg/kg/dia.'});
   n.birthWeight=input.birthWeight===''||input.birthWeight==null?null:parseNumber(input.birthWeight);
   if(n.birthWeight!==null&&(!Number.isFinite(n.birthWeight)||n.birthWeight<=0||n.birthWeight>1e12))errors.push({field:'birthWeight',message:'Peso ao nascer: informe um valor válido e maior que zero.'});
+  if(Number.isFinite(n.birthWeight)&&n.birthWeight>0&&(n.birthWeight<0.1||n.birthWeight>10))errors.push({field:'birthWeight',message:'Peso ao nascer fora da faixa de conferência (0,1 a 10 kg). Confira unidade e digitação.'});
   let fluidReference=null;
   if(!errors.length){
     try{fluidReference=fluidGuidance({day:n.day,gaWeeks:n.gaWeeks,birthWeight:n.birthWeight,phase:input.fluidPhase});}
@@ -118,6 +125,10 @@ export function calculate(input) {
   const nonProtein=grams.glucose*ENERGY.glucose+grams.lip*ENERGY.lip;
   const calories=nonProtein+grams.aa*ENERGY.aa;
   const totalVolume=adjustedTotalCents/100;
+  if(n.fluid<80||compareProducts([totalVolume],[w,80])<0){
+    const advice=input.pSalt==='glycero'?'Glicerofosfato de sódio já selecionado.':'Considere selecionar glicerofosfato de sódio no lugar de fosfato de potássio quando houver cálcio e fósforo na bolsa.';
+    notices.push(`ATENÇÃO — Taxa hídrica da NPP abaixo de 80 mL/kg/dia na solicitação ou no volume efetivo. ${advice} A escolha do sal não substitui a conferência farmacêutica da compatibilidade cálcio-fósforo.`);
+  }
   const glucosePercent=totalVolume>0?grams.glucose/totalVolume*100:0;
   const aminoAcidPercent=totalVolume>0?grams.aa/totalVolume*100:0;
   const lipidRate=grams.lip/(w*24);
@@ -129,6 +140,8 @@ export function calculate(input) {
     blocks.push('Concentração final de aminoácidos acima de 4%. Revise a dose de aminoácidos ou a taxa hídrica e calcule novamente.');
   if(totalVolume>0&&compareProducts([volumes.glucose,c.glucose,100],[totalVolume,25])>0)
     blocks.push('Concentração final de glicose acima de 25%. Revise a VIG ou a taxa hídrica e calcule novamente.');
+  if(n.vig>12||compareProducts([volumes.glucose,500],[w,1440,12])>0)
+    blocks.push('VIG acima de 12 mg/kg/min na dose solicitada ou na oferta efetiva. Revise a VIG e calcule novamente.');
   if(compareProducts([volumes.lip,c.lip],[w,4])>0)
     blocks.push('Taxa de infusão de lipídios acima do limite de 4 g/kg/dia em 24 horas (aproximadamente 0,167 g/kg/h). Revise a dose de lipídios e calcule novamente.');
   if(fluidReference.max!==null&&(n.fluid>fluidReference.max||compareProducts([totalVolume],[w,fluidReference.max])>0))
