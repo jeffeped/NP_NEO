@@ -79,12 +79,13 @@ async function fromFenton(data,action,key,fetcher){
   const bytes=await bounded(response,MAX_CSV);
   return new Response(bytes,{headers:{...originHeaders,'Content-Type':'text/csv; charset=utf-8','Content-Disposition':'attachment; filename="Fenton-2025-escores-z.csv"'}});
  }
- const result=await response.json();
+ let result;
+ try{result=await response.json();}catch{throw new Error('chart-json-invalid');}
  if(result?.ok!==true)throw new Error('Upstream chart error');
  const url=contentUrl(result.contentUrl);
  if(!url||(format==='jpg'?!/\.jpe?g$/i.test(url):!url.toLowerCase().endsWith('.pdf')))throw new Error('Unexpected chart URL');
  const chart=await fetcher(url,{method:'GET',redirect:'error',signal:AbortSignal.timeout(20000)});
- if(!chart.ok)throw new Error('Chart unavailable');
+ if(!chart.ok)throw new Error(`chart-file-http-${chart.status}`);
  const bytes=await bounded(chart,MAX_CHART);
  const jpg=bytes[0]===0xff&&bytes[1]===0xd8&&bytes[2]===0xff;
  const pdf=bytes[0]===37&&bytes[1]===80&&bytes[2]===68&&bytes[3]===70;
@@ -113,7 +114,9 @@ export default {
    return await fromFenton(data,url.pathname.slice(1),env.FENTON_API_KEY,fetch);
   }catch(err){
    // Temporary status-only diagnostic: never reveal upstream body, inputs, key, or URL.
-   const diagnostic=/^fenton-(http-[0-9]{3}|fetch-(TypeError|TimeoutError|AbortError|other))$/.test(err?.message||'')?err.message:'worker-processing';
+   const known={'Upstream chart error':'chart-upstream-result','Unexpected chart URL':'chart-url-rejected','Unexpected chart format':'chart-format','Oversized upstream response':'response-too-large'};
+   const message=err?.message||'';
+   const diagnostic=/^(fenton-(http-[0-9]{3}|fetch-(TypeError|TimeoutError|AbortError|other))|chart-file-http-[0-9]{3}|chart-json-invalid)$/.test(message)?message:(known[message]||'worker-processing');
    return error('Não foi possível consultar a Fenton. Tente novamente.',502,{...originHeaders,'X-Fenton-Diagnostic':diagnostic});
   }
  }
