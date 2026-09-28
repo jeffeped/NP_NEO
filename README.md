@@ -1,6 +1,6 @@
 # GROW_NEO by Prof. Jefferson
 
-Instrumento de apoio à terapia nutricional neonatal, com nutrição parenteral, hidratação venosa e avaliação da dieta enteral. Versão de avaliação 0.6.7 publicada.
+Instrumento de apoio à terapia nutricional neonatal, com nutrição parenteral, hidratação venosa e avaliação da dieta enteral. Versão de avaliação 0.6.8.
 
 As mudanças de cada versão estão documentadas em [CHANGELOG.md](CHANGELOG.md), além do histórico auditável de commits do repositório.
 

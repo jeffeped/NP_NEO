@@ -1,6 +1,12 @@
 # Histórico de versões
 
-## 0.6.7 — em preparação (integração Fenton desativada até publicar o serviço seguro)
+## 0.6.8 — correção da conexão Fenton (28/09/2026)
+
+- Corrige a política de segurança da página (CSP): `connect-src 'self'` bloqueava a chamada ao Worker, mesmo com os endpoints e o CORS funcionando. A política agora permite também a origem HTTPS exata do Worker configurado.
+- Atualiza a versão do cache offline para que aparelhos instalados recebam a política corrigida.
+- Acrescenta teste de regressão que relaciona o endereço configurado à política da página, impedindo a omissão do Worker ou a liberação de destinos adicionais.
+
+## 0.6.7 — publicada em 28/09/2026
 
 - Prepara formulário de medidas seriadas da Fenton 2025 na aba Crescimento, com gráfico JPG exibido no app, PDF e tabela de escores Z em CSV. O formulário aparece somente após configurar o endereço HTTPS do serviço intermediário.
 - Acrescenta código de Worker para enviar à Fenton apenas sexo, IG ao nascer, IPM e medidas, guardando a chave em segredo privado. Valida entrada, limita consultas, restringe origens, impede que URLs de gráficos apontem a outro servidor e não inclui identificadores ou data de nascimento no CSV.
