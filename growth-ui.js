@@ -1,7 +1,9 @@
 import {calculateGrowth} from './growth.js';
+import {initFenton} from './fenton-ui.js';
 const fmt=(n,d=1)=>Number.isFinite(n)?n.toFixed(d).replace('.',','):'—';
 const pma=n=>{const days=Math.round(n*7);return `${Math.floor(days/7)} sem + ${days%7} d`;};
 export function initGrowth(doc){
+ initFenton(doc);
  let last=null;const $=id=>doc.getElementById(id);
  const invalidate=()=>{last=null;$('gr-result').hidden=true;};
  for(const event of ['input','change'])$('growth-form').addEventListener(event,invalidate);

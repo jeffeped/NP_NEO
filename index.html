@@ -238,6 +238,25 @@
           <div id="gr-context" class="context"></div><div id="gr-summary" class="summary"></div><div id="gr-notices"></div>
           <p class="help">A comparação é informativa e não define crescimento adequado, lento ou rápido. Interprete com o estado clínico, balanço hídrico e trajetória antropométrica.</p>
         </section>
+        <section id="fenton-integration" class="section section-inner" hidden>
+          <h2>Fenton 2025 · medidas seriadas</h2>
+          <p class="help">Informe a idade pós-menstrual (IPM) de cada medida. Somente sexo, idade gestacional e medidas serão enviados ao serviço externo da Fenton, sem nome, número ou data de nascimento. É necessária conexão à internet.</p>
+          <form id="fenton-form" autocomplete="off" novalidate>
+            <div class="field-grid">
+              <label class="field full">Sexo<select id="fenton-sex" required><option value="">Selecione</option><option value="F">Feminino</option><option value="M">Masculino</option></select></label>
+              <label class="field">IG ao nascer<input id="fenton-ga-weeks" inputmode="numeric" aria-label="IG ao nascer em semanas" required><span class="unit">semanas</span></label>
+              <label class="field">Dias adicionais<input id="fenton-ga-days" inputmode="numeric" value="0" aria-label="Dias adicionais da IG ao nascer" required><span class="unit">0–6 dias</span></label>
+            </div>
+            <div id="fenton-measures" class="fenton-measures"></div>
+            <button id="fenton-add" class="secondary" type="button">Adicionar medida</button>
+            <div class="fenton-actions"><button id="fenton-chart-button" class="primary" type="submit">Ver gráfico Fenton</button><button id="fenton-pdf-button" class="secondary" type="button">Gerar PDF Fenton</button><button id="fenton-z-button" class="secondary" type="button">Calcular escores Z</button></div>
+          </form>
+          <p id="fenton-status" role="status" class="help"></p>
+          <figure id="fenton-figure" hidden><img id="fenton-chart" alt="Gráfico Fenton 2025 das medidas informadas"></figure>
+          <a id="fenton-chart-download" class="download-link" download="Fenton-2025.jpg" hidden>Baixar gráfico JPG</a>
+          <a id="fenton-pdf-download" class="download-link" download="Fenton-2025.pdf" hidden>Baixar gráfico PDF</a>
+          <a id="fenton-csv-download" class="download-link" download="Fenton-2025-escores-z.csv" hidden>Baixar tabela de escores Z (CSV)</a>
+        </section>
       </section>
       <section id="notes" role="tabpanel" aria-labelledby="tab-notes" hidden>
         <h2 class="page-title">Notas importantes</h2>
