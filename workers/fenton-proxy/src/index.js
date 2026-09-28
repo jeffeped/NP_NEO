@@ -71,7 +71,7 @@ async function fromFenton(data,action,key,fetcher){
  let response;
  try{
   response=await fetcher(`${FENTON_ORIGIN}/api/Fenton/${endpoint}`,{
-   method:'POST',headers:{'X-API-Key':key},body:form,redirect:'error',signal:AbortSignal.timeout(20000)
+   method:'POST',headers:{'X-API-Key':key},body:form,redirect:'manual',signal:AbortSignal.timeout(20000)
   });
  }catch(err){throw new Error(`fenton-fetch-${['TypeError','TimeoutError','AbortError'].includes(err?.name)?err.name:'other'}`);}
  if(!response.ok)throw new Error(`fenton-http-${response.status}`);
