@@ -13,7 +13,7 @@ const fill=app=>{
 };
 
 test('sem servidor configurado o formulário Fenton fica oculto e mantém link oficial',()=>{
- const a=setup();initFenton(a.document);
+ const a=setup();initFenton(a.document,{proxyUrl:''});
  assert.equal(a.document.getElementById('fenton-integration').hidden,true);
  assert.equal(a.document.querySelector('.growth-plotter').getAttribute('href'),'https://fentongrowth.ca/');
 });
