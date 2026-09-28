@@ -27,10 +27,10 @@ identificador nem data de nascimento, acrescenta a credencial privada na chamada
    oficial permanece disponível.
 
 
-> Estado em 28/09/2026: Worker conectado e implantado; endpoints reais ainda em teste
-> com dados fictícios. Não habilitar o formulário no aplicativo antes de conferir
-> gráficos e escores Z produzidos pela API. O CSV de escores Z respondeu
-> corretamente ao teste fictício; JPG e PDF seguem em diagnóstico.
+> Estado em 28/09/2026: Worker conectado e implantado. Teste com medidas
+> fictícias confirmou CSV de escores Z, gráfico JPG e gráfico PDF, além do
+> preflight CORS. O JPG foi inspecionado visualmente e mostrou as três medidas.
+> A interface está configurada na branch de revisão, pendente de publicação.
 
 ## Segurança e limites
 
