@@ -12,9 +12,11 @@ identificador nem data de nascimento, acrescenta a credencial privada na chamada
    chamado `grow-neo-fenton-proxy`. No painel do Worker, adicionar o segredo
    `FENTON_API_KEY` com a chave recebida **diretamente do e-mail original**.
    Não colar a chave no GitHub, no chat, em scripts, em URLs ou em arquivos do projeto.
-2. No diretório `workers/fenton-proxy`, autenticar o Wrangler e implantar com
-   `npx wrangler deploy`. O arquivo `wrangler.jsonc` declara que o segredo é
-   obrigatório e configura o limite inicial de 30 consultas por minuto por IP.
+2. Conectar o repositório `jeffeped/NP_NEO` em Workers Builds, selecionar a branch
+   `feature/fenton-secure-proxy` e definir `/workers/fenton-proxy/` como diretório
+   raiz. O comando de implantação é `npx wrangler deploy`. O arquivo `wrangler.jsonc`
+   declara que o segredo é obrigatório e configura o limite inicial de 30
+   consultas por minuto por IP. Cada novo commit na branch aciona o build.
 3. Antes de habilitar o app público, testar o Worker com **dados fictícios** e
    confirmar os formatos reais de resposta dos endpoints Fenton (JPG, PDF e
    CSV), o endereço temporário das imagens e o funcionamento em navegadores
