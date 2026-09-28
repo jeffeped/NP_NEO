@@ -132,7 +132,14 @@ regression test checks that the page permits only its own origin and the
 configured Worker for connections. It failed on 0.6.7 before the correction.
 The initial suggestion of a browser extension or network block was not an
 established diagnosis. The published CSP omission is a confirmed application
-defect; an end-to-end browser test remains the acceptance check for the fix.
+defect. After PR #24 was merged as `9f8c2fee` and Pages deployment succeeded,
+we used the app's Update button to install 0.6.8 in the same remote browser.
+Submitting the fabricated example through the Growth tab then displayed
+“Gráfico Fenton 2025 gerado.” and the chart with all three measurement points.
+The browser end-to-end test therefore passed after the CSP correction. The full
+automated suite also passed 403 tests locally and in GitHub Actions. Verification
+on the user's own updated device and formal clinical validation remain separate
+follow-ups.
 
 ## Questions for the Fenton team
 
