@@ -68,26 +68,20 @@ async function fromFenton(data,action,key,fetcher){
  const format=action==='chart-pdf'?'pdf':'jpg';
  if(action!=='zscores')form.append('runMode',format);
  const endpoint=action!=='zscores'?'ClientPlotPoints':'ClientDownloadCsv';
- let response;
- try{
-  response=await fetcher(`${FENTON_ORIGIN}/api/Fenton/${endpoint}`,{
-   method:'POST',headers:{'X-API-Key':key},body:form,redirect:'manual',signal:AbortSignal.timeout(20000)
-  });
- }catch(err){throw new Error(`fenton-fetch-${['TypeError','TimeoutError','AbortError'].includes(err?.name)?err.name:'other'}`);}
- if(!response.ok)throw new Error(`fenton-http-${response.status}`);
+ const response=await fetcher(`${FENTON_ORIGIN}/api/Fenton/${endpoint}`,{
+  method:'POST',headers:{'X-API-Key':key},body:form,redirect:'manual',signal:AbortSignal.timeout(20000)
+ });
+ if(!response.ok)throw new Error('Upstream rejected request');
  if(action==='zscores'){
   const bytes=await bounded(response,MAX_CSV);
   return new Response(bytes,{headers:{...originHeaders,'Content-Type':'text/csv; charset=utf-8','Content-Disposition':'attachment; filename="Fenton-2025-escores-z.csv"'}});
  }
- let result;
- try{result=await response.json();}catch{throw new Error('chart-json-invalid');}
+ const result=await response.json();
  if(result?.ok!==true)throw new Error('Upstream chart error');
  const url=contentUrl(result.contentUrl);
  if(!url||(format==='jpg'?!/\.jpe?g$/i.test(url):!url.toLowerCase().endsWith('.pdf')))throw new Error('Unexpected chart URL');
- let chart;
- try{chart=await fetcher(url,{method:'GET',redirect:'manual',signal:AbortSignal.timeout(20000)});}
- catch(err){throw new Error(`chart-fetch-${['TypeError','TimeoutError','AbortError'].includes(err?.name)?err.name:'other'}`);}
- if(!chart.ok)throw new Error(`chart-file-http-${chart.status}`);
+ const chart=await fetcher(url,{method:'GET',redirect:'manual',signal:AbortSignal.timeout(20000)});
+ if(!chart.ok)throw new Error('Chart unavailable');
  const bytes=await bounded(chart,MAX_CHART);
  const jpg=bytes[0]===0xff&&bytes[1]===0xd8&&bytes[2]===0xff;
  const pdf=bytes[0]===37&&bytes[1]===80&&bytes[2]===68&&bytes[3]===70;
@@ -114,12 +108,9 @@ export default {
    const data=JSON.parse(raw);
    if(!validatePayload(data))return error('Confira idades e medidas informadas.',400,originHeaders);
    return await fromFenton(data,url.pathname.slice(1),env.FENTON_API_KEY,fetch);
-  }catch(err){
-   // Temporary status-only diagnostic: never reveal upstream body, inputs, key, or URL.
-   const known={'Upstream chart error':'chart-upstream-result','Unexpected chart URL':'chart-url-rejected','Unexpected chart format':'chart-format','Oversized upstream response':'response-too-large'};
-   const message=err?.message||'';
-   const diagnostic=/^(fenton-(http-[0-9]{3}|fetch-(TypeError|TimeoutError|AbortError|other))|chart-file-http-[0-9]{3}|chart-fetch-(TypeError|TimeoutError|AbortError|other)|chart-json-invalid)$/.test(message)?message:(known[message]||'worker-processing');
-   return error('Não foi possível consultar a Fenton. Tente novamente.',502,{...originHeaders,'X-Fenton-Diagnostic':diagnostic});
+  }catch{
+   // No upstream body, measurements, credential, or generated URL in responses/logs.
+   return error('Não foi possível consultar a Fenton. Tente novamente.',502,originHeaders);
   }
  }
 };
