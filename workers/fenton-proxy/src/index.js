@@ -71,7 +71,7 @@ async function fromFenton(data,action,key,fetcher){
  const response=await fetcher(`${FENTON_ORIGIN}/api/Fenton/${endpoint}`,{
   method:'POST',headers:{'X-API-Key':key},body:form,redirect:'error',signal:AbortSignal.timeout(20000)
  });
- if(!response.ok)throw new Error('Upstream rejected request');
+ if(!response.ok)throw new Error(`fenton-http-${response.status}`);
  if(action==='zscores'){
   const bytes=await bounded(response,MAX_CSV);
   return new Response(bytes,{headers:{...originHeaders,'Content-Type':'text/csv; charset=utf-8','Content-Disposition':'attachment; filename="Fenton-2025-escores-z.csv"'}});
@@ -108,9 +108,10 @@ export default {
    const data=JSON.parse(raw);
    if(!validatePayload(data))return error('Confira idades e medidas informadas.',400,originHeaders);
    return await fromFenton(data,url.pathname.slice(1),env.FENTON_API_KEY,fetch);
-  }catch{
-   // No upstream body, measurements, credential, or generated URL in responses/logs.
-   return error('Não foi possível consultar a Fenton. Tente novamente.',502,originHeaders);
+  }catch(err){
+   // Temporary status-only diagnostic: never reveal upstream body, inputs, key, or URL.
+   const diagnostic=/^fenton-http-[0-9]{3}$/.test(err?.message||'')?err.message:'worker-processing';
+   return error('Não foi possível consultar a Fenton. Tente novamente.',502,{...originHeaders,'X-Fenton-Diagnostic':diagnostic});
   }
  }
 };
