@@ -1,0 +1,9 @@
+{
+  "name": "grow-neo-fenton-proxy",
+  "main": "src/index.js",
+  "compatibility_date": "2026-09-27",
+  "secrets": { "required": ["FENTON_API_KEY"] },
+  "ratelimits": [
+    { "name": "RATE_LIMITER", "namespace_id": "20260927", "simple": { "limit": 30, "period": 60 } }
+  ]
+}

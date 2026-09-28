@@ -1,5 +1,11 @@
 # Histórico de versões
 
+## 0.6.7 — em preparação (integração Fenton desativada até publicar o serviço seguro)
+
+- Prepara formulário de medidas seriadas da Fenton 2025 na aba Crescimento, com gráfico JPG exibido no app, PDF e tabela de escores Z em CSV. O formulário aparece somente após configurar o endereço HTTPS do serviço intermediário.
+- Acrescenta código de Worker para enviar à Fenton apenas sexo, IG ao nascer, IPM e medidas, guardando a chave em segredo privado. Valida entrada, limita consultas, restringe origens, impede que URLs de gráficos apontem a outro servidor e não inclui identificadores ou data de nascimento no CSV.
+- Mantém o link externo da Fenton enquanto o serviço intermediário não for implantado e testado com credencial configurada fora do repositório.
+
 ## 0.6.6 — em revisão
 
 - Orienta, logo abaixo do link do plotador Fenton 2025 na aba Crescimento, a rolar até o bloco “Measurements” para informar medidas individuais.
