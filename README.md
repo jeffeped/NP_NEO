@@ -1,6 +1,6 @@
 # GROW_NEO by Prof. Jefferson
 
-Instrumento de apoio à terapia nutricional neonatal, com nutrição parenteral, hidratação venosa e avaliação da dieta enteral. Versão de avaliação 0.6.7 em preparação; 0.6.6 permanece publicada.
+Instrumento de apoio à terapia nutricional neonatal, com nutrição parenteral, hidratação venosa e avaliação da dieta enteral. Versão de avaliação 0.6.7 publicada.
 
 As mudanças de cada versão estão documentadas em [CHANGELOG.md](CHANGELOG.md), além do histórico auditável de commits do repositório.
 
@@ -15,9 +15,13 @@ O médico informa os parâmetros; o app calcula volumes, avalia a oferta enteral
 
 Esta versão passou por verificações técnicas locais; não foi realizada validação clínica formal. Confira os resultados antes do uso assistencial.
 
-Na aba Crescimento há um link para o plotador oficial Fenton 2025
-(https://fentongrowth.ca/), aberto em nova aba. A calculadora de velocidade do
-GROW_NEO continua local; nenhum parâmetro é enviado automaticamente ao site externo.
+Na aba Crescimento, o médico pode solicitar um gráfico JPG ou PDF e um CSV de
+escores Z à Fenton 2025. A solicitação explícita envia sexo, idade gestacional
+ao nascer e medidas seriadas por um Worker com a chave privada; não inclui
+identificadores ou data de nascimento. Também há um link para o plotador oficial
+(https://fentongrowth.ca/) em nova aba. A calculadora de velocidade do GROW_NEO
+continua local. Consulte o [registro técnico da integração](docs/FENTON_INTEGRATION.md)
+para fluxo, privacidade, verificação e pendências de validação clínica.
 
 Responsável pelas definições: Jefferson Guilherme. O registro metodológico e as fontes de desenvolvimento são mantidos no projeto local.
 

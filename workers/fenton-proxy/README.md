@@ -1,4 +1,4 @@
-# Integração privada Fenton 2025 — preparada para implantação
+# Integração privada Fenton 2025 — implantada
 
 O GROW_NEO é publicado pelo GitHub Pages e **não consegue guardar uma chave de API**.
 Este Worker recebe apenas sexo, idade gestacional ao nascer e medidas seriadas
@@ -13,24 +13,24 @@ identificador nem data de nascimento, acrescenta a credencial privada na chamada
    `FENTON_API_KEY` com a chave recebida **diretamente do e-mail original**.
    Não colar a chave no GitHub, no chat, em scripts, em URLs ou em arquivos do projeto.
 2. Conectar o repositório `jeffeped/NP_NEO` em Workers Builds, selecionar a branch
-   `feature/fenton-secure-proxy` e definir `/workers/fenton-proxy/` como diretório
+   `main` e definir `/workers/fenton-proxy/` como diretório
    raiz. O comando de implantação é `npx wrangler deploy`. O arquivo `wrangler.jsonc`
    declara que o segredo é obrigatório e configura o limite inicial de 30
    consultas por minuto por IP. Cada novo commit na branch aciona o build.
-3. Antes de habilitar o app público, testar o Worker com **dados fictícios** e
-   confirmar os formatos reais de resposta dos endpoints Fenton (JPG, PDF e
-   CSV), o endereço temporário das imagens e o funcionamento em navegadores
-   móveis. Os testes locais usam respostas simuladas e não substituem essa prova.
-4. Inserir apenas o endereço público HTTPS do Worker em `fenton-config.js`,
-   executar `npm test` e publicar o app. O formulário da aba Crescimento só
-   aparece quando esse endereço está configurado. O link atual ao plotador
-   oficial permanece disponível.
+3. Testar o Worker com **dados fictícios** nas três rotas (`/chart`,
+   `/chart-pdf`, `/zscores`), conferir o preflight CORS e inspecionar os arquivos
+   retornados. Repetir a prova quando houver mudança do contrato da API.
+4. Manter apenas o endereço público HTTPS do Worker em `fenton-config.js`,
+   executar `npm test` e publicar o app. O formulário da aba Crescimento aparece
+   quando esse endereço está configurado. O link ao plotador oficial permanece.
 
 
-> Estado em 28/09/2026: Worker conectado e implantado. Teste com medidas
-> fictícias confirmou CSV de escores Z, gráfico JPG e gráfico PDF, além do
-> preflight CORS. O JPG foi inspecionado visualmente e mostrou as três medidas.
-> A interface está configurada na branch de revisão, pendente de publicação.
+> Estado em 28/09/2026: Worker implantado; GROW NEO 0.6.7 publicado após
+> mesclagem da PR #22. Teste com medidas fictícias confirmou CSV de escores Z,
+> JPG (2550 × 3300), PDF (2 páginas) e preflight CORS. O gráfico JPG foi
+> inspecionado visualmente. O teste clínico comparativo e a checagem ponta a
+> ponta em um Edge local ainda estão pendentes. Em Workers Builds, conferir a
+> troca da branch de produção `feature/fenton-secure-proxy` para `main`.
 
 ## Segurança e limites
 
@@ -49,3 +49,6 @@ identificador nem data de nascimento, acrescenta a credencial privada na chamada
 Documentação técnica: [segredos dos Workers](https://developers.cloudflare.com/workers/configuration/secrets/),
 [limites de requisição](https://developers.cloudflare.com/workers/runtime-apis/bindings/rate-limit/)
 e [manual Fenton 2025](https://fentongrowth.ca/docs/Fenton2025PlotterUsersManual.pdf).
+
+Fluxo, contrato de dados, resultados dos testes e perguntas para a equipe da
+Dra. Fenton: [registro técnico da integração](../../docs/FENTON_INTEGRATION.md).
