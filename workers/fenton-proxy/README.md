@@ -26,6 +26,11 @@ identificador nem data de nascimento, acrescenta a credencial privada na chamada
    aparece quando esse endereço está configurado. O link atual ao plotador
    oficial permanece disponível.
 
+
+> Estado em 28/09/2026: Worker conectado e implantado; endpoints reais ainda em teste
+> com dados fictícios. Não habilitar o formulário no aplicativo antes de conferir
+> gráficos e escores Z produzidos pela API.
+
 ## Segurança e limites
 
 - O Worker recusa requisições de outras origens, conteúdos inesperados e campos
