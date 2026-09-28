@@ -117,6 +117,23 @@ connection was configured to watch `feature/fenton-secure-proxy` at the time of
 this record. Its production branch should be changed to `main` following the
 merge, then a deployment should be verified.
 
+## Browser failure and correction (28 September 2026)
+
+After publication, the user reported `Failed to fetch`. A fresh direct test
+returned HTTP 200 with a JPG and HTTP 204 for the CORS preflight, but inspection
+of the published HTML identified a separate browser restriction: its enforced
+Content Security Policy contained `connect-src 'self'`. This policy prohibited
+the browser from contacting the configured Worker. Direct HTTP tests and mocked
+UI tests had not exercised that policy.
+
+Version 0.6.8 adds the exact Worker origin to `connect-src` and changes the
+service-worker cache version so installed copies receive the new HTML. A new
+regression test checks that the page permits only its own origin and the
+configured Worker for connections. It failed on 0.6.7 before the correction.
+The initial suggestion of a browser extension or network block was not an
+established diagnosis. The published CSP omission is a confirmed application
+defect; an end-to-end browser test remains the acceptance check for the fix.
+
 ## Questions for the Fenton team
 
 1. Are submissions without title, patient number, and date of birth supported
