@@ -68,9 +68,12 @@ async function fromFenton(data,action,key,fetcher){
  const format=action==='chart-pdf'?'pdf':'jpg';
  if(action!=='zscores')form.append('runMode',format);
  const endpoint=action!=='zscores'?'ClientPlotPoints':'ClientDownloadCsv';
- const response=await fetcher(`${FENTON_ORIGIN}/api/Fenton/${endpoint}`,{
-  method:'POST',headers:{'X-API-Key':key},body:form,redirect:'error',signal:AbortSignal.timeout(20000)
- });
+ let response;
+ try{
+  response=await fetcher(`${FENTON_ORIGIN}/api/Fenton/${endpoint}`,{
+   method:'POST',headers:{'X-API-Key':key},body:form,redirect:'error',signal:AbortSignal.timeout(20000)
+  });
+ }catch(err){throw new Error(`fenton-fetch-${['TypeError','TimeoutError','AbortError'].includes(err?.name)?err.name:'other'}`);}
  if(!response.ok)throw new Error(`fenton-http-${response.status}`);
  if(action==='zscores'){
   const bytes=await bounded(response,MAX_CSV);
@@ -110,7 +113,7 @@ export default {
    return await fromFenton(data,url.pathname.slice(1),env.FENTON_API_KEY,fetch);
   }catch(err){
    // Temporary status-only diagnostic: never reveal upstream body, inputs, key, or URL.
-   const diagnostic=/^fenton-http-[0-9]{3}$/.test(err?.message||'')?err.message:'worker-processing';
+   const diagnostic=/^fenton-(http-[0-9]{3}|fetch-(TypeError|TimeoutError|AbortError|other))$/.test(err?.message||'')?err.message:'worker-processing';
    return error('Não foi possível consultar a Fenton. Tente novamente.',502,{...originHeaders,'X-Fenton-Diagnostic':diagnostic});
   }
  }
