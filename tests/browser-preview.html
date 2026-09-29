@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GROW_NEO · revisão manual de telas</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 24px 16px; background: #edf2ef; color: #19392d; font: 16px/1.5 Arial, sans-serif; }
+    main { max-width: 790px; margin: 0 auto; }
+    h1 { margin: 0 0 8px; font-size: 1.5rem; }
+    h2 { margin: 0 0 8px; font-size: 1.1rem; }
+    p { margin: 0 0 12px; }
+    header { margin-bottom: 24px; }
+    section { margin-bottom: 28px; }
+    .frame-wrap { max-width: 100%; padding: 8px; overflow-x: auto; background: #fff; border: 1px solid #bccfc3; border-radius: 8px; }
+    iframe { display: block; box-sizing: content-box; height: 1000px; border: 1px solid #718d7d; background: #fff; }
+    .narrow { width: 320px; }
+    .phone { width: 390px; }
+    .wide { width: 720px; }
+    .help { color: #52675d; font-size: .875rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>GROW_NEO · revisão manual de telas</h1>
+      <p>Página de teste para conferir o aplicativo nas larguras de 320, 390 e 720 pixels. Cada quadro contém uma instância independente do app, com altura de 1.000 pixels.</p>
+      <p><strong>Use somente dados fictícios.</strong> Abra a aba Ambulatório, informe medidas fictícias e gere as curvas. Confira os botões, os campos, a tabela, a rolagem dos gráficos e a exportação em PDF.</p>
+      <p class="help">Role dentro de cada quadro para percorrer o app. A rolagem horizontal dos gráficos deve ficar dentro do gráfico, sem ampliar a página do app. Se a janela externa for menor que um quadro, role a moldura branca na horizontal para examiná-lo por inteiro.</p>
+    </header>
+    <section aria-labelledby="preview-320">
+      <h2 id="preview-320">320 px · tela estreita</h2>
+      <div class="frame-wrap"><iframe class="narrow" src="../index.html" title="GROW_NEO com largura de 320 pixels"></iframe></div>
+    </section>
+    <section aria-labelledby="preview-390">
+      <h2 id="preview-390">390 px · celular</h2>
+      <div class="frame-wrap"><iframe class="phone" src="../index.html" title="GROW_NEO com largura de 390 pixels"></iframe></div>
+    </section>
+    <section aria-labelledby="preview-720">
+      <h2 id="preview-720">720 px · largura máxima do app</h2>
+      <div class="frame-wrap"><iframe class="wide" src="../index.html" title="GROW_NEO com largura de 720 pixels"></iframe></div>
+    </section>
+  </main>
+</body>
+</html>
