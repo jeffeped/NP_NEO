@@ -11,6 +11,7 @@ import {initStandard} from '../standard-ui.js';
 import {initHydration} from '../hydration-ui.js';
 import {initEnteral} from '../enteral-ui.js';
 import {initGrowth} from '../growth-ui.js';
+import {initIntergrowth} from '../intergrowth-ui.js';
 
 // Executa o app real em um DOM simulado; não substitui a revisão visual em navegador.
 const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
@@ -41,7 +42,7 @@ function openApp() {
   const {document,window}=parseHTML(html);
   window.HTMLElement.prototype.scrollIntoView=function(){};
   const context={document,window:{addEventListener(){},scrollTo(){}},navigator:{},
-    console,URL,Blob,MessageChannel,initAppUpdate,intravenousFromResult,...engine,macroReference,formatAlertNumber,initHydration,initStandard,initEnteral,initGrowth,
+    console,URL,Blob,MessageChannel,initAppUpdate,intravenousFromResult,...engine,macroReference,formatAlertNumber,initHydration,initStandard,initEnteral,initGrowth,initIntergrowth,
     createReport:async()=>new Uint8Array()};
   vm.runInNewContext(source,context);
   // O DOM simulado não seleciona implicitamente a primeira opção como o navegador.
@@ -288,12 +289,14 @@ test('interface HV: formulário independente preserva resultado e exportação d
   assert.equal(app.el('hv-result').hidden,true);assert.equal(app.el('hydration').hidden,true);
 });
 
-test('interface: teclado percorre as cinco abas, incluindo início, fim e retorno',()=>{
+test('interface: teclado percorre as oito abas, incluindo Ambulatório no fim e retorno',()=>{
   const app=openApp();
   const key=(id,value)=>{const e=new app.window.Event('keydown',{bubbles:true,cancelable:true});Object.defineProperty(e,'key',{value});app.el(id).dispatchEvent(e);};
-  key('tab-parameters','End');assert.equal(app.el('notes').hidden,false);
-  key('tab-notes','ArrowRight');assert.equal(app.el('parameters').hidden,false);
-  key('tab-parameters','ArrowLeft');assert.equal(app.el('notes').hidden,false);
+  assert.equal(app.document.querySelectorAll('.tabs [role="tab"]').length,8);
+  key('tab-parameters','End');assert.equal(app.el('intergrowth').hidden,false);
+  key('tab-intergrowth','ArrowRight');assert.equal(app.el('parameters').hidden,false);
+  key('tab-parameters','ArrowLeft');assert.equal(app.el('intergrowth').hidden,false);
+  key('tab-intergrowth','ArrowLeft');assert.equal(app.el('notes').hidden,false);
   key('tab-notes','Home');assert.equal(app.el('parameters').hidden,false);
 });
 

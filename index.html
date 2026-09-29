@@ -36,7 +36,7 @@
         <button id="tab-results" role="tab" aria-controls="results" aria-selected="false" type="button">Resultados</button>
         <button id="tab-hydration" role="tab" aria-controls="hydration" aria-selected="false" type="button" title="Hidratação venosa">HV</button>
         <button id="tab-standard" role="tab" aria-controls="standard" aria-selected="false" type="button">NP padrão</button>
-        <button id="tab-enteral" role="tab" aria-controls="enteral" aria-selected="false" type="button">Enteral</button><button id="tab-growth" role="tab" aria-controls="growth" aria-selected="false" type="button">Crescimento</button><button id="tab-notes" role="tab" aria-controls="notes" aria-selected="false" type="button">Notas</button>
+        <button id="tab-enteral" role="tab" aria-controls="enteral" aria-selected="false" type="button">Enteral</button><button id="tab-growth" role="tab" aria-controls="growth" aria-selected="false" type="button">Crescimento</button><button id="tab-notes" role="tab" aria-controls="notes" aria-selected="false" type="button">Notas</button><button id="tab-intergrowth" role="tab" aria-controls="intergrowth" aria-selected="false" type="button">Ambulatório</button>
       </div>
     </header>
     <main>
@@ -262,7 +262,7 @@
         <h2 class="page-title">Notas importantes</h2>
         <section class="section section-inner"><h3>Crescimento — método e referência</h3>
         <p>A velocidade de crescimento ponderal usa o peso médio do período: 1.000 × (peso final − peso inicial) ÷ [((peso inicial + peso final) ÷ 2) × dias], com pesos em gramas.</p>
-        <p>A idade pós-menstrual média do intervalo seleciona a mediana específica por sexo da referência Fenton 2025, de 22 a 49 semanas. A comparação é descritiva. O aplicativo não usa mudança de escore Z &gt;0,67 para classificar crescimento rápido e ainda não calcula escore Z.</p>
+        <p>A idade pós-menstrual média do intervalo seleciona a mediana específica por sexo da referência Fenton 2025, de 22 a 49 semanas. A comparação é descritiva. A calculadora de velocidade não usa mudança de escore Z &gt;0,67 para classificar crescimento rápido. Os escores Z estão disponíveis nos módulos de medidas seriadas Fenton 2025 e INTERGROWTH-21st.</p>
         <p>Antes da recuperação do peso de nascimento, o valor é exibido sem percentual da referência. Intervalos inferiores a 5 dias recebem cautela por maior sensibilidade a variações hídricas e de pesagem.</p></section>
         <section class="section section-inner"><h3>Enteral — fase clínica e referências</h3>
         <p>A fase é selecionada pelo médico, sem inferência pelo dia de vida. As diretrizes de NP de 2018 não estabelecem três faixas específicas de oligoanúria, transição e crescimento. Referências de D1 e D2 são informativas, não metas atribuídas automaticamente à fase.</p>
@@ -338,6 +338,35 @@
           <h2>Privacidade</h2>
           <p>Os parâmetros, cálculos e PDFs são processados no aparelho. O aplicativo não mantém cadastro ou histórico de pacientes. Não insira informações identificáveis nos campos ou arquivos exportados.</p>
         </div></section>
+      </section>
+      <section id="intergrowth" role="tabpanel" aria-labelledby="tab-intergrowth" hidden>
+        <h2 class="page-title">Seguimento do prematuro</h2>
+        <p class="caption">INTERGROWTH-21st · padrão pós-natal · 27+0 a 64+0 semanas de IPM</p>
+        <p class="notice info">Use a <strong>idade pós-menstrual (IPM)</strong>: idade gestacional ao nascer + idade cronológica decorrida. Não use a idade corrigida neste campo. Exemplo: nascimento com 30 semanas + 10 semanas de vida = 40 semanas de IPM.</p>
+        <form id="ig-form" class="section section-inner" autocomplete="off" novalidate>
+          <label class="field">Sexo<select id="ig-sex" class="hv-select" required><option value="">Selecione</option><option value="female">Feminino</option><option value="male">Masculino</option></select></label>
+          <p class="help">Informe as medidas em ordem crescente de IPM, com 0–6 dias adicionais e pelo menos uma medida antropométrica por linha. Peso em gramas; comprimento e perímetro cefálico (PC) em centímetros.</p>
+          <div id="ig-measures" class="ig-measures"></div>
+          <button id="ig-add" class="secondary" type="button">Adicionar medida</button>
+          <p class="help">Até 20 medições. As curvas e os escores são calculados neste aparelho, sem envio das medidas e sem histórico de pacientes.</p>
+          <div id="ig-errors" class="notice danger" role="alert" hidden></div>
+          <div class="ig-actions"><button class="primary" type="submit">Gerar curvas e escores</button><button id="ig-clear" class="secondary" type="button">Limpar medidas</button></div>
+        </form>
+        <p id="ig-status" class="help" role="status"></p>
+        <section id="ig-result" hidden>
+          <div id="ig-context" class="context"></div>
+          <h3>Medidas e posição na curva</h3>
+          <div class="table-wrap"><table class="ig-table" aria-label="Medidas seriadas, escores Z e percentis INTERGROWTH-21st"><thead><tr><th>IPM</th><th>Medida</th><th>Escore Z</th><th>Percentil</th></tr></thead><tbody id="ig-result-rows"></tbody></table></div>
+          <p class="help">Curvas de referência: escores Z de −3 a +3. A posição na curva descreve a medida e não estabelece diagnóstico. Interprete a trajetória com o contexto clínico. Em telas pequenas, deslize o gráfico na horizontal para ver toda a curva.</p>
+          <div id="ig-charts"></div>
+          <button id="ig-export" class="primary" type="button" disabled>Gerar relatório em PDF</button>
+          <a id="ig-pdf-download" class="download-link" hidden>Baixar relatório INTERGROWTH-21st em PDF</a>
+        </section>
+        <details class="section ig-reference"><summary>Referência e limites</summary><div class="section-inner">
+          <p>Padrão pós-natal de prematuros, derivado de uma coorte selecionada sem restrição de crescimento fetal ou morbidade grave. A amostra de nascidos antes de 33 semanas foi pequena; interpretar no contexto clínico.</p>
+          <p>A faixa deste módulo é de 27 semanas e 0 dias a 64 semanas e 0 dias de IPM. O aplicativo não extrapola a curva além desses limites e não converte automaticamente para outra referência.</p>
+          <p><a href="https://intergrowth21.com/tools-resources/postnatal-growth-preterm-infants" target="_blank" rel="noopener noreferrer">Padrão e materiais oficiais INTERGROWTH-21st</a>. Villar J et al., 2015. <a href="https://doi.org/10.1016/S2214-109X(15)00163-1" target="_blank" rel="noopener noreferrer">Artigo de referência</a>.</p>
+        </div></details>
       </section>
       <footer class="app-footer">
         <p>Versão de avaliação · conferir os resultados antes do uso assistencial.</p>
