@@ -1,5 +1,13 @@
 # Histórico de versões
 
+## 0.7.2 — em preparação, publicação pendente
+
+- Reorganiza as oito abas em duas colunas fixas: NP ind, NP padrão, HV e Resultados à esquerda; Enteral, GROW_Fenton, INTERGROWTH e Notas à direita. A ordem do teclado acompanha a disposição visual.
+- Renomeia Crescimento para **GROW_Fenton** e Ambulatório para **INTERGROWTH**, inclusive nas instruções de navegação.
+- Acrescenta cálculo local de velocidade ponderal **observada** entre duas avaliações selecionadas: variação em gramas, g/dia e g/kg/dia por Average2pt, com o intervalo exato de IPM em dias. Não atribui percentis, escores Z, metas ou classificação INTERGROWTH à velocidade.
+- Documenta a pesquisa de fontes e os limites de interpretação; mantém separados os padrões antropométricos e o cálculo de velocidade entre medidas.
+- Atualiza versão e cache para 0.7.2 e inclui o novo módulo no conjunto de arquivos offline. Resultados de verificação e eventual publicação serão registrados após a conclusão.
+
 ## 0.7.1 — 28/09/2026 (Manaus)
 
 - Acrescenta **Curvas em 1 página** à aba Ambulatório: PDF A4 vertical com peso, comprimento e perímetro cefálico alinhados pela IPM, trajetórias de todas as medidas e resumo da última avaliação.

@@ -1,5 +1,6 @@
 import {parseNumber,parseWeightGrams} from './engine.js';
 import {calculateIntergrowth} from './intergrowth.js';
+import {calculateIntergrowthVelocity} from './intergrowth-velocity.js';
 import {createIntergrowthChart} from './intergrowth-charts.js';
 import {exportIntergrowthPdf,exportIntergrowthSummaryPdf} from './intergrowth-pdf.js';
 
@@ -25,15 +26,52 @@ export function initIntergrowth(doc,{calculate=calculateIntergrowth,chart=create
  const $=id=>doc.getElementById(id),form=$('ig-form'),rows=$('ig-measures'),status=$('ig-status');
  const resultSection=$('ig-result'),charts=$('ig-charts'),table=$('ig-result-rows');
  const exportButton=$('ig-export'),summaryButton=$('ig-export-summary'),download=$('ig-pdf-download'),add=$('ig-add'),errors=$('ig-errors');
+ const velocityStart=$('ig-velocity-start'),velocityEnd=$('ig-velocity-end'),velocityButton=$('ig-velocity-calculate'),velocityOutput=$('ig-velocity-result'),velocityError=$('ig-velocity-error');
  const setExportDisabled=value=>{exportButton.disabled=value;summaryButton.disabled=value;};
  let last=null,pdfUrl=null,revision=0,busy=false;
  const text=(tag,value,cls)=>{const element=doc.createElement(tag);element.textContent=value;if(cls)element.className=cls;return element;};
+ const clearDownload=()=>{
+  download.hidden=true;download.removeAttribute('href');
+  if(pdfUrl)urls.revokeObjectURL(pdfUrl);pdfUrl=null;
+ };
+ const clearVelocityOutput=()=>{
+  velocityOutput.replaceChildren();velocityOutput.hidden=true;velocityError.textContent='';velocityError.hidden=true;
+ };
  const clear=()=>{
   revision++;last=null;resultSection.hidden=true;charts.replaceChildren();table.replaceChildren();$('ig-context').replaceChildren();
-  setExportDisabled(true);download.hidden=true;download.removeAttribute('href');
-  if(pdfUrl)urls.revokeObjectURL(pdfUrl);pdfUrl=null;
+  setExportDisabled(true);clearDownload();clearVelocityOutput();
+  for(const select of [velocityStart,velocityEnd]){select.replaceChildren();select.disabled=true;}
+  velocityButton.disabled=true;$('ig-velocity-help').textContent='';
   errors.hidden=true;errors.textContent='';status.textContent='';
  };
+ const prepareVelocity=()=>{
+  const eligible=last.measurements.map((row,index)=>({row,index})).filter(({row})=>row.weight!=null);
+  for(const select of [velocityStart,velocityEnd]){
+   for(const {row,index} of eligible){const option=text('option',`Medida ${index+1} · ${age(row)} · ${measurement('weight',row.weight)}`);option.value=String(index);select.append(option);}
+   select.disabled=eligible.length<2;
+  }
+  if(eligible.length){velocityStart.options[0].selected=true;velocityEnd.options[eligible.length-1].selected=true;}
+  velocityButton.disabled=eligible.length<2;
+  $('ig-velocity-help').textContent=eligible.length<2?'Informe peso em pelo menos duas avaliações para calcular a velocidade.':'As avaliações inicial e final podem ser alteradas para escolher o período de acompanhamento.';
+ };
+ const invalidateVelocity=()=>{
+  if(!last)return;
+  const {velocity,...result}=last;last=result;revision++;clearDownload();clearVelocityOutput();
+  status.textContent='Intervalo alterado; calcule novamente a velocidade ponderal.';
+ };
+ velocityStart.addEventListener('change',invalidateVelocity);velocityEnd.addEventListener('change',invalidateVelocity);
+ velocityButton.addEventListener('click',()=>{
+  if(!last||velocityButton.disabled)return;
+  invalidateVelocity();
+  try{
+   const velocity=calculateIntergrowthVelocity(last,Number(velocityStart.value),Number(velocityEnd.value));
+   last={...last,velocity};
+   velocityOutput.append(text('p',`Medidas ${velocity.initialEvaluation} a ${velocity.finalEvaluation} · ${velocity.intervalDays} dias · ${measurement('weight',velocity.startWeight)} → ${measurement('weight',velocity.endWeight)}`),
+    text('p',`Variação de peso: ${measurement('weight',velocity.totalGain)} · Peso médio: ${measurement('weight',velocity.averageWeight)}`),
+    text('p',`${number(velocity.gramsPerDay,1)} g/dia · ${number(velocity.gramsPerKgDay,1)} g/kg/dia`));
+   velocityOutput.hidden=false;status.textContent='Velocidade ponderal calculada e incluída nos próximos PDFs.';
+  }catch(error){velocityError.textContent=error.message;velocityError.hidden=false;status.textContent='Confira o intervalo selecionado para a velocidade ponderal.';}
+ });
  const invalidate=()=>{const hadResult=last!==null||busy;clear();if(hadResult)status.textContent='Medidas alteradas; gere novamente as curvas e os resultados.';};
  const renumber=()=>{
   Array.from(rows.children).forEach((row,index)=>{
@@ -77,15 +115,14 @@ export function initIntergrowth(doc,{calculate=calculateIntergrowth,chart=create
     viewport.append(chart(doc,{sex:result.sex,metric,measurements:result.measurements}));
     figure.append(text('figcaption',label),viewport);charts.append(figure);
    }
-   last=result;resultSection.hidden=false;setExportDisabled(busy);
+   last=result;prepareVelocity();resultSection.hidden=false;setExportDisabled(busy);
    status.textContent='Curvas e escores calculados neste aparelho.';
   }catch(error){clear();errors.textContent=error.message;errors.hidden=false;}
  });
  const generatePdf=async(summary=false)=>{
   if(!last||busy)return;
   const snapshot=last,currentRevision=revision;busy=true;setExportDisabled(true);
-  download.hidden=true;download.removeAttribute('href');
-  if(pdfUrl)urls.revokeObjectURL(pdfUrl);pdfUrl=null;
+  clearDownload();
   status.textContent='Preparando PDF no aparelho…';
   try{
    const bytes=await (summary?summaryPdf:pdf)(snapshot);

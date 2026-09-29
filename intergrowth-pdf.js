@@ -1,14 +1,21 @@
 import {VERSION} from './engine.js';
 import {buildIntergrowthChartModel,INTERGROWTH_METRICS} from './intergrowth-charts.js';
 import {INTERGROWTH_MIN_DAYS,INTERGROWTH_MAX_DAYS} from './intergrowth.js';
+import {calculateIntergrowthVelocity} from './intergrowth-velocity.js';
 
 const fmt=(value,digits=1)=>Number.isFinite(value)?value.toFixed(digits).replace('.',','):'—';
 const percentile=value=>!Number.isFinite(value)?'—':value<.1?'<0,1':value>99.9?'>99,9':fmt(value);
 const METRICS=['weight','length','head'];
+const velocityFor=result=>result.velocity==null?null:calculateIntergrowthVelocity(result,result.velocity.initialIndex,result.velocity.finalIndex);
+const shortPma=days=>`${Math.floor(days/7)}+${days%7}`;
+const velocityInterval=velocity=>`Avaliações ${velocity.initialEvaluation}-${velocity.finalEvaluation} · IPM ${shortPma(velocity.startPmaDays)} a ${shortPma(velocity.endPmaDays)} · ${velocity.intervalDays} dias`;
+const velocityValues=velocity=>`${fmt(velocity.gramsPerDay)} g/dia · ${fmt(velocity.gramsPerKgDay)} g/kg/dia · ganho ${fmt(velocity.totalGain,0)} g · peso médio ${fmt(velocity.averageWeight,0)} g`;
+const velocityReference='Velocidade: Fenton et al. Pediatr Res. 2019;85:650-654. DOI: 10.1038/s41390-019-0313-z.';
 
 /** An independent local report: only the validated ambulatory result is supplied. */
 export async function exportIntergrowthPdf(result){
  if(!result||!['male','female'].includes(result.sex)||!Array.isArray(result.measurements)||!result.measurements.length)throw new Error('Calcule as avaliações ambulatoriais antes de exportar.');
+ const velocity=velocityFor(result);
  if(!globalThis.PDFLib)throw new Error('Biblioteca de PDF indisponível. Reabra o aplicativo e tente novamente.');
  const {PDFDocument,StandardFonts,rgb}=globalThis.PDFLib,doc=await PDFDocument.create();
  doc.setTitle('GROW_NEO — Seguimento ambulatorial INTERGROWTH-21st');
@@ -64,6 +71,10 @@ export async function exportIntergrowthPdf(result){
    text(page,'GROW_NEO · Seguimento ambulatorial',left,751,15,bold);
    text(page,`INTERGROWTH-21st · ${descriptor.label}`,left,730,12,bold);
    text(page,`${result.sex==='female'?'Feminino':'Masculino'} · IPM de 27+0 a 64+0 semanas · versão ${VERSION}`,left,713,9);
+   if(velocity){
+    text(page,`Velocidade ponderal observada · ${velocityInterval(velocity)}`,left,699,8.5,bold);
+    text(page,velocityValues(velocity),left,687,8.5,regular,muted);
+   }
    chart(page,model);
    const startY=403,rowHeight=12.4;
    page.drawRectangle({x:left,y:startY-6,width:right-left,height:19,color:color('#eaf0ec')});
@@ -86,6 +97,7 @@ export async function exportIntergrowthPdf(result){
    text(page,'Referência de prematuros selecionados; interpretar no contexto clínico. Sem extrapolação.',left,88,8,regular,muted);
    text(page,'Fonte: Villar et al. Lancet Glob Health. 2015;3:e681–e691. Equações: Apêndice 8 (pp. 10–11).',left,74,8,regular,muted);
    text(page,'DOI: 10.1016/S2214-109X(15)00163-1 · Gráficos próprios; sem endosso dos autores.',left,60,8,regular,muted);
+   if(velocity)text(page,velocityReference,left,47,8,regular,muted);
    text(page,'Sem identificação do paciente · processamento local · conferir antes do uso assistencial.',left,35,8,regular,muted);
    alignRight(page,`${pageNumber}/${totalPages}`,right,20,7,regular,muted);
   }
@@ -97,6 +109,7 @@ export async function exportIntergrowthPdf(result){
 export async function exportIntergrowthSummaryPdf(result){
  if(!result||!['male','female'].includes(result.sex)||!Array.isArray(result.measurements)||!result.measurements.length)throw new Error('Calcule as avaliações ambulatoriais antes de exportar.');
  if(result.measurements.length>20)throw new Error('A prancha de uma página comporta até vinte avaliações.');
+ const velocity=velocityFor(result),summaryOffset=velocity?42:0;
  if(!globalThis.PDFLib)throw new Error('Biblioteca de PDF indisponível. Reabra o aplicativo e tente novamente.');
  const {PDFDocument,StandardFonts,rgb}=globalThis.PDFLib,doc=await PDFDocument.create();
  doc.setTitle('GROW_NEO - Prancha INTERGROWTH-21st em uma página');
@@ -120,7 +133,7 @@ export async function exportIntergrowthSummaryPdf(result){
 
  for(const [index,metric] of METRICS.entries()){
   const model=buildIntergrowthChartModel({sex:result.sex,metric,measurements:result.measurements});
-  const titleY=730-index*172,plot={left:74,right:514,top:titleY-12,bottom:titleY-148};
+  const titleY=730-index*(velocity?158:172),top=titleY-12,plot={left:74,right:514,top,bottom:top-(velocity?122:136)};
   const xAt=days=>plot.left+(days-INTERGROWTH_MIN_DAYS)/(INTERGROWTH_MAX_DAYS-INTERGROWTH_MIN_DAYS)*(plot.right-plot.left);
   const yAt=value=>plot.bottom+(value-model.yMin)/(model.yMax-model.yMin)*(plot.top-plot.bottom);
   text(`${model.label} (${model.unit})`,left,titleY,10,bold);
@@ -151,23 +164,29 @@ export async function exportIntergrowthSummaryPdf(result){
   for(let i=1;i<model.points.length;i++)line(xAt(model.points[i-1].pmaDays),yAt(model.points[i-1].value),xAt(model.points[i].pmaDays),yAt(model.points[i].value),patient,1.2);
   for(const point of model.points)page.drawCircle({x:xAt(point.pmaDays),y:yAt(point.value),size:2.6,color:patient,borderColor:rgb(1,1,1),borderWidth:.55});
  }
- centerText('Idade pós-menstrual (semanas)',294,211,9,bold);
- text('Todos os pontos informados são incluídos. Histórico com valores e escores: relatório detalhado.',left,197,8.5,regular,muted);
- text(`Última avaliação · IPM ${age(last.pmaDays)}`,left,180,10,bold);
- page.drawRectangle({x:left,y:156,width:right-left,height:18,color:color('#eaf0ec')});
- text('Indicador',left+5,162,8.5,bold);rightText('Medida',330,162,8.5,bold);rightText('Escore Z',440,162,8.5,bold);rightText('Percentil',right-5,162,8.5,bold);
+ centerText('Idade pós-menstrual (semanas)',294,211+summaryOffset,9,bold);
+ text('Todos os pontos informados são incluídos. Histórico com valores e escores: relatório detalhado.',left,197+summaryOffset,8.5,regular,muted);
+ text(`Última avaliação · IPM ${age(last.pmaDays)}`,left,180+summaryOffset,10,bold);
+ page.drawRectangle({x:left,y:156+summaryOffset,width:right-left,height:18,color:color('#eaf0ec')});
+ text('Indicador',left+5,162+summaryOffset,8.5,bold);rightText('Medida',330,162+summaryOffset,8.5,bold);rightText('Escore Z',440,162+summaryOffset,8.5,bold);rightText('Percentil',right-5,162+summaryOffset,8.5,bold);
  for(const [index,metric] of METRICS.entries()){
-  const descriptor=INTERGROWTH_METRICS[metric],y=144-index*14,available=Number.isFinite(last[metric]),score=last.scores?.[metric];
+  const descriptor=INTERGROWTH_METRICS[metric],y=144+summaryOffset-index*14,available=Number.isFinite(last[metric]),score=last.scores?.[metric];
   text(`${descriptor.label} (${descriptor.inputUnit})`,left+5,y,9);
   rightText(available?fmt(last[metric],metric==='weight'?0:1):'Não informada',330,y,9);
   rightText(available&&Number.isFinite(score?.z)?fmt(score.z,2):'-',440,y,9);
   rightText(available&&Number.isFinite(score?.percentile)?percentile(score.percentile):'-',right-5,y,9);
  }
+ if(velocity){
+  text('Velocidade ponderal observada · método do peso médio (Average2pt)',left,139,9,bold);
+  text(velocityInterval(velocity),left,125,8.5,regular,muted);
+  text(velocityValues(velocity),left,111,9);
+ }
  text('Coorte selecionada; poucos nascidos antes de 33 semanas. Interpretar no contexto clínico.',left,96,8,regular,muted);
  text('Fonte: Villar et al. Lancet Glob Health. 2015;3:e681-e691. Equações: Apêndice 8.',left,84,8,regular,muted);
  text('DOI: 10.1016/S2214-109X(15)00163-1 · Sem extrapolação além de 27+0 a 64+0 semanas de IPM.',left,72,8,regular,muted);
  text('Gráficos próprios, sem endosso dos autores. Sem identificação do paciente; processamento local.',left,60,8,regular,muted);
- text('Conferir os resultados antes do uso assistencial.',left,42,8,regular,muted);
- rightText('1/1',right,42,8,regular,muted);
+ if(velocity)text(velocityReference,left,48,8,regular,muted);
+ text('Conferir os resultados antes do uso assistencial.',left,velocity?30:42,8,regular,muted);
+ rightText('1/1',right,velocity?30:42,8,regular,muted);
  return doc.save();
 }

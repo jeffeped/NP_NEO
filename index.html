@@ -33,10 +33,13 @@
       </div>
       <div class="tabs" role="tablist" aria-label="Calculadora">
         <button id="tab-parameters" role="tab" aria-controls="parameters" aria-selected="true" type="button" title="Nutrição parenteral individualizada">NP ind</button>
-        <button id="tab-results" role="tab" aria-controls="results" aria-selected="false" type="button">Resultados</button>
-        <button id="tab-hydration" role="tab" aria-controls="hydration" aria-selected="false" type="button" title="Hidratação venosa">HV</button>
+        <button id="tab-enteral" role="tab" aria-controls="enteral" aria-selected="false" type="button">Enteral</button>
         <button id="tab-standard" role="tab" aria-controls="standard" aria-selected="false" type="button">NP padrão</button>
-        <button id="tab-enteral" role="tab" aria-controls="enteral" aria-selected="false" type="button">Enteral</button><button id="tab-growth" role="tab" aria-controls="growth" aria-selected="false" type="button">Crescimento</button><button id="tab-notes" role="tab" aria-controls="notes" aria-selected="false" type="button">Notas</button><button id="tab-intergrowth" role="tab" aria-controls="intergrowth" aria-selected="false" type="button">Ambulatório</button>
+        <button id="tab-growth" role="tab" aria-controls="growth" aria-selected="false" type="button">GROW_Fenton</button>
+        <button id="tab-hydration" role="tab" aria-controls="hydration" aria-selected="false" type="button" title="Hidratação venosa">HV</button>
+        <button id="tab-intergrowth" role="tab" aria-controls="intergrowth" aria-selected="false" type="button">INTERGROWTH</button>
+        <button id="tab-results" role="tab" aria-controls="results" aria-selected="false" type="button">Resultados</button>
+        <button id="tab-notes" role="tab" aria-controls="notes" aria-selected="false" type="button">Notas</button>
       </div>
     </header>
     <main>
@@ -210,7 +213,7 @@
           <h3>Referências por fase clínica</h3><div id="en-clinical-reference" class="notice" role="status"></div>
           <div id="en-transition" class="notice" role="status"></div>
           <p class="help">Metas avaliadas antes do arredondamento. Consulte os critérios na aba Notas.</p>
-          <p id="en-pn-note" class="help"></p><p class="help">Um cálculo válido da aba Crescimento será incluído neste relatório.</p><button id="en-export" class="primary" type="button">Exportar aporte total em PDF</button><p id="en-pdf-status" class="help" role="status"></p><a id="en-pdf-download" class="download-link" hidden>Baixar relatório em PDF</a>
+          <p id="en-pn-note" class="help"></p><p class="help">Um cálculo válido da aba GROW_Fenton será incluído neste relatório.</p><button id="en-export" class="primary" type="button">Exportar aporte total em PDF</button><p id="en-pdf-status" class="help" role="status"></p><a id="en-pdf-download" class="download-link" hidden>Baixar relatório em PDF</a>
         </section>
       </section>
       <section id="growth" role="tabpanel" aria-labelledby="tab-growth" hidden>
@@ -357,6 +360,23 @@
           <div id="ig-context" class="context"></div>
           <h3>Medidas e posição na curva</h3>
           <div class="table-wrap"><table class="ig-table" aria-label="Medidas seriadas, escores Z e percentis INTERGROWTH-21st"><thead><tr><th>IPM</th><th>Medida</th><th>Escore Z</th><th>Percentil</th></tr></thead><tbody id="ig-result-rows"></tbody></table></div>
+          <section class="section section-inner ig-velocity" aria-labelledby="ig-velocity-title">
+            <h3 id="ig-velocity-title">Velocidade de crescimento ponderal</h3>
+            <p class="help">Selecione duas avaliações com peso. O intervalo é calculado pela diferença de IPM em dias. Para avaliar ganho ponderal, escolha um período após a perda inicial de peso pós-natal.</p>
+            <div class="ig-velocity-fields">
+              <label class="field">Avaliação inicial<select id="ig-velocity-start" class="hv-select" disabled><option value="">Gere as curvas primeiro</option></select></label>
+              <label class="field">Avaliação final<select id="ig-velocity-end" class="hv-select" disabled><option value="">Gere as curvas primeiro</option></select></label>
+            </div>
+            <p id="ig-velocity-help" class="help"></p>
+            <button id="ig-velocity-calculate" class="secondary" type="button" disabled>Calcular velocidade ponderal</button>
+            <div id="ig-velocity-error" class="notice danger" role="alert" hidden></div>
+            <div id="ig-velocity-result" class="notice info" role="status" hidden></div>
+            <p class="help">Velocidade observada pelo método do peso médio (Average2pt), sem percentil ou escore Z de velocidade INTERGROWTH. Depois de calculada, será incluída nos dois formatos de PDF.</p>
+            <details class="ig-reference"><summary>Método de cálculo</summary><div>
+              <p>g/dia = (peso final − peso inicial) ÷ dias. g/kg/dia = 1.000 × (peso final − peso inicial) ÷ [peso médio × dias], com pesos em gramas e peso médio = (peso inicial + peso final) ÷ 2.</p>
+              <p><a href="https://doi.org/10.1038/s41390-019-0313-z" target="_blank" rel="noopener noreferrer">Fenton et al., Pediatric Research, 2019</a>. Método descritivo; não estabelece uma meta ambulatorial nem classifica a adequação do crescimento.</p>
+            </div></details>
+          </section>
           <p class="help">Curvas de referência: escores Z de −3 a +3. A posição na curva descreve a medida e não estabelece diagnóstico. Interprete a trajetória com o contexto clínico. Em telas pequenas, deslize o gráfico na horizontal para ver toda a curva.</p>
           <div id="ig-charts"></div>
           <p class="help">Escolha o PDF: as curvas em 1 página reúnem os três gráficos e o resumo da última avaliação. O relatório detalhado inclui as tabelas de todas as avaliações.</p>

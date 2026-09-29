@@ -153,3 +153,156 @@ test('Ambulatório: falha em exportação permite tentar novamente sem link anti
  assert.equal(app.el('ig-export-summary').disabled,false);
  assert.match(app.el('ig-status').textContent,/Não foi possível gerar/);
 });
+
+function velocityExample(options={}){
+ const app=setup(options);
+ app.fill({weeks:40,days:0,weight:3000});
+ app.click('ig-add');app.fill({weeks:41,days:3,weight:3300},1);
+ app.submit();return app;
+}
+
+function chooseVelocity(app,id,value){
+ const select=app.el(id);
+ for(const option of select.options)option.removeAttribute('selected');
+ [...select.options].find(option=>option.value===String(value)).selected=true;
+ app.event(select,'change');
+}
+
+test('INTERGROWTH: velocidade mostra 30 g/dia e 9,5 g/kg/dia para 3000 a 3300 g em 10 dias',()=>{
+ const app=velocityExample();
+ assert.equal(app.el('ig-velocity-start').value,'0');
+ assert.equal(app.el('ig-velocity-end').value,'1');
+ assert.equal(app.el('ig-velocity-calculate').disabled,false);
+ assert.equal(app.el('ig-velocity-result').hidden,true);
+ app.click('ig-velocity-calculate');
+ assert.equal(app.el('ig-velocity-error').hidden,true);
+ assert.equal(app.el('ig-velocity-result').hidden,false);
+ assert.match(app.el('ig-velocity-result').textContent,/Medidas 1 a 2 · 10 dias · 3\.000 g → 3\.300 g/);
+ assert.match(app.el('ig-velocity-result').textContent,/Variação de peso: 300 g · Peso médio: 3\.150 g/);
+ assert.match(app.el('ig-velocity-result').textContent,/30,0 g\/dia · 9,5 g\/kg\/dia/);
+ assert.equal(app.ui.getResult().velocity.intervalDays,10);
+ assert.equal(app.ui.getResult().velocity.gramsPerDay,30);
+ assert.match(app.el('ig-status').textContent,/incluída nos próximos PDFs/);
+});
+
+test('INTERGROWTH: seletores de velocidade excluem avaliações sem peso e preservam os números originais',()=>{
+ const app=setup();
+ app.fill({weeks:40,weight:3000});
+ app.click('ig-add');app.fill({weeks:40,days:5,length:50},1);
+ app.click('ig-add');app.fill({weeks:41,days:3,weight:3300},2);
+ app.submit();
+ for(const id of ['ig-velocity-start','ig-velocity-end']){
+  const select=app.el(id);
+  assert.deepEqual([...select.options].map(option=>option.value),['0','2']);
+  assert.match(select.options[0].textContent,/Medida 1/);
+  assert.match(select.options[1].textContent,/Medida 3/);
+  assert.equal(select.disabled,false);
+ }
+ app.click('ig-velocity-calculate');
+ assert.equal(app.ui.getResult().velocity.finalEvaluation,3);
+ assert.equal(app.ui.getResult().velocity.gramsPerDay,30);
+});
+
+test('INTERGROWTH: menos de dois pesos mantém a velocidade desabilitada e permite gerar as curvas',()=>{
+ for(const first of [{weeks:40,length:49},{weeks:40,weight:3000}]){
+  const app=setup();app.fill(first);
+  app.click('ig-add');app.fill({weeks:41,head:35},1);app.submit();
+  assert.equal(app.el('ig-velocity-start').disabled,true);
+  assert.equal(app.el('ig-velocity-end').disabled,true);
+  assert.equal(app.el('ig-velocity-calculate').disabled,true);
+  assert.match(app.el('ig-velocity-help').textContent,/pelo menos duas avaliações/);
+  app.click('ig-velocity-calculate');
+  assert.equal(app.ui.getResult().velocity,undefined);
+  assert.equal(app.el('ig-velocity-result').hidden,true);
+  assert.equal(app.el('ig-result').hidden,false);
+  assert.ok(app.el('ig-charts').querySelector('svg'));
+  assert.equal(app.el('ig-export').disabled,false);
+ }
+});
+
+test('INTERGROWTH: seleção invertida exibe erro e preserva curvas e resultados antropométricos',()=>{
+ const app=velocityExample(),curves=[...app.el('ig-charts').children];
+ app.click('ig-velocity-calculate');
+ chooseVelocity(app,'ig-velocity-start',1);chooseVelocity(app,'ig-velocity-end',0);
+ app.click('ig-velocity-calculate');
+ assert.equal(app.el('ig-velocity-error').hidden,false);
+ assert.match(app.el('ig-velocity-error').textContent,/final deve ser posterior/);
+ assert.equal(app.ui.getResult().velocity,undefined);
+ assert.equal(app.el('ig-velocity-result').hidden,true);
+ assert.equal(app.el('ig-result').hidden,false);
+ assert.deepEqual([...app.el('ig-charts').children],curves);
+ assert.equal(app.el('ig-result-rows').children.length,2);
+});
+
+test('INTERGROWTH: ganho zero e perda de peso não são ocultados na velocidade',()=>{
+ for(const [weight,expected] of [[3000,/0,0 g\/dia · 0,0 g\/kg\/dia/],[2700,/-30,0 g\/dia · -10,5 g\/kg\/dia/]]){
+  const app=velocityExample();app.fill({weight},1);app.submit();app.click('ig-velocity-calculate');
+  assert.equal(app.el('ig-velocity-result').hidden,false);
+  assert.equal(app.el('ig-velocity-error').hidden,true);
+  assert.match(app.el('ig-velocity-result').textContent,expected);
+ }
+});
+
+test('INTERGROWTH: mudar o período descarta velocidade e download sem apagar as curvas',async()=>{
+ const app=velocityExample({pdf:async()=>new Uint8Array([1])});
+ app.click('ig-add');app.fill({weeks:42,weight:3450},2);app.submit();
+ app.click('ig-velocity-calculate');app.click('ig-export');
+ await new Promise(resolve=>setImmediate(resolve));
+ const curves=[...app.el('ig-charts').children],measurements=app.ui.getResult().measurements;
+ assert.equal(app.el('ig-pdf-download').hidden,false);
+ chooseVelocity(app,'ig-velocity-start',1);
+ assert.equal(app.ui.getResult().velocity,undefined);
+ assert.equal(app.ui.getResult().measurements,measurements);
+ assert.equal(app.el('ig-velocity-result').hidden,true);
+ assert.equal(app.el('ig-pdf-download').hidden,true);
+ assert.equal(app.el('ig-pdf-download').getAttribute('href'),null);
+ assert.deepEqual(app.revoked,['blob:intergrowth-test']);
+ assert.equal(app.el('ig-result').hidden,false);
+ assert.deepEqual([...app.el('ig-charts').children],curves);
+ assert.equal(app.el('ig-export').disabled,false);
+ assert.equal(app.el('ig-export-summary').disabled,false);
+ app.click('ig-velocity-calculate');
+ assert.equal(app.ui.getResult().velocity.initialEvaluation,2);
+ assert.equal(app.ui.getResult().velocity.intervalDays,4);
+ assert.equal(app.ui.getResult().velocity.gramsPerDay,37.5);
+});
+
+test('INTERGROWTH: alterar a seleção ou calcular velocidade durante PDF pendente descarta o arquivo antigo',async()=>{
+ for(const mode of ['selection','calculation']){
+  let complete,received;
+  const app=velocityExample({summaryPdf:result=>{received=result;return new Promise(resolve=>{complete=resolve;});}});
+  app.click('ig-export-summary');
+  assert.equal(received.velocity,undefined);
+  if(mode==='selection')chooseVelocity(app,'ig-velocity-start',1);
+  else app.click('ig-velocity-calculate');
+  complete(new Uint8Array([1,2,3]));
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(app.el('ig-pdf-download').hidden,true);
+  assert.equal(app.el('ig-pdf-download').getAttribute('href'),null);
+  assert.equal(app.el('ig-result').hidden,false);
+  assert.equal(app.el('ig-export').disabled,false);
+  assert.equal(app.el('ig-export-summary').disabled,false);
+  if(mode==='calculation'){
+   assert.equal(app.ui.getResult().velocity.gramsPerDay,30);
+   assert.equal(app.el('ig-velocity-result').hidden,false);
+  }
+ }
+});
+
+test('INTERGROWTH: ambos os formatos de PDF recebem a velocidade do período calculado',async()=>{
+ const calls=[],app=velocityExample({
+  pdf:async result=>{calls.push(['detailed',result]);return new Uint8Array([1]);},
+  summaryPdf:async result=>{calls.push(['summary',result]);return new Uint8Array([2]);}
+ });
+ app.click('ig-velocity-calculate');
+ const current=app.ui.getResult();
+ app.click('ig-export-summary');await new Promise(resolve=>setImmediate(resolve));
+ app.click('ig-export');await new Promise(resolve=>setImmediate(resolve));
+ assert.deepEqual(calls,[['summary',current],['detailed',current]]);
+ for(const [,result] of calls){
+  assert.equal(result.velocity.initialIndex,0);
+  assert.equal(result.velocity.finalIndex,1);
+  assert.equal(result.velocity.gramsPerDay,30);
+ }
+ assert.equal(app.el('ig-pdf-download').hidden,false);
+});

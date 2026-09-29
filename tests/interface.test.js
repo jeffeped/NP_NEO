@@ -29,7 +29,7 @@ test('ícone instalado usa logo GROW_NEO em todos os tamanhos e no iPhone',()=>{
   assert.equal(readFileSync(new URL('../'+apple.replace(/^\.\//,''),import.meta.url)).readUInt32BE(16),180);
   assert.doesNotMatch(html+JSON.stringify(manifest),/assets\/icon-(192|512|maskable)/);
 });
-test('Crescimento abre plotador Fenton 2025 em outra aba sem enviar parâmetros',()=>{
+test('GROW_Fenton abre plotador Fenton 2025 em outra aba sem enviar parâmetros',()=>{
  const {document}=parseHTML(html),link=document.querySelector('#growth a.growth-plotter');
  assert.equal(link.getAttribute('href'),'https://fentongrowth.ca/');
  assert.equal(link.getAttribute('target'),'_blank');
@@ -233,7 +233,7 @@ function openHydration(){
   return {...app,unit,calculateHydration:()=>app.dispatch('hv-form','submit')};
 }
 
-test('interface HV: terceira aba calcula com as fórmulas confirmadas e mostra seis componentes',()=>{
+test('interface HV: calcula com as fórmulas confirmadas e mostra seis componentes',()=>{
   const app=openHydration();app.calculateHydration();
   assert.equal(app.el('hydration').hidden,false);assert.equal(app.el('parameters').hidden,true);assert.equal(app.el('results').hidden,true);
   assert.equal(app.el('tab-hydration').getAttribute('aria-selected'),'true');
@@ -289,15 +289,26 @@ test('interface HV: formulário independente preserva resultado e exportação d
   assert.equal(app.el('hv-result').hidden,true);assert.equal(app.el('hydration').hidden,true);
 });
 
-test('interface: teclado percorre as oito abas, incluindo Ambulatório no fim e retorno',()=>{
+test('interface: abas seguem as duas colunas solicitadas e o teclado acompanha a ordem visual',()=>{
   const app=openApp();
   const key=(id,value)=>{const e=new app.window.Event('keydown',{bubbles:true,cancelable:true});Object.defineProperty(e,'key',{value});app.el(id).dispatchEvent(e);};
-  assert.equal(app.document.querySelectorAll('.tabs [role="tab"]').length,8);
-  key('tab-parameters','End');assert.equal(app.el('intergrowth').hidden,false);
-  key('tab-intergrowth','ArrowRight');assert.equal(app.el('parameters').hidden,false);
-  key('tab-parameters','ArrowLeft');assert.equal(app.el('intergrowth').hidden,false);
-  key('tab-intergrowth','ArrowLeft');assert.equal(app.el('notes').hidden,false);
+  const tabs=Array.from(app.document.querySelectorAll('.tabs [role="tab"]'));
+  const names=['parameters','enteral','standard','growth','hydration','intergrowth','results','notes'];
+  assert.deepEqual(tabs.map(tab=>tab.getAttribute('aria-controls')),names);
+  assert.deepEqual(tabs.map(tab=>tab.textContent),['NP ind','Enteral','NP padrão','GROW_Fenton','HV','INTERGROWTH','Resultados','Notas']);
+  for(let i=0;i<names.length;i++){
+    const current=names[i],next=names[(i+1)%names.length];
+    key('tab-'+current,'ArrowRight');
+    assert.equal(app.el(next).hidden,false);
+    assert.equal(app.el('tab-'+next).getAttribute('aria-selected'),'true');
+    assert.equal(app.el('tab-'+next).getAttribute('tabindex'),'0');
+    assert.equal(app.el(current).hidden,true);
+    assert.equal(app.el('tab-'+current).getAttribute('tabindex'),'-1');
+  }
+  key('tab-parameters','End');assert.equal(app.el('notes').hidden,false);
   key('tab-notes','Home');assert.equal(app.el('parameters').hidden,false);
+  key('tab-parameters','ArrowLeft');assert.equal(app.el('notes').hidden,false);
+  key('tab-notes','ArrowLeft');assert.equal(app.el('results').hidden,false);
 });
 
 test('interface crescimento: calcula peso médio e mostra cautela antes de recuperar peso de nascimento',()=>{
