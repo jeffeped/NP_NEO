@@ -263,6 +263,19 @@ extreme inputs and missing latest measurements) were rendered and visually
 inspected. A separate review of UI/PDF/offline behavior found no blocking
 defect. Physical printing and formal clinical validation are not claimed.
 
+Browser acceptance of [PR #26](https://github.com/jeffeped/NP_NEO/pull/26),
+code commit `b6c26d98701bbb0de6aa6919e8537a1fa0616859`, used three fictitious male
+evaluations: 35+4 weeks (2100 g, 45.2 cm, 31.5 cm), 40+2 (3350 g, 50.5 cm,
+35 cm), and 48+0 (4700 g, 57 cm, 38.5 cm). Both format buttons completed
+and provided appropriately named download links. The downloaded one-page
+file was checked as A4, version 0.7.1, with the correct latest evaluation.
+Changing a measurement hid the result and invalidated the prior PDF;
+recalculating restored export. A screenshot records the two buttons and
+one-page download link. The preview origin does not complete service-worker
+installation; offline readiness in production must be checked after release.
+The [GitHub test run](https://github.com/jeffeped/NP_NEO/actions/runs/36515150562)
+for that code commit also passed.
+
 ## Attribution and distribution
 
 The source article states CC BY-NC-ND. Oxford's website permits clinicians to
