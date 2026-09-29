@@ -303,11 +303,11 @@ tests. PR #26 does not modify the Worker or Fenton configuration. The cause of
 that pre-existing Cloudflare build failure was not investigated in this
 release; it is recorded as a separate infrastructure follow-up.
 
-## Navigation and observed weight velocity — 0.7.2 (publication pending)
+## Navigation and observed weight velocity — 0.7.2
 
-Prepared on 29 September 2026 (UTC). This section records the development
-change; it does not claim publication or production acceptance. Earlier
-release records above remain historical records of 0.7.0 and 0.7.1.
+Prepared and published on 29 September 2026. This section records the
+development change and the production acceptance below. Earlier release
+records above remain historical records of 0.7.0 and 0.7.1.
 
 ### Navigation
 
@@ -418,10 +418,42 @@ three charts; recalculation restored the selected result.
 
 Preview service-worker installation reported an update download failure on
 the third-party preview origin. This is not a production offline acceptance
-test. Automated cache tests passed, including the new module; production
-update/offline behavior remains a release check. This record does not claim
-clinical validation or successful production deployment. Publication remains
-pending the user's separate release instruction.
+test. Automated cache tests passed, including the new module. Production
+acceptance is recorded below; these technical checks are not clinical validation.
+
+### Production acceptance — 29 September 2026 (Manaus)
+
+After the user's explicit publication instruction, PR #27 was merged from
+`5baa95a70124f62ad2ab8c31f3fb279597328d55`, producing squash commit
+`2c3a6de053589339c125441835beb5f19f6753ec`. The GitHub Actions `test` job on
+the reviewed PR head passed (run `36520510095`). GitHub Pages deployment
+`36520719077` completed successfully for the merge commit.
+
+At https://jeffeped.github.io/NP_NEO/ in a separate browser tab:
+
+- The existing 0.7.1 installation updated through **Atualizar** and its restart
+  confirmation; the footer then showed **0.7.2**.
+- The requested two-column tab order and the labels **GROW_Fenton** and
+  **INTERGROWTH** were present.
+- The app displayed **Pronto para usar offline**, confirming its static-cache
+  readiness check. This session did not simulate network disconnection.
+- Fictitious female measurements at 40+0 (3000 g, 49 cm, 34.5 cm) and 41+3
+  (3300 g, 50 cm, 35 cm) generated all three charts. The selected velocity
+  interval was exactly 10 days: 300 g change, 3150 g mean weight,
+  **30.0 g/day and 9.5 g/kg/day**.
+- Both the single-page and detailed PDF exports completed and displayed their
+  respective download links.
+
+A production screenshot with these fictitious measurements was retained as
+`GROW_NEO_0.7.2_publicado_dados_ficticios.jpg` in the project verification files.
+No patient identifiers were entered. The source review, formulas and prior
+PDF layout checks remain documented above.
+
+The separate Cloudflare check `Workers Builds: grow-neo-fenton-proxy` failed
+on the reviewed PR head, as it did in the previous release. Its specific
+failure cause was not diagnosed in this release. No Worker files or Fenton
+configuration were changed; this remains a separate infrastructure follow-up,
+not a failed GitHub Pages deployment. Not all external checks were green.
 
 ## Attribution and distribution
 
