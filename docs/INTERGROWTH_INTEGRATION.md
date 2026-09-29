@@ -303,6 +303,113 @@ tests. PR #26 does not modify the Worker or Fenton configuration. The cause of
 that pre-existing Cloudflare build failure was not investigated in this
 release; it is recorded as a separate infrastructure follow-up.
 
+## Navigation and observed weight velocity — 0.7.2 (publication pending)
+
+Prepared on 29 September 2026 (UTC). This section records the development
+change; it does not claim publication or production acceptance. Earlier
+release records above remain historical records of 0.7.0 and 0.7.1.
+
+### Navigation
+
+The tab grid has two columns at all supported widths, including the narrow
+mobile layout. Its visible arrangement is:
+
+| Left column | Right column |
+| --- | --- |
+| NP ind | Enteral |
+| NP padrão | GROW_Fenton |
+| HV | INTERGROWTH |
+| Resultados | Notas |
+
+The old tab names Crescimento and Ambulatório become **GROW_Fenton** and
+**INTERGROWTH**. Existing calculations retain their clinical meanings and
+panel IDs. The tab buttons follow row order in the DOM, and keyboard navigation
+reads that same order from `aria-controls`; there is no separate hard-coded
+list that can drift from the visible buttons. Navigation instructions in the
+enteral report and browser preview use the current tab names.
+
+### Source review and interpretation boundary
+
+The [official postnatal resources](https://intergrowth21.com/tools-resources/postnatal-growth-preterm-infants)
+consulted for this change provide size-for-age weight, length and head
+circumference tables, charts and a calculator. No separate postnatal weight
+velocity centile table was located in the official resources consulted.
+This is a bounded search finding, not proof that no other publication exists.
+Fetal velocity standards are not substituted for postnatal preterm standards.
+
+Two primary studies inform the methodological distinction:
+
+1. Fenton TR, Anderson D, Groh-Wargo S, et al. An Attempt to Standardize the
+   Calculation of Growth Velocity of Preterm Infants—Evaluation of Practical
+   Bedside Methods. J Pediatr. 2018;196:77-83.
+   [DOI](https://doi.org/10.1016/j.jpeds.2017.10.005),
+   [PubMed](https://pubmed.ncbi.nlm.nih.gov/29246464/).
+   This study evaluates growth-velocity calculations, including velocities
+   derived from INTERGROWTH and other growth curves. A velocity derived from
+   a size curve does not supply an individual child's velocity percentile or
+   a separately validated ambulatory velocity standard.
+2. Fenton TR, Griffin IJ, Hoyos A, et al. Accuracy of preterm infant weight gain
+   velocity calculations vary depending on method used and infant age at time
+   of measurement. Pediatr Res. 2019;85:650-654.
+   [DOI](https://doi.org/10.1038/s41390-019-0313-z),
+   [PubMed](https://pubmed.ncbi.nlm.nih.gov/30705399/).
+   This methodological study supports Average2pt and excluding initial
+   postnatal weight loss when assessing growth. Its neonatal findings are not
+   represented here as validation of an ambulatory INTERGROWTH velocity norm.
+
+Accordingly, this release reports **observed weight velocity**, calculated
+from two entered measurements. It does not add an INTERGROWTH velocity
+reference line, percentile, Z score, target, adequacy classification or rapid
+growth threshold. The existing INTERGROWTH Z scores and percentiles still
+refer to individual measurements at their exact PMA, not to their velocity.
+
+### Calculation and interval selection
+
+The clinician selects an initial and a later evaluation, both with a weight.
+The data remain subject to the existing 27+0 through 64+0-week PMA range.
+Let `W1` and `W2` be the selected weights in grams, and `PMA1` and `PMA2` their
+exact ages in days:
+
+- `intervalDays = PMA2 - PMA1`.
+- `weightChange = W2 - W1`, in grams.
+- `averageWeight = (W1 + W2) / 2`, the arithmetic mean of the two endpoint
+  weights; it is not the mean of every intervening measurement.
+- `gramsPerDay = weightChange / intervalDays`.
+- `gramsPerKgDay = 1000 * weightChange / (averageWeight * intervalDays)`
+  (Average2pt).
+
+For the same infant, the PMA difference equals elapsed calendar days because
+the gestational age at birth cancels. The implementation uses exact PMA days,
+including the additional 0-6 days entered with completed weeks. It does not
+subtract rounded weeks or use corrected age. It requires the final evaluation
+to follow the initial evaluation, with valid weights at both endpoints.
+Missing weights are not replaced with values from another visit. Zero and
+negative observed weight change remain valid descriptive outputs.
+
+The interval is a clinical selection. When assessing growth, exclude the
+initial neonatal weight-loss phase. This tab has no birthweight or birth-age
+field with which to establish the nadir, recovery of birthweight, or the
+clinical growth phase automatically. The app therefore does not infer those
+events from PMA alone. An interval that includes weight loss can describe
+weight change but should not be interpreted automatically as tissue growth.
+
+`intergrowth-velocity.js` performs the calculation locally and is included in
+the static service-worker cache. Version and cache are bumped to **0.7.2**.
+The module does not alter the published size equations, request a network
+service, collect patient identifiers, or persist the selected measurements.
+
+### Verification and release status
+
+Local verification on 2026-09-29: **458/458 automated tests passed**. The new
+tests cover hand-calculated velocity, exact-day intervals, missing weights,
+reversed selections, zero/negative gain, PDF recalculation and stale-download
+invalidation. An independent review passed 87 focused tests. Rendered PDFs
+were inspected with typical values, 20 measurements, extremes and missing data;
+the summary retains one A4 page and the detailed report retains three pages.
+Browser acceptance and any later publication are recorded separately. This
+record does not claim clinical validation, a successful deployment, or a
+production offline check for 0.7.2.
+
 ## Attribution and distribution
 
 The source article states CC BY-NC-ND. Oxford's website permits clinicians to

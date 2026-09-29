@@ -4,6 +4,7 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {exportIntergrowthPdf,exportIntergrowthSummaryPdf} from '../intergrowth-pdf.js';
 import {calculateIntergrowth} from '../intergrowth.js';
+import {calculateIntergrowthVelocity} from '../intergrowth-velocity.js';
 
 vm.runInThisContext(readFileSync(new URL('../vendor/pdf-lib.min.js',import.meta.url),'utf8'));
 const resultFor=count=>({sex:'female',measurements:Array.from({length:count},(_,index)=>({weeks:Math.floor((280+index*7)/7),days:0,pmaDays:280+index*7,weight:3000+index*100,length:46+index*.5,head:32+index*.25,scores:{weight:{z:-.25,percentile:40.1},length:{z:.33,percentile:62.9},head:{z:-.8,percentile:21.2}}}))});
@@ -119,3 +120,57 @@ test('prancha informa indicador nunca medido e recusa ausência ou excesso de av
  await assert.rejects(exportIntergrowthSummaryPdf(null),/Calcule/);
  await assert.rejects(exportIntergrowthSummaryPdf(resultFor(21)),/vinte/);
 });
+
+for(const [name,exporter,pageCount] of [['detalhado',exportIntergrowthPdf,3],['prancha',exportIntergrowthSummaryPdf,1]]){
+ test(`PDF ${name}: inclui velocidade selecionada recalculada e conserva gráficos, página e fontes`,async()=>{
+  const result=resultFor(20);result.velocity={initialIndex:0,finalIndex:19,gramsPerDay:99999,gramsPerKgDay:99999,intervalDays:1};
+  const velocity=calculateIntergrowthVelocity(result,0,19),lines=[],paths=[],circles=[];
+  const original=PDFLib.PDFPage.prototype.drawText,originalPath=PDFLib.PDFPage.prototype.drawSvgPath,originalCircle=PDFLib.PDFPage.prototype.drawCircle;
+  PDFLib.PDFPage.prototype.drawText=function(value,options){
+   lines.push({value,...options});
+   if(name==='prancha')assert.ok(options.size>=8,`Fonte pequena: ${value}`);
+   assert.ok(options.x>=0&&options.y>=0&&options.y+options.size<=this.getHeight(),`Fora da página: ${value}`);
+   assert.ok(options.x+options.font.widthOfTextAtSize(value,options.size)<=this.getWidth(),`Texto excede página: ${value}`);
+   return original.call(this,value,options);
+  };
+  PDFLib.PDFPage.prototype.drawSvgPath=function(path,options){paths.push({path,options});return originalPath.call(this,path,options);};
+  PDFLib.PDFPage.prototype.drawCircle=function(options){circles.push(options);return originalCircle.call(this,options);};
+  try{
+   const doc=await PDFLib.PDFDocument.load(await exporter(result));assert.equal(doc.getPageCount(),pageCount);
+   if(name==='prancha')assert.ok(Math.abs(doc.getPage(0).getWidth()-595.28)<.01);
+  }finally{PDFLib.PDFPage.prototype.drawText=original;PDFLib.PDFPage.prototype.drawSvgPath=originalPath;PDFLib.PDFPage.prototype.drawCircle=originalCircle;}
+  const values=lines.map(line=>line.value),round=value=>value.toFixed(1).replace('.',',');
+  assert.ok(values.some(value=>value.includes('Velocidade ponderal observada')));
+  assert.ok(values.some(value=>value.includes('Avaliações 1-20 · IPM 40+0 a 59+0 · 133 dias')));
+  assert.ok(values.some(value=>value.includes(`${round(velocity.gramsPerDay)} g/dia · ${round(velocity.gramsPerKgDay)} g/kg/dia`)));
+  assert.ok(values.some(value=>value.includes('peso médio 3950 g')));
+  assert.ok(values.some(value=>value.includes('10.1038/s41390-019-0313-z')));
+  assert.ok(!values.some(value=>/99999|percentil da velocidade|Z da velocidade|velocidade adequada/.test(value)));
+  assert.equal(paths.length,21);
+  if(name==='prancha'){
+   assert.equal(circles.filter(circle=>circle.x>=74&&circle.x<=514).length,60);
+   for(let i=0;i<3;i++){
+    const labels=lines.filter(line=>/^Z [+-]?\d$/.test(line.value)).slice(i*7,(i+1)*7),top=718-i*158,bottom=top-122;
+    assert.ok(labels.every(label=>label.y>=bottom&&label.y+label.size<=top+5));
+    for(let j=1;j<labels.length;j++)assert.ok(labels[j-1].y-labels[j].y>=10.99);
+   }
+  }
+ });
+
+ test(`PDF ${name}: intervalo não adjacente e perda ponderal não são substituídos por outro par`,async()=>{
+  const result=calculateIntergrowth({sex:'female',measurements:[{weeks:40,days:0,weight:3000},{weeks:40,days:5,length:49},{weeks:41,days:3,weight:2700},{weeks:44,days:0,weight:4000}]}),lines=[];
+  result.velocity=calculateIntergrowthVelocity(result,0,2);
+  const original=PDFLib.PDFPage.prototype.drawText;
+  PDFLib.PDFPage.prototype.drawText=function(value,options){lines.push(value);return original.call(this,value,options);};
+  try{await exporter(result);}finally{PDFLib.PDFPage.prototype.drawText=original;}
+  assert.ok(lines.some(value=>value.includes('Avaliações 1-3 · IPM 40+0 a 41+3 · 10 dias')));
+  assert.ok(lines.some(value=>value.includes('-30,0 g/dia · -10,5 g/kg/dia · ganho -300 g · peso médio 2850 g')));
+ });
+
+ test(`PDF ${name}: velocidade inválida bloqueia exportação em vez de reaproveitar estatísticas anteriores`,async()=>{
+  const result=resultFor(2);result.velocity={initialIndex:0,finalIndex:0,gramsPerDay:30};
+  await assert.rejects(exporter(result),/posterior/);
+  result.velocity={initialIndex:0,finalIndex:1};delete result.measurements[1].weight;
+  await assert.rejects(exporter(result),/informe o peso/);
+ });
+}

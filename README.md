@@ -1,6 +1,6 @@
 # GROW_NEO by Prof. Jefferson
 
-Instrumento de apoio à terapia nutricional neonatal, com nutrição parenteral, hidratação venosa, avaliação da dieta enteral e acompanhamento do crescimento. Versão de avaliação 0.7.1.
+Instrumento de apoio à terapia nutricional neonatal, com nutrição parenteral, hidratação venosa, avaliação da dieta enteral e acompanhamento do crescimento. Versão de avaliação 0.7.2.
 
 As mudanças de cada versão estão documentadas em [CHANGELOG.md](CHANGELOG.md), além do histórico auditável de commits do repositório.
 
@@ -15,7 +15,7 @@ O médico informa os parâmetros; o app calcula volumes, avalia a oferta enteral
 
 Esta versão passou por verificações técnicas locais; não foi realizada validação clínica formal. Confira os resultados antes do uso assistencial.
 
-Na aba Crescimento, o médico pode solicitar um gráfico JPG ou PDF e um CSV de
+Na aba GROW_Fenton, o médico pode solicitar um gráfico JPG ou PDF e um CSV de
 escores Z à Fenton 2025. A solicitação explícita envia sexo, idade gestacional
 ao nascer e medidas seriadas por um Worker com a chave privada; não inclui
 identificadores ou data de nascimento. Também há um link para o plotador oficial
@@ -25,11 +25,26 @@ para fluxo, privacidade, verificação e pendências de validação clínica.
 
 Responsável pelas definições: Jefferson Guilherme. O registro metodológico e as fontes de desenvolvimento são mantidos no projeto local.
 
-## Ambulatório — oitava aba
+## Organização das abas
+
+O quadro mantém duas colunas em telas grandes e pequenas:
+
+| Lado esquerdo | Lado direito |
+| --- | --- |
+| NP ind | Enteral |
+| NP padrão | GROW_Fenton |
+| HV | INTERGROWTH |
+| Resultados | Notas |
+
+A navegação por teclado acompanha a ordem visual por linha. **GROW_Fenton** é o novo nome da aba Crescimento; **INTERGROWTH** é o novo nome da aba Ambulatório.
+
+## INTERGROWTH — seguimento ambulatorial
 
 Curvas pós-natais INTERGROWTH-21st para prematuros, com peso, comprimento e perímetro cefálico por sexo, escores Z e percentis. As avaliações usam **idade pós-menstrual (IPM) de 27 semanas + 0 dias a 64 semanas + 0 dias**, inclusive; a IPM é a idade gestacional ao nascer somada ao tempo decorrido desde o nascimento. Não informar idade corrigida nesse campo. Esta aba não cobre todo o seguimento ambulatorial depois de 64 semanas de IPM e não faz transição automática para outro padrão.
 
 Informe de 1 a 20 avaliações, em ordem crescente de IPM, com pelo menos uma medida em cada avaliação. Peso em gramas; comprimento e perímetro cefálico em centímetros. O resultado exibe trajetórias e oferece dois PDFs: **Curvas em 1 página**, com três gráficos alinhados e resumo da última avaliação em A4; e **Relatório detalhado**, com as tabelas de todas as avaliações, um indicador por página. A síntese usa somente a última avaliação: uma medida ausente não é substituída por valor de consulta anterior. Cálculo, gráficos e PDFs são locais e funcionam offline após o aplicativo indicar que está pronto; as medidas não são enviadas a um serviço externo nem mantidas entre sessões.
+
+A seção **Velocidade de crescimento ponderal observada** permite selecionar duas avaliações com peso e calcula a variação em gramas, g/dia e g/kg/dia pelo método Average2pt (média aritmética dos dois pesos). O intervalo usa a diferença exata de IPM em dias. É uma descrição das medidas da criança: não fornece percentil, escore Z, meta ou classificação de velocidade INTERGROWTH. A seleção clínica do intervalo deve excluir a perda ponderal neonatal inicial quando o objetivo for avaliar crescimento; esta aba não possui os dados necessários para identificar automaticamente essa fase.
 
 As equações foram implementadas a partir do Apêndice 8 de Villar et al. (2015), com conferência nas tabelas oficiais. O padrão provém de uma coorte selecionada e teve poucos participantes nascidos antes de 33 semanas. A implementação não equivale a validação clínica ou endosso do consórcio. Fontes, fórmulas, unidades, verificações e limitações estão no [registro técnico INTERGROWTH](docs/INTERGROWTH_INTEGRATION.md).
 
