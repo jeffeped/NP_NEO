@@ -1,5 +1,12 @@
 # Histórico de versões
 
+## 0.7.1 — em preparação
+
+- Acrescenta **Curvas em 1 página** à aba Ambulatório: PDF A4 vertical com peso, comprimento e perímetro cefálico alinhados pela IPM, trajetórias de todas as medidas e resumo da última avaliação.
+- Mantém a opção **Relatório detalhado**, com tabelas completas. A composição de uma página é própria do GROW_NEO e usa os mesmos cálculos e limites do padrão pós-natal INTERGROWTH-21st.
+- Invalida os dois formatos após editar os dados e impede disponibilizar um PDF antigo se o formulário mudar durante a exportação.
+- Atualiza versão e cache para 0.7.1.
+
 ## 0.7.0 — 28/09/2026 (Manaus)
 
 - Acrescenta a oitava aba, **Ambulatório**, com o padrão pós-natal INTERGROWTH-21st para prematuros, para peso, comprimento e perímetro cefálico por sexo, entre 27+0 e 64+0 semanas de idade pós-menstrual.

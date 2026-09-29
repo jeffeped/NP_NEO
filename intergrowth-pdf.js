@@ -1,5 +1,6 @@
 import {VERSION} from './engine.js';
 import {buildIntergrowthChartModel,INTERGROWTH_METRICS} from './intergrowth-charts.js';
+import {INTERGROWTH_MIN_DAYS,INTERGROWTH_MAX_DAYS} from './intergrowth.js';
 
 const fmt=(value,digits=1)=>Number.isFinite(value)?value.toFixed(digits).replace('.',','):'—';
 const percentile=value=>!Number.isFinite(value)?'—':value<.1?'<0,1':value>99.9?'>99,9':fmt(value);
@@ -89,5 +90,84 @@ export async function exportIntergrowthPdf(result){
    alignRight(page,`${pageNumber}/${totalPages}`,right,20,7,regular,muted);
   }
  }
+ return doc.save();
+}
+
+/** Compact A4 chart sheet. It shares the reference models, not the detailed page layout. */
+export async function exportIntergrowthSummaryPdf(result){
+ if(!result||!['male','female'].includes(result.sex)||!Array.isArray(result.measurements)||!result.measurements.length)throw new Error('Calcule as avaliações ambulatoriais antes de exportar.');
+ if(result.measurements.length>20)throw new Error('A prancha de uma página comporta até vinte avaliações.');
+ if(!globalThis.PDFLib)throw new Error('Biblioteca de PDF indisponível. Reabra o aplicativo e tente novamente.');
+ const {PDFDocument,StandardFonts,rgb}=globalThis.PDFLib,doc=await PDFDocument.create();
+ doc.setTitle('GROW_NEO - Prancha INTERGROWTH-21st em uma página');
+ doc.setAuthor('Jefferson P Guilherme');doc.setCreator(`GROW_NEO ${VERSION}`);
+ doc.setSubject('Padrão pós-natal para prematuros; 27+0 a 64+0 semanas de IPM; resumo da última avaliação');
+ const regular=await doc.embedFont(StandardFonts.Helvetica),bold=await doc.embedFont(StandardFonts.HelveticaBold);
+ const page=doc.addPage([595.28,841.89]),left=32,right=563.28;
+ const color=hex=>rgb(parseInt(hex.slice(1,3),16)/255,parseInt(hex.slice(3,5),16)/255,parseInt(hex.slice(5,7),16)/255);
+ const ink=color('#263f31'),muted=color('#48594f'),patient=color('#a14b12'),grid=color('#e2e9e4');
+ const text=(value,x,y,size=9,font=regular,tone=ink)=>page.drawText(String(value),{x,y,size,font,color:tone});
+ const rightText=(value,x,y,size=9,font=regular,tone=ink)=>text(value,x-font.widthOfTextAtSize(String(value),size),y,size,font,tone);
+ const centerText=(value,x,y,size=9,font=regular,tone=ink)=>text(value,x-font.widthOfTextAtSize(String(value),size)/2,y,size,font,tone);
+ const line=(x1,y1,x2,y2,tone,width=.6)=>page.drawLine({start:{x:x1,y:y1},end:{x:x2,y:y2},color:tone,thickness:width});
+ const last=result.measurements.at(-1),age=days=>`${Math.floor(days/7)} sem + ${days%7} d`;
+ text('GROW_NEO · Curvas em uma página',left,810,16,bold);
+ text('INTERGROWTH-21st · Padrão pós-natal de prematuros',left,791,11,bold);
+ text(`${result.sex==='female'?'Feminino':'Masculino'} · ${result.measurements.length} ${result.measurements.length===1?'avaliação':'avaliações'} · IPM de 27+0 a 64+0 semanas · versão ${VERSION}`,left,776,9);
+ text('IPM = idade gestacional ao nascer + idade pós-natal. Não é idade corrigida.',left,762,8.5,regular,muted);
+ page.drawCircle({x:left+3,y:750,size:2.6,color:patient});
+ text('Pontos: medidas informadas · Traço laranja: sequência das medidas · Linhas verdes: referência Z',left+12,747,8.5,regular,muted);
+
+ for(const [index,metric] of METRICS.entries()){
+  const model=buildIntergrowthChartModel({sex:result.sex,metric,measurements:result.measurements});
+  const titleY=730-index*172,plot={left:74,right:514,top:titleY-12,bottom:titleY-148};
+  const xAt=days=>plot.left+(days-INTERGROWTH_MIN_DAYS)/(INTERGROWTH_MAX_DAYS-INTERGROWTH_MIN_DAYS)*(plot.right-plot.left);
+  const yAt=value=>plot.bottom+(value-model.yMin)/(model.yMax-model.yMin)*(plot.top-plot.bottom);
+  text(`${model.label} (${model.unit})`,left,titleY,10,bold);
+  rightText(model.points.length?`${model.points.length} ${model.points.length===1?'medida':'medidas'}`:'Nenhuma medida informada',right,titleY,8.5,regular,muted);
+  for(const tick of model.yTicks){
+   const y=yAt(tick.value);line(plot.left,y,plot.right,y,grid,.5);
+   rightText(tick.label,plot.left-8,y-3,8.5,regular,muted);
+  }
+  for(const tick of model.xTicks){
+   const x=xAt(tick.value*7);line(x,plot.top,x,plot.bottom,grid,.5);
+   centerText(tick.label,x,plot.bottom-13,8.5,regular,muted);
+  }
+  line(plot.left,plot.top,plot.left,plot.bottom,color('#819187'));
+  line(plot.left,plot.bottom,plot.right,plot.bottom,color('#819187'));
+  // Positions are rebuilt for the compact panels; type remains 8.5 points.
+  // Separate labels after projection, so extreme measurements cannot stack Z labels.
+  const labels=[...model.curves].reverse().map(curve=>({curve,targetY:yAt(curve.points.at(-1).value)}));
+  labels.forEach((label,i)=>{label.y=Math.min(label.targetY,plot.top-4,i?labels[i-1].y-11:Infinity);});
+  for(let i=labels.length-1;i>=0;i--)labels[i].y=Math.max(labels[i].y,i<labels.length-1?labels[i+1].y+11:plot.bottom+4);
+  for(const {curve,y} of labels){
+   const path=curve.points.map((point,i)=>`${i?'L':'M'} ${xAt(point.pmaDays)-plot.left} ${plot.top-yAt(point.value)}`).join(' ');
+   page.drawSvgPath(path,{x:plot.left,y:plot.top,borderColor:color(curve.style.color),borderWidth:curve.z===0?1.15:.7,borderDashArray:curve.style.dash.map(value=>value*.65)});
+   const endY=yAt(curve.points.at(-1).value);
+   if(Math.abs(y-endY)>1)line(plot.right+1,endY,plot.right+7,y,color('#66746c'),.5);
+   text(`Z ${curve.z>0?'+':''}${curve.z}`,plot.right+10,y-3,8.5,curve.z===0?bold:regular,muted);
+  }
+  // No per-point numbers: all measurements stay visible without crowded labels.
+  for(let i=1;i<model.points.length;i++)line(xAt(model.points[i-1].pmaDays),yAt(model.points[i-1].value),xAt(model.points[i].pmaDays),yAt(model.points[i].value),patient,1.2);
+  for(const point of model.points)page.drawCircle({x:xAt(point.pmaDays),y:yAt(point.value),size:2.6,color:patient,borderColor:rgb(1,1,1),borderWidth:.55});
+ }
+ centerText('Idade pós-menstrual (semanas)',294,211,9,bold);
+ text('Todos os pontos informados são incluídos. Histórico com valores e escores: relatório detalhado.',left,197,8.5,regular,muted);
+ text(`Última avaliação · IPM ${age(last.pmaDays)}`,left,180,10,bold);
+ page.drawRectangle({x:left,y:156,width:right-left,height:18,color:color('#eaf0ec')});
+ text('Indicador',left+5,162,8.5,bold);rightText('Medida',330,162,8.5,bold);rightText('Escore Z',440,162,8.5,bold);rightText('Percentil',right-5,162,8.5,bold);
+ for(const [index,metric] of METRICS.entries()){
+  const descriptor=INTERGROWTH_METRICS[metric],y=144-index*14,available=Number.isFinite(last[metric]),score=last.scores?.[metric];
+  text(`${descriptor.label} (${descriptor.inputUnit})`,left+5,y,9);
+  rightText(available?fmt(last[metric],metric==='weight'?0:1):'Não informada',330,y,9);
+  rightText(available&&Number.isFinite(score?.z)?fmt(score.z,2):'-',440,y,9);
+  rightText(available&&Number.isFinite(score?.percentile)?percentile(score.percentile):'-',right-5,y,9);
+ }
+ text('Coorte selecionada; poucos nascidos antes de 33 semanas. Interpretar no contexto clínico.',left,96,8,regular,muted);
+ text('Fonte: Villar et al. Lancet Glob Health. 2015;3:e681-e691. Equações: Apêndice 8.',left,84,8,regular,muted);
+ text('DOI: 10.1016/S2214-109X(15)00163-1 · Sem extrapolação além de 27+0 a 64+0 semanas de IPM.',left,72,8,regular,muted);
+ text('Gráficos próprios, sem endosso dos autores. Sem identificação do paciente; processamento local.',left,60,8,regular,muted);
+ text('Conferir os resultados antes do uso assistencial.',left,42,8,regular,muted);
+ rightText('1/1',right,42,8,regular,muted);
  return doc.save();
 }

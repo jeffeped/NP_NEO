@@ -215,6 +215,67 @@ completed and the download link appeared. The observed scores were -0.31,
 the live result and offline-ready indicator was retained with the project's
 verification records. No patient identifiers or real patient data were used.
 
+## One-page chart option — 0.7.1 (prepared 28 September 2026, Manaus)
+
+The requested ambulatory output is a single sheet containing weight, length
+and head circumference. The official resource page offers combined WLHC
+charts for both sexes, in z scores and centiles. The four files inspected on
+29 September 2026 UTC have **two pages**, with weight on the first page and
+length/head circumference on the second. Examples:
+
+- [Boys, combined z-score charts](https://intergrowth21.com/sites/default/files/2023-02/grow_preterm-zs-boys_2p_en.pdf)
+- [Girls, combined z-score charts](https://intergrowth21.com/sites/default/files/2023-02/grow_preterm-zs-girls_2p_en.pdf)
+
+GROW_NEO therefore provides its own A4 portrait composition, rather than a
+modified Oxford figure. `exportIntergrowthSummaryPdf` uses the same daily
+reference values and patient-point model as the screen/detailed report. It
+changes page composition only; it does not change equations, age limits,
+scores, percentiles or input validation.
+
+- Three vertically aligned panels share the 27-64-week PMA range. Every panel
+  retains its own vertical scale and explicit units (kg, cm, cm). All entered
+  points remain represented, including those outside the usual reference
+  curves. A missing indicator is explicitly identified.
+- The summary table uses the **last entered evaluation**, with its PMA and
+  the value, Z score and percentile of each indicator. An absent value stays
+  absent; it is never silently replaced with an earlier observation.
+- The complete observation tables remain available on screen and through
+  **Relatório detalhado**. The new **Curvas em 1 página** export is a chart
+  sheet with a latest-evaluation summary, not the complete numerical history.
+- Both export buttons use the same revision/snapshot invalidation. Editing,
+  clearing or recalculating prevents an older asynchronous PDF from appearing.
+  Only one export runs at a time; selecting a format replaces the previous
+  download link and labels the new file explicitly.
+- No new network request, dependency, patient identifier or storage is added.
+  The existing PDF module remains in the static cache, bumped to 0.7.1.
+
+This section records the prepared change. Production deployment is separate
+from implementation and verification; the last production acceptance above
+remains for 0.7.0 until a later deployment is explicitly recorded.
+
+Local verification: **436 automated tests passed**. New checks cover one-page
+A4 output, all patient points, reference paths, page/text bounds, missing
+indicators and last-visit-only summaries, as well as format selection,
+concurrent requests, failed exports and stale PDF invalidation. Existing
+clinical calculations and detailed PDF regression tests remain passing.
+Four synthetic one-page PDFs (three male visits, twenty female visits,
+extreme inputs and missing latest measurements) were rendered and visually
+inspected. A separate review of UI/PDF/offline behavior found no blocking
+defect. Physical printing and formal clinical validation are not claimed.
+
+Browser acceptance of [PR #26](https://github.com/jeffeped/NP_NEO/pull/26),
+code commit `b6c26d98701bbb0de6aa6919e8537a1fa0616859`, used three fictitious male
+evaluations: 35+4 weeks (2100 g, 45.2 cm, 31.5 cm), 40+2 (3350 g, 50.5 cm,
+35 cm), and 48+0 (4700 g, 57 cm, 38.5 cm). Both format buttons completed
+and provided appropriately named download links. The downloaded one-page
+file was checked as A4, version 0.7.1, with the correct latest evaluation.
+Changing a measurement hid the result and invalidated the prior PDF;
+recalculating restored export. A screenshot records the two buttons and
+one-page download link. The preview origin does not complete service-worker
+installation; offline readiness in production must be checked after release.
+The [GitHub test run](https://github.com/jeffeped/NP_NEO/actions/runs/36515150562)
+for that code commit also passed.
+
 ## Attribution and distribution
 
 The source article states CC BY-NC-ND. Oxford's website permits clinicians to
