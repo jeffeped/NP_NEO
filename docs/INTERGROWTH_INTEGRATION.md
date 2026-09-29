@@ -406,9 +406,22 @@ reversed selections, zero/negative gain, PDF recalculation and stale-download
 invalidation. An independent review passed 87 focused tests. Rendered PDFs
 were inspected with typical values, 20 measurements, extremes and missing data;
 the summary retains one A4 page and the detailed report retains three pages.
-Browser acceptance and any later publication are recorded separately. This
-record does not claim clinical validation, a successful deployment, or a
-production offline check for 0.7.2.
+Browser acceptance on the same date used the exact code commit
+`c3e21f323be40d14e6433b8c19d0621b6e1155a5` in a separate preview. The requested
+tab pairs were confirmed at 320, 390 and 720 px, with no horizontal overflow
+or clipped tab labels. In the 320 px frame, fictitious female measurements
+at 40+0 (3000 g, 49 cm, 34.5 cm) and 41+3 (3300 g, 50 cm, 35 cm) produced
+three charts and observed velocity of 30.0 g/day and 9.5 g/kg/day over exactly
+10 days. Both PDF formats produced download links. Changing the selected
+interval removed the previous velocity and PDF link while preserving all
+three charts; recalculation restored the selected result.
+
+Preview service-worker installation reported an update download failure on
+the third-party preview origin. This is not a production offline acceptance
+test. Automated cache tests passed, including the new module; production
+update/offline behavior remains a release check. This record does not claim
+clinical validation or successful production deployment. Publication remains
+pending the user's separate release instruction.
 
 ## Attribution and distribution
 
