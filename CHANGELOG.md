@@ -1,12 +1,13 @@
 # Histórico de versões
 
-## 0.7.0 — em revisão (29/09/2026)
+## 0.7.0 — 28/09/2026 (Manaus)
 
 - Acrescenta a oitava aba, **Ambulatório**, com o padrão pós-natal INTERGROWTH-21st para prematuros, para peso, comprimento e perímetro cefálico por sexo, entre 27+0 e 64+0 semanas de idade pós-menstrual.
 - Implementa localmente as equações publicadas por Villar et al. (2015), Apêndice 8, usando a IPM exata em semanas e dias. Calcula escores Z e percentis, desenha curvas e trajetórias de até 20 avaliações e gera PDF separado no aparelho.
 - Rejeita extrapolação etária, IPM repetida ou decrescente e erros evidentes de unidade. Alterações de entrada invalidam resultados e arquivos anteriores. A nova aba não transmite medidas nem mantém histórico de pacientes.
 - Documenta as fontes, equações, conferência com tabelas oficiais, população de origem e limites de uso. Não há transição automática para curvas OMS após 64 semanas de IPM.
 - Atualiza o cache offline para incluir os módulos da nova aba; preserva a política de conexão específica da integração Fenton.
+- Confere no navegador os gráficos, resultados, download do PDF, invalidação por edição e rejeição de IPM fora da faixa. Página de teste responsivo cobre larguras de 320, 390 e 720 pixels, com rolagem horizontal limitada aos gráficos.
 
 ## 0.6.8 — correção da conexão Fenton (28/09/2026)
 

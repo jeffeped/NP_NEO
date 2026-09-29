@@ -168,11 +168,33 @@ cached and served without a network request after installation.
 
 Vector PDFs generated from synthetic series of 3 and 20 observations were
 rendered and visually inspected for labels, table layout and page boundaries.
-Live browser acceptance was not completed: the available remote browser could
-not open the local development server. This is a limitation of this verification
-session, not evidence of a failure in the deployed application. The feature is
-prepared for pull-request review; it has not been deployed to the live app as
-part of this work.
+
+Browser acceptance was then completed on 29 September UTC (28 September in
+Manaus), using a public preview of the exact PR commits `38ac1fb` and `f64a585`.
+The local development server was not accessible to the remote browser, so the
+public repository files were rendered through raw.githack.com for this check.
+Only fictitious measurements were entered. The published application remains
+hosted on GitHub Pages; it does not depend on this preview service.
+
+- Opened the eighth tab and generated all three SVG charts, six result rows and
+  a PDF from two male observations: 35+4 weeks, 2100 g, 45.2 cm, 31.5 cm;
+  and 40+2 weeks, 3350 g, 50.5 cm, 35 cm.
+- Downloaded the browser-generated PDF (46,322 bytes); its three pages, version
+  0.7.0, measurements, scores, percentiles and source notes were checked.
+- Editing a measurement hid both the result and the previous PDF link.
+  Submitting 64+1 weeks displayed the explicit out-of-range error.
+- Used the reusable [browser preview](../tests/browser-preview.html) at iframe
+  widths 320, 390 and 720 px, with female fictitious data at 40+0 weeks:
+  3000 g, 49 cm and 34.5 cm. All three charts rendered in every frame.
+  Document scroll widths equalled client widths (305, 375 and 705 px,
+  respectively, after scrollbar space). The chart containers alone scroll
+  horizontally on narrow screens; keyboard scrolling was also verified.
+
+The preview origin did not complete service-worker installation, so it is not
+evidence of live-host offline acceptance. Offline caching has the automated
+verification described above; installation/update status must be checked on the
+GitHub Pages origin after release. This browser check is technical acceptance,
+not formal clinical validation.
 
 ## Attribution and distribution
 
