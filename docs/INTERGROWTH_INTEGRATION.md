@@ -249,9 +249,8 @@ scores, percentiles or input validation.
 - No new network request, dependency, patient identifier or storage is added.
   The existing PDF module remains in the static cache, bumped to 0.7.1.
 
-This section records the prepared change. Production deployment is separate
-from implementation and verification; the last production acceptance above
-remains for 0.7.0 until a later deployment is explicitly recorded.
+The change was prepared and verified before publication. Implementation,
+preview checks and production acceptance are recorded separately below.
 
 Local verification: **436 automated tests passed**. New checks cover one-page
 A4 output, all patient points, reference paths, page/text bounds, missing
@@ -275,6 +274,34 @@ one-page download link. The preview origin does not complete service-worker
 installation; offline readiness in production must be checked after release.
 The [GitHub test run](https://github.com/jeffeped/NP_NEO/actions/runs/36515150562)
 for that code commit also passed.
+
+### Production acceptance — 0.7.1, 28 September 2026 (Manaus)
+
+After the user's explicit instruction to publish, PR #26 was merged from
+verified head `585611c5c1f07b5d5f513dfa6b742392ff78da2f`, producing squash commit
+`69583647ce8c37737a874e4904f3fe4a2503a65a`. Its
+[GitHub Pages deployment](https://github.com/jeffeped/NP_NEO/actions/runs/36515592730)
+completed successfully. The final PR
+[test run](https://github.com/jeffeped/NP_NEO/actions/runs/36515323923) passed.
+
+A separate empty session on the official application was updated using the
+app's own update/restart button. The visible version became **0.7.1**, with
+**Pronto para usar offline** displayed. This confirms the production precache
+completeness check; no disconnected-network test is claimed here.
+
+The female fictitious case at 40+0 weeks (3000 g, 49 cm, 34.5 cm) generated all
+three on-screen charts. Both **Relatório detalhado** and **Curvas em 1 página**
+completed, with the appropriate download link/name. Scores remained -0.31,
+-0.18, +0.27 and percentiles 37.8, 42.7, 60.5. A screenshot of the two export
+options, one-page download, version and offline-ready indicator was saved in
+the project verification records. No real patient data were entered.
+
+The separate Cloudflare check `Workers Builds: grow-neo-fenton-proxy` reports
+failure on the PR head and also on the pre-existing main commit `c9750da`.
+This is distinct from the successful GitHub Pages deployment and application
+tests. PR #26 does not modify the Worker or Fenton configuration. The cause of
+that pre-existing Cloudflare build failure was not investigated in this
+release; it is recorded as a separate infrastructure follow-up.
 
 ## Attribution and distribution
 
