@@ -190,11 +190,30 @@ hosted on GitHub Pages; it does not depend on this preview service.
   respectively, after scrollbar space). The chart containers alone scroll
   horizontally on narrow screens; keyboard scrolling was also verified.
 
-The preview origin did not complete service-worker installation, so it is not
-evidence of live-host offline acceptance. Offline caching has the automated
-verification described above; installation/update status must be checked on the
-GitHub Pages origin after release. This browser check is technical acceptance,
-not formal clinical validation.
+The preview origin did not complete service-worker installation. The live-host
+check below was therefore performed separately. These browser checks are
+technical acceptance, not formal clinical validation.
+
+### Production acceptance — 28 September 2026 (Manaus)
+
+[PR #25](https://github.com/jeffeped/NP_NEO/pull/25) was merged after explicit
+publication approval, producing commit `c81b097639ae8ada1ef7ef0850a69191480d9cd6`.
+The [GitHub Pages deployment](https://github.com/jeffeped/NP_NEO/actions/runs/36512387209)
+completed successfully. The application code in that commit matches the tested
+PR tree.
+
+On the [official application](https://jeffeped.github.io/NP_NEO/), a separate
+empty browser tab was updated through the app's own update/restart button,
+preserving the earlier open session. The visible version changed from 0.6.8
+to **0.7.0** and the app displayed **Pronto para usar offline**, confirming its
+precache completeness check passed on the production origin.
+
+The eighth tab generated all three charts, Z scores and percentiles using the
+female fictitious case at 40+0 weeks (3000 g, 49 cm, 34.5 cm). Its PDF generation
+completed and the download link appeared. The observed scores were -0.31,
+-0.18 and +0.27 respectively; percentiles 37.8, 42.7 and 60.5. A screenshot of
+the live result and offline-ready indicator was retained with the project's
+verification records. No patient identifiers or real patient data were used.
 
 ## Attribution and distribution
 
