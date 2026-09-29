@@ -1,4 +1,4 @@
-const CACHE='npp-neo-static-0.7.0';
+const CACHE='npp-neo-static-0.7.1';
 const FILES=['./','./index.html','./styles.css','./app.js','./app-update.js','./assets/grow-neo-logo.png','./engine.js','./alerts.js','./fluid-guidance.js','./standard.js','./standard-ui.js','./standard-pdf.js','./hydration.js','./hydration-ui.js','./hydration-pdf.js','./pdf.js','./enteral.js','./enteral-ui.js','./enteral-pdf.js','./growth.js','./growth-ui.js','./fenton-ui.js','./fenton-config.js','./manifest.webmanifest','./vendor/pdf-lib.min.js','./assets/uea-logo.png','./assets/grow-neo-icon-192.png','./assets/grow-neo-icon-512.png','./assets/grow-neo-maskable-512.png','./assets/grow-neo-apple-touch-icon.png'];
 FILES.push('./intergrowth.js','./intergrowth-ui.js','./intergrowth-charts.js','./intergrowth-pdf.js');
 const URLS=new Set(FILES.map(p=>new URL(p,self.registration.scope).href));

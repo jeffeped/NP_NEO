@@ -31,12 +31,14 @@ test('Ambulatório: gera curvas SVG locais e resultados apenas dos indicadores i
  assert.equal(app.el('ig-result-rows').children.length,2);
  assert.match(app.el('ig-result-rows').textContent,/40 sem \+ 0 dMedida 1Peso3\.000 g/);
  assert.equal(app.el('ig-export').disabled,false);
+ assert.equal(app.el('ig-export-summary').disabled,false);
 });
 
 test('Ambulatório: IPM fora da referência ou linha vazia impede curva, escore e exportação',()=>{
  const app=setup();app.fill({weeks:64,days:1,weight:6500});app.submit();
  assert.equal(app.el('ig-result').hidden,true);
  assert.equal(app.el('ig-export').disabled,true);
+ assert.equal(app.el('ig-export-summary').disabled,true);
  assert.match(app.el('ig-errors').textContent,/64 semanas \+ 0 dias/);
  app.fill({weeks:40,days:0,weight:''});app.submit();
  assert.match(app.el('ig-errors').textContent,/pelo menos uma medida/);
@@ -100,4 +102,54 @@ test('Ambulatório: reset usado ao restaurar a página impede reutilizar dados d
  assert.equal(app.el('ig-result').hidden,true);
  assert.equal(app.el('ig-sex').value,'');
  assert.equal(app.el('ig-charts').children.length,0);
+});
+
+test('Ambulatório: escolhe PDF de uma página ou detalhado e substitui o download anterior',async()=>{
+ const calls=[],app=setup({
+  pdf:async result=>{calls.push(['detailed',result]);return new Uint8Array([1]);},
+  summaryPdf:async result=>{calls.push(['summary',result]);return new Uint8Array([2]);}
+ });
+ app.fill({weeks:40,weight:3000});app.submit();app.click('ig-export-summary');
+ assert.equal(app.el('ig-export').disabled,true);
+ assert.equal(app.el('ig-export-summary').disabled,true);
+ app.click('ig-export'); // Ignore competing requests while an export is pending.
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.deepEqual(calls,[['summary',app.ui.getResult()]]);
+ assert.equal(app.el('ig-pdf-download').download,'GROW_NEO-INTERGROWTH-21st-1-pagina.pdf');
+ assert.match(app.el('ig-pdf-download').textContent,/1 página/);
+ assert.equal(app.el('ig-export').disabled,false);
+ app.click('ig-export');assert.equal(app.el('ig-pdf-download').hidden,true);
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.deepEqual(calls,[['summary',app.ui.getResult()],['detailed',app.ui.getResult()]]);
+ assert.equal(app.el('ig-pdf-download').download,'GROW_NEO-INTERGROWTH-21st.pdf');
+ assert.match(app.el('ig-pdf-download').textContent,/detalhado/);
+ assert.deepEqual(app.revoked,['blob:intergrowth-test']);
+ app.fill({weight:3100});
+ assert.equal(app.el('ig-pdf-download').hidden,true);
+ assert.equal(app.el('ig-export-summary').disabled,true);
+});
+
+test('Ambulatório: PDF de uma página pendente é descartado ao editar e recalcular',async()=>{
+ let complete;const app=setup({summaryPdf:()=>new Promise(resolve=>{complete=resolve;})});
+ app.fill({weeks:40,weight:3000});app.submit();app.click('ig-export-summary');
+ app.fill({weight:3100});app.submit();
+ complete(new Uint8Array([1,2,3]));await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(app.el('ig-pdf-download').hidden,true);
+ assert.equal(app.el('ig-pdf-download').getAttribute('href'),null);
+ assert.equal(app.el('ig-export').disabled,false);
+ assert.equal(app.el('ig-export-summary').disabled,false);
+ assert.equal(app.ui.getResult().measurements[0].weight,3100);
+ assert.match(app.el('ig-status').textContent,/Curvas e escores calculados/);
+});
+
+test('Ambulatório: falha em exportação permite tentar novamente sem link antigo',async()=>{
+ const app=setup({pdf:async()=>new Uint8Array([1]),summaryPdf:async()=>{throw new Error('PDF indisponível');}});
+ app.fill({weeks:40,weight:3000});app.submit();app.click('ig-export');
+ await new Promise(resolve=>setImmediate(resolve));app.click('ig-export-summary');
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(app.el('ig-pdf-download').hidden,true);
+ assert.equal(app.el('ig-pdf-download').getAttribute('href'),null);
+ assert.equal(app.el('ig-export').disabled,false);
+ assert.equal(app.el('ig-export-summary').disabled,false);
+ assert.match(app.el('ig-status').textContent,/Não foi possível gerar/);
 });

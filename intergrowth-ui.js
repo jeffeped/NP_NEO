@@ -1,7 +1,7 @@
 import {parseNumber,parseWeightGrams} from './engine.js';
 import {calculateIntergrowth} from './intergrowth.js';
 import {createIntergrowthChart} from './intergrowth-charts.js';
-import {exportIntergrowthPdf} from './intergrowth-pdf.js';
+import {exportIntergrowthPdf,exportIntergrowthSummaryPdf} from './intergrowth-pdf.js';
 
 const metrics=[['weight','Peso','g'],['length','Comprimento','cm'],['head','Perímetro cefálico','cm']];
 const number=(value,digits=2)=>value.toFixed(digits).replace('.',',');
@@ -21,15 +21,16 @@ export function readIntergrowthForm(form){
  };
 }
 
-export function initIntergrowth(doc,{calculate=calculateIntergrowth,chart=createIntergrowthChart,pdf=exportIntergrowthPdf,urls=globalThis.URL}={}){
+export function initIntergrowth(doc,{calculate=calculateIntergrowth,chart=createIntergrowthChart,pdf=exportIntergrowthPdf,summaryPdf=exportIntergrowthSummaryPdf,urls=globalThis.URL}={}){
  const $=id=>doc.getElementById(id),form=$('ig-form'),rows=$('ig-measures'),status=$('ig-status');
  const resultSection=$('ig-result'),charts=$('ig-charts'),table=$('ig-result-rows');
- const exportButton=$('ig-export'),download=$('ig-pdf-download'),add=$('ig-add'),errors=$('ig-errors');
+ const exportButton=$('ig-export'),summaryButton=$('ig-export-summary'),download=$('ig-pdf-download'),add=$('ig-add'),errors=$('ig-errors');
+ const setExportDisabled=value=>{exportButton.disabled=value;summaryButton.disabled=value;};
  let last=null,pdfUrl=null,revision=0,busy=false;
  const text=(tag,value,cls)=>{const element=doc.createElement(tag);element.textContent=value;if(cls)element.className=cls;return element;};
  const clear=()=>{
   revision++;last=null;resultSection.hidden=true;charts.replaceChildren();table.replaceChildren();$('ig-context').replaceChildren();
-  exportButton.disabled=true;download.hidden=true;download.removeAttribute('href');
+  setExportDisabled(true);download.hidden=true;download.removeAttribute('href');
   if(pdfUrl)urls.revokeObjectURL(pdfUrl);pdfUrl=null;
   errors.hidden=true;errors.textContent='';status.textContent='';
  };
@@ -76,23 +77,29 @@ export function initIntergrowth(doc,{calculate=calculateIntergrowth,chart=create
     viewport.append(chart(doc,{sex:result.sex,metric,measurements:result.measurements}));
     figure.append(text('figcaption',label),viewport);charts.append(figure);
    }
-   last=result;resultSection.hidden=false;exportButton.disabled=busy;
+   last=result;resultSection.hidden=false;setExportDisabled(busy);
    status.textContent='Curvas e escores calculados neste aparelho.';
   }catch(error){clear();errors.textContent=error.message;errors.hidden=false;}
  });
- exportButton.addEventListener('click',async()=>{
+ const generatePdf=async(summary=false)=>{
   if(!last||busy)return;
-  const snapshot=last,currentRevision=revision;busy=true;exportButton.disabled=true;status.textContent='Preparando PDF no aparelho…';
+  const snapshot=last,currentRevision=revision;busy=true;setExportDisabled(true);
+  download.hidden=true;download.removeAttribute('href');
+  if(pdfUrl)urls.revokeObjectURL(pdfUrl);pdfUrl=null;
+  status.textContent='Preparando PDF no aparelho…';
   try{
-   const bytes=await pdf(snapshot);
+   const bytes=await (summary?summaryPdf:pdf)(snapshot);
    if(last!==snapshot||revision!==currentRevision)return;
    if(pdfUrl)urls.revokeObjectURL(pdfUrl);
    pdfUrl=urls.createObjectURL(new Blob([bytes],{type:'application/pdf'}));
-   download.href=pdfUrl;download.download='GROW_NEO-INTERGROWTH-21st.pdf';download.hidden=false;
-   status.textContent='PDF pronto. Use o link abaixo para baixar.';
+   download.href=pdfUrl;download.download=summary?'GROW_NEO-INTERGROWTH-21st-1-pagina.pdf':'GROW_NEO-INTERGROWTH-21st.pdf';
+   download.textContent=summary?'Baixar curvas em 1 página (PDF)':'Baixar relatório detalhado (PDF)';download.hidden=false;
+   status.textContent=summary?'PDF de 1 página pronto. Use o link abaixo para baixar.':'Relatório detalhado pronto. Use o link abaixo para baixar.';
   }catch(error){if(last===snapshot&&revision===currentRevision)status.textContent='Não foi possível gerar o PDF. Tente novamente.';}
-  finally{busy=false;exportButton.disabled=last===null;}
- });
+  finally{busy=false;setExportDisabled(last===null);}
+ };
+ exportButton.addEventListener('click',()=>generatePdf());
+ summaryButton.addEventListener('click',()=>generatePdf(true));
  const reset=()=>{
   clear();for(const option of $('ig-sex').options)option.selected=false;$('ig-sex').options[0].selected=true;
   rows.replaceChildren();addRow();
