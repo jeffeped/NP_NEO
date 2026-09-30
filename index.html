@@ -219,9 +219,6 @@
       <section id="growth" role="tabpanel" aria-labelledby="tab-growth" hidden>
         <h2 class="page-title">Velocidade de crescimento</h2>
         <p class="caption">Peso médio do período · comparação descritiva com Fenton 2025</p>
-        <a class="secondary growth-plotter" href="https://fentongrowth.ca/" target="_blank" rel="noopener noreferrer">Abrir plotador Fenton 2025 (site externo)</a>
-        <p class="help growth-plotter-instruction">No site da Fenton, role até o fim da página e procure o bloco “Measurements” para plotar medidas individuais.</p>
-        <p class="help growth-plotter-help">O plotador oficial abre em outra aba e precisa de internet. Os dados do GROW_NEO não são enviados automaticamente; informe as medidas diretamente no site da Fenton.</p>
         <form id="growth-form" class="section section-inner" autocomplete="off" novalidate>
           <div class="field-grid">
             <label class="field full">Sexo para a referência<select id="gr-sex" class="hv-select" required><option value="">Selecione</option><option value="female">Feminino</option><option value="male">Masculino</option></select></label>
@@ -258,6 +255,13 @@
           <figure id="fenton-figure" hidden><img id="fenton-chart" alt="Gráfico Fenton 2025 das medidas informadas"></figure>
           <a id="fenton-chart-download" class="download-link" download="Fenton-2025.jpg" hidden>Baixar gráfico JPG</a>
           <a id="fenton-pdf-download" class="download-link" download="Fenton-2025.pdf" hidden>Baixar gráfico PDF</a>
+          <div class="section section-inner">
+            <h3>Aporte total + gráfico Fenton</h3>
+            <p class="help">Calcule o aporte total na aba Enteral e gere o gráfico acima. O PDF reúne aportes, metas e velocidade de crescimento calculada na página 1; gráfico Fenton na página 2.</p>
+            <button id="fenton-total-export" class="primary" type="button">Exportar aporte total + Fenton em PDF</button>
+            <p id="fenton-total-status" class="help" role="status"></p>
+            <a id="fenton-total-download" class="download-link" hidden>Baixar relatório de duas páginas</a>
+          </div>
           <a id="fenton-csv-download" class="download-link" download="Fenton-2025-escores-z.csv" hidden>Baixar tabela de escores Z (CSV)</a>
         </section>
       </section>

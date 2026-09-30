@@ -48,8 +48,9 @@ export function initFenton(doc,{proxyUrl=FENTON_PROXY_URL,fetcher=globalThis.fet
  const figure=doc.getElementById('fenton-figure'),chart=doc.getElementById('fenton-chart');
  const chartLink=doc.getElementById('fenton-chart-download'),csvLink=doc.getElementById('fenton-csv-download'),pdfLink=doc.getElementById('fenton-pdf-download');
  const jobs=[doc.getElementById('fenton-chart-button'),doc.getElementById('fenton-pdf-button'),doc.getElementById('fenton-z-button')];
- let chartUrl=null,csvUrl=null,pdfUrl=null,busy=false,revision=0;
+ let chartUrl=null,csvUrl=null,pdfUrl=null,busy=false,revision=0,chartResult=null;
  const clear=()=>{
+  chartResult=null;
   if(chartUrl)urls.revokeObjectURL(chartUrl);
   if(csvUrl)urls.revokeObjectURL(csvUrl);
   if(pdfUrl)urls.revokeObjectURL(pdfUrl);
@@ -84,6 +85,7 @@ export function initFenton(doc,{proxyUrl=FENTON_PROXY_URL,fetcher=globalThis.fet
     if(file.type!=='image/jpeg')throw new Error('Formato de gráfico inesperado.');
     if(chartUrl)urls.revokeObjectURL(chartUrl);
     chartUrl=urls.createObjectURL(file);chart.src=chartUrl;figure.hidden=false;
+    chartResult={blob:file,data};
     chartLink.href=chartUrl;chartLink.hidden=false;status.textContent='Gráfico Fenton 2025 gerado.';
    }else if(kind==='chart-pdf'){
     if(file.type!=='application/pdf')throw new Error('Formato de PDF inesperado.');
@@ -102,5 +104,5 @@ export function initFenton(doc,{proxyUrl=FENTON_PROXY_URL,fetcher=globalThis.fet
  form.addEventListener('submit',event=>{event.preventDefault();request('chart');});
  jobs[1].addEventListener('click',()=>request('chart-pdf'));
  jobs[2].addEventListener('click',()=>request('zscores'));
- return {read:()=>readFentonForm(form)};
+ return {read:()=>readFentonForm(form),getChart:()=>chartResult,invalidate};
 }

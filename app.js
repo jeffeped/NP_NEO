@@ -1,3 +1,4 @@
+import {initFentonNutritionReport} from './fenton-nutrition-ui.js';
 import {initAppUpdate} from './app-update.js';
 import {initStandard} from './standard-ui.js';
 import {calculate,parseNumber,parseWeightGrams,round1,formatVolume,VERSION} from './engine.js';
@@ -107,5 +108,13 @@ const standardUI=initStandard(document);
 const growthUI=initGrowth(document);
 const intergrowthUI=initIntergrowth(document);
 const enteralUI=initEnteral(document,source=>intravenousFromResult(source,source==='individual'?result:source==='standard'?standardUI.getResult():source==='hydration'?hydrationUI.getResult():null),()=>growthUI.getResult());
-window.addEventListener('pageshow',e=>{if(e.persisted){$('npp-form').reset();invalidate();updateRules();hydrationUI.reset();standardUI.reset();enteralUI.invalidate();growthUI.invalidate();intergrowthUI.reset();}});
+const fentonReportUI=initFentonNutritionReport(document,{
+ getNutrition:()=>enteralUI.getResult(),getGrowth:()=>growthUI.getResult(),getChart:()=>growthUI.fenton?.getChart(),
+ validateNutrition:nutrition=>{
+  const source=nutrition.integrated.source;
+  intravenousFromResult(source,source==='individual'?result:source==='standard'?standardUI.getResult():source==='hydration'?hydrationUI.getResult():null);
+  if(source==='individual'&&[...document.querySelectorAll('[data-ack]')].some(x=>!x.checked))throw new Error('Confira e aceite as doses na aba Resultados antes de exportar.');
+ }
+});
+window.addEventListener('pageshow',e=>{if(e.persisted){$('npp-form').reset();invalidate();updateRules();hydrationUI.reset();standardUI.reset();enteralUI.invalidate();growthUI.invalidate();growthUI.fenton?.invalidate();fentonReportUI.invalidate();intergrowthUI.reset();}});
 updateRules();
