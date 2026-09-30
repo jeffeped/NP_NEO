@@ -1,12 +1,12 @@
 # Histórico de versões
 
-## 0.7.3 - preparada em 30/09/2026
+## 0.7.3 — publicada em 30/09/2026 (Manaus)
 
 - Retira o link do plotador externo da GROW_Fenton e suas instruções.
 - Acrescenta PDF A4 de duas páginas: aporte nutricional total, metas e velocidade na primeira; gráfico oficial Fenton completo na segunda.
 - Reutiliza os resultados da sessão, aplica as travas da fonte IV e o aceite de doses; edições invalidam relatórios e exportações em andamento.
 - Montagem local, disponível offline com o gráfico já recebido na sessão; versão e cache coordenados.
-- Evidências e limites em docs/FENTON_NUTRITION_REPORT.md. Publicação pendente da conclusão do PR #28.
+- Evidências e limites em docs/FENTON_NUTRITION_REPORT.md. PR #28 integrado; 480 testes aprovados, sem falhas nem exclusões; implantação no GitHub Pages confirmada.
 
 ## 0.7.2 — publicada em 29/09/2026 (Manaus)
 

@@ -1,6 +1,6 @@
 # Aporte total e Fenton em duas páginas - 0.7.3
 
-Solicitação de Jefferson Guilherme em 30/09/2026. Alteração de apresentação e exportação; fórmulas clínicas preservadas. Preparada para revisão, sem publicação nesta etapa.
+Solicitação de Jefferson Guilherme em 30/09/2026. Alteração de apresentação e exportação; fórmulas clínicas preservadas. Publicada em 30/09/2026 após a verificação descrita ao final.
 
 ## Requisitos e decisões
 
@@ -44,4 +44,8 @@ Nenhum PDF ou dado de paciente faz parte deste registro ou do repositório.
 - Para os testes DOM foi utilizada a distribuição oficial autocontida worker.js do linkedom v0.18.12, obtida do repositório WebReflection/linkedom; versão idêntica à dependência fixada. Não houve alteração de dependências do aplicativo.
 - Na etapa local, a criação de branch e tree foi recusada pela ferramenta, impedindo a publicação naquele momento.
 - Retomada: os 18 arquivos previstos foram enviados à branch feature/fenton-nutrition-pdf-073 em dois commits, 81db312b7e4a00d62e71538eb083510819689381 e d8ae7634106c5be25fce8966df3bb2ef26c5da5a. A comparação com a base pública 758eb81c7c3f4fbf50ae02798e6ad3fb98d7110d confirmou os caminhos previstos e a preservação dos assets.
-- PR #28 aberto para executar a suíte completa no GitHub Actions antes da integração. Publicação autorizada pelo responsável; conclusão e implantação ainda pendentes neste registro.
+- PR #28 integrado após **480 testes aprovados, zero falhas, zero exclusões**, no commit 743ed90154a1eed920f2ec1336d87e8e3fc85d04. Evidência: https://github.com/jeffeped/NP_NEO/actions/runs/36773885324.
+- Commit de integração/publicação: ab264267aefaf002d4a8d03719f69c85ed4ac72c. Implantação GitHub Pages concluída com sucesso: https://github.com/jeffeped/NP_NEO/actions/runs/36773998578.
+- Verificação pública após a implantação: engine.js informa 0.7.3; sw.js informa cache 0.7.3 e inclui os dois módulos novos; index.html contém o botão do relatório combinado e não contém o antigo link “Abrir plotador Fenton”.
+- Endereço: https://jeffeped.github.io/NP_NEO/. Publicação autorizada por Jefferson Guilherme.
+- Limite desta conferência remota: não foi feita interação de navegador com a API Fenton real nem geração de um PDF em produção. Permanecem válidos os ensaios técnicos anteriores com resposta simulada; não equivalem à validação clínica.
