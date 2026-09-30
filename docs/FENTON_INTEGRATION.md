@@ -168,4 +168,4 @@ send the API key as part of a test or a support request.
 
 ## Combined nutrition report (30 September 2026)
 
-Version 0.7.3 removes the external plotter link at the user?s request, superseding the UI description above. It keeps the official integration and adds a local two-page nutrition + chart PDF. See [the implementation and verification record](FENTON_NUTRITION_REPORT.md). The API contract and proxy are unchanged.
+Version 0.7.3 removes the external plotter link at the user's request, superseding the UI description above. It keeps the official integration and adds a local two-page nutrition + chart PDF. See [the implementation and verification record](FENTON_NUTRITION_REPORT.md). The API contract and proxy are unchanged.

@@ -38,9 +38,10 @@ O serviço Fenton e os arquivos de marca não alterados foram simulados no ensai
 Nenhum PDF ou dado de paciente faz parte deste registro ou do repositório.
 
 
-## Verifica??o final e estado de entrega
+## Verificação final e estado de entrega
 
-- Su?te local final: **479 testes aprovados, zero falhas**. Foi exclu?do somente o teste de dimens?es dos ?cones de marca, que n?o foram modificados nem estavam dispon?veis nesta c?pia de trabalho.
-- Para os testes DOM foi utilizada a distribui??o oficial autocontida worker.js do linkedom v0.18.12, obtida do reposit?rio WebReflection/linkedom; vers?o id?ntica ? depend?ncia fixada. N?o houve altera??o de depend?ncias do aplicativo.
-- Cria??o de branch e tree no GitHub recusadas pela ferramenta: `MCP tool call requires approval, but approval policy is never`. Nenhuma branch, PR, commit remoto ou publica??o foi criada. CI remoto n?o executado.
-- A implementa??o e os testes permanecem na branch Git local feature/fenton-nutrition-pdf. Base p?blica consultada: 758eb81c7c3f4fbf50ae02798e6ad3fb98d7110d.
+- Suíte local final registrada em 30/09/2026: **479 testes aprovados, zero falhas**. Foi excluído somente o teste de dimensões dos ícones de marca, que não foram modificados nem estavam disponíveis naquela cópia de trabalho.
+- Para os testes DOM foi utilizada a distribuição oficial autocontida worker.js do linkedom v0.18.12, obtida do repositório WebReflection/linkedom; versão idêntica à dependência fixada. Não houve alteração de dependências do aplicativo.
+- Na etapa local, a criação de branch e tree foi recusada pela ferramenta, impedindo a publicação naquele momento.
+- Retomada: os 18 arquivos previstos foram enviados à branch feature/fenton-nutrition-pdf-073 em dois commits, 81db312b7e4a00d62e71538eb083510819689381 e d8ae7634106c5be25fce8966df3bb2ef26c5da5a. A comparação com a base pública 758eb81c7c3f4fbf50ae02798e6ad3fb98d7110d confirmou os caminhos previstos e a preservação dos assets.
+- PR #28 aberto para executar a suíte completa no GitHub Actions antes da integração. Publicação autorizada pelo responsável; conclusão e implantação ainda pendentes neste registro.

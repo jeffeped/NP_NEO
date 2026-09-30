@@ -30,7 +30,7 @@ test('ícone instalado usa logo GROW_NEO em todos os tamanhos e no iPhone',()=>{
   assert.equal(readFileSync(new URL('../'+apple.replace(/^\.\//,''),import.meta.url)).readUInt32BE(16),180);
   assert.doesNotMatch(html+JSON.stringify(manifest),/assets\/icon-(192|512|maskable)/);
 });
-test('GROW_Fenton oferece relat?rio combinado e remove o plotador externo',()=>{
+test('GROW_Fenton oferece relatório combinado e remove o plotador externo',()=>{
  const {document}=parseHTML(html);
  assert.equal(document.querySelector('#growth a.growth-plotter'),null);
  assert.equal(document.querySelector('.growth-plotter-instruction'),null);
