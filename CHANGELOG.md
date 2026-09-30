@@ -1,5 +1,13 @@
 # Histórico de versões
 
+## 0.7.3 - preparada em 30/09/2026
+
+- Retira o link do plotador externo da GROW_Fenton e suas instruções.
+- Acrescenta PDF A4 de duas páginas: aporte nutricional total, metas e velocidade na primeira; gráfico oficial Fenton completo na segunda.
+- Reutiliza os resultados da sessão, aplica as travas da fonte IV e o aceite de doses; edições invalidam relatórios e exportações em andamento.
+- Montagem local, disponível offline com o gráfico já recebido na sessão; versão e cache coordenados.
+- Evidências e limites em docs/FENTON_NUTRITION_REPORT.md. Publicação pendente da conclusão do PR #28.
+
 ## 0.7.2 — publicada em 29/09/2026 (Manaus)
 
 - Reorganiza as oito abas em duas colunas fixas: NP ind, NP padrão, HV e Resultados à esquerda; Enteral, GROW_Fenton, INTERGROWTH e Notas à direita. A ordem do teclado acompanha a disposição visual.
@@ -227,3 +235,4 @@ Registro das mudanças publicadas do NP_NEO. O histórico detalhado e auditável
 ## 0.1.2
 
 - Consolida a versão inicial de avaliação da calculadora de NP neonatal individualizada.
+
