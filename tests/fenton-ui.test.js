@@ -12,10 +12,10 @@ const fill=app=>{
  for(const [field,value] of Object.entries({weeks:24,days:3,weightGrams:613,headCm:'21,5',lengthCm:31}))row.querySelector(`[data-field="${field}"]`).value=String(value);
 };
 
-test('sem servidor configurado o formulário Fenton fica oculto e mantém link oficial',()=>{
+test('sem servidor configurado o formulário Fenton fica oculto; plotador externo removido',()=>{
  const a=setup();initFenton(a.document,{proxyUrl:''});
  assert.equal(a.document.getElementById('fenton-integration').hidden,true);
- assert.equal(a.document.querySelector('.growth-plotter').getAttribute('href'),'https://fentongrowth.ca/');
+ assert.equal(a.document.querySelector('.growth-plotter'),null);
 });
 
 test('idade e medidas enviadas não incluem identificador nem data de nascimento',()=>{

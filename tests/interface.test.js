@@ -1,3 +1,4 @@
+import {initFentonNutritionReport} from '../fenton-nutrition-ui.js';
 import {intravenousFromResult} from '../enteral.js';
 import {initAppUpdate} from '../app-update.js';
 import test from 'node:test';
@@ -29,20 +30,18 @@ test('ícone instalado usa logo GROW_NEO em todos os tamanhos e no iPhone',()=>{
   assert.equal(readFileSync(new URL('../'+apple.replace(/^\.\//,''),import.meta.url)).readUInt32BE(16),180);
   assert.doesNotMatch(html+JSON.stringify(manifest),/assets\/icon-(192|512|maskable)/);
 });
-test('GROW_Fenton abre plotador Fenton 2025 em outra aba sem enviar parâmetros',()=>{
- const {document}=parseHTML(html),link=document.querySelector('#growth a.growth-plotter');
- assert.equal(link.getAttribute('href'),'https://fentongrowth.ca/');
- assert.equal(link.getAttribute('target'),'_blank');
- assert.match(link.getAttribute('rel'),/noopener noreferrer/);
- assert.equal(link.nextElementSibling.classList.contains('growth-plotter-instruction'),true);
- assert.match(link.nextElementSibling.textContent,/role até o fim da página.*“Measurements”.*medidas individuais/);
- assert.match(document.querySelector('#growth .growth-plotter-help').textContent,/não são enviados automaticamente/);
+test('GROW_Fenton oferece relat?rio combinado e remove o plotador externo',()=>{
+ const {document}=parseHTML(html);
+ assert.equal(document.querySelector('#growth a.growth-plotter'),null);
+ assert.equal(document.querySelector('.growth-plotter-instruction'),null);
+ assert.ok(document.getElementById('fenton-total-export'));
+ assert.match(document.getElementById('fenton-total-export').textContent,/aporte total.*Fenton/);
 });
 function openApp() {
   const {document,window}=parseHTML(html);
   window.HTMLElement.prototype.scrollIntoView=function(){};
   const context={document,window:{addEventListener(){},scrollTo(){}},navigator:{},
-    console,URL,Blob,MessageChannel,initAppUpdate,intravenousFromResult,...engine,macroReference,formatAlertNumber,initHydration,initStandard,initEnteral,initGrowth,initIntergrowth,
+    console,URL,Blob,MessageChannel,initFentonNutritionReport,initAppUpdate,intravenousFromResult,...engine,macroReference,formatAlertNumber,initHydration,initStandard,initEnteral,initGrowth,initIntergrowth,
     createReport:async()=>new Uint8Array()};
   vm.runInNewContext(source,context);
   // O DOM simulado não seleciona implicitamente a primeira opção como o navegador.
@@ -447,3 +446,4 @@ test('integração real: selecionar fonte é obrigatório e trocar fonte invalid
  const app=openApp();enteralSetup(app,'');assert.match(app.el('en-errors').textContent,/Selecione o aporte/);
  enteralSetup(app,'none');assert.equal(app.el('en-result').hidden,false);app.set('en-source','standard');assert.equal(app.el('en-result').hidden,true);
 });
+
