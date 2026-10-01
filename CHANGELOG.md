@@ -1,5 +1,13 @@
 # Histórico de versões
 
+## 0.7.4 · em revisão (pull request)
+
+- NP individualizada: osmolaridade estimada acima de 900 mOsm/L em acesso periférico passa a bloquear prescrição e PDF. Em acesso central, segue como orientação. Decisão do responsável clínico em 01/10/2026.
+- HV: acesso venoso (central ou periférico) passa a ser obrigatório. Em acesso periférico, glicose final acima de 12,5% (comparação exata, 125 mg/mL) ou osmolaridade estimada acima de 900 mOsm/L bloqueia composição e PDF. O PDF registra o acesso.
+- CI: testes passam a rodar também em push para a `main`, não só em pull request.
+- Corrige a paginação de Wang et al. (Pediatr Neonatol. 2020;61:331-337; PMID 32199865) em `alerts.js` e no README.
+- Atualiza versão e cache para 0.7.4. 492 testes locais aprovados (480 anteriores, dois deles reescritos pela nova regra, e 12 novos).
+
 ## 0.7.3 — publicada em 30/09/2026 (Manaus)
 
 - Retira o link do plotador externo da GROW_Fenton e suas instruções.

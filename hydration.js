@@ -63,6 +63,7 @@ export function calculateHydration(input){
   }
   for(const field of ['weight','fluid'])if(n[field]===0)errors.push({field,message:`${labels[field]} deve ser maior que zero.`});
   if(Number.isFinite(n.weight)&&n.weight>0&&(n.weight<0.1||n.weight>20))errors.push({field:'weight',message:'Peso atual fora da faixa de conferência (100 a 20.000 g). Confira unidade e digitação.'});
+  if(!['central','peripheral'].includes(input.access))errors.push({field:'access',message:'Selecione o acesso venoso: central ou periférico.'});
   if(!['perKgDay','totalDay'].includes(input.doseUnit))errors.push({field:'doseUnit',message:'Selecione a unidade dos eletrólitos: mEq/kg/dia ou mEq totais em 24 horas.'});
   for(const c of HYDRATION_COMPONENTS){
     concentrations[c.id]=parseNumber(input.concentrations?.[c.id]);
@@ -109,6 +110,14 @@ export function calculateHydration(input){
     const saltOsmoles=rows.reduce((sum,row)=>sum+row.amountMeq*SALT_OSMOLES_PER_MEQ[row.id],0);
     mixture.osmolarity=(mixture.sg5*glucoseOsmolarity.sg5+mixture.sg50*glucoseOsmolarity.sg50+saltOsmoles*1000)/totalVolume;
   }
-  return {ok:true,input:{...n,doseUnit:input.doseUnit,concentrations,glucoseOsmolarity},rows,blocks,canPrepare:blocks.length===0,mixture,vigRange,
+  // Decisão do protocolo (01/10/2026), igual à NP individualizada: em acesso
+  // periférico, glicose final >12,5% ou osmolaridade estimada >900 mOsm/L
+  // bloqueiam o preparo e o PDF. A glicose é comparada em aritmética exata
+  // (12,5% = 125 mg/mL); a osmolaridade é uma estimativa.
+  if(mixture&&input.access==='peripheral'){
+    if(sub(glucose,mul(total,ratio(125n))).a>0n)blocks.push(`Concentração final de glicose de ${formatHydrationNumber(Math.ceil(mixture.glucosePercent*10)/10)}%, acima de 12,5%, em acesso periférico. É obrigatório acesso central. Revise o acesso, a VIG ou a taxa hídrica.`);
+    if(Number.isFinite(mixture.osmolarity)&&mixture.osmolarity>900)blocks.push(`Osmolaridade estimada de ${Math.ceil(mixture.osmolarity)} mOsm/L, acima de 900 mOsm/L, em acesso periférico. É obrigatório acesso central. Revise o acesso ou os parâmetros.`);
+  }
+  return {ok:true,input:{...n,access:input.access,doseUnit:input.doseUnit,concentrations,glucoseOsmolarity},rows,blocks,canPrepare:blocks.length===0,mixture,vigRange,
     totals:{totalVolume,infusion:totalVolume/24,glucoseGrams:num(div(glucose,ratio(1000n))),electrolytesVolume:num(electrolytesVolume),glucoseSolutionsVolume:num(available)}};
 }

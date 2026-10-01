@@ -3,7 +3,7 @@ import {intravenousFromResult,integrateNutrition,assessTransition} from '../ente
 import {calculateHydration,HYDRATION_COMPONENTS} from '../hydration.js';
 import {calculateStandard} from '../standard.js';
 for(const weight of [.8,1,2])test(`HV ${weight} kg: energia normalizada por kg e precisão preservada`,()=>{
- const r=calculateHydration({weight,fluid:60,vig:5,na:0,k:0,ca:0,mg:0,doseUnit:'perKgDay',concentrations:Object.fromEntries(HYDRATION_COMPONENTS.map(c=>[c.id,c.concentration]))});
+ const r=calculateHydration({access:'central',weight,fluid:60,vig:5,na:0,k:0,ca:0,mg:0,doseUnit:'perKgDay',concentrations:Object.fromEntries(HYDRATION_COMPONENTS.map(c=>[c.id,c.concentration]))});
  const iv=intravenousFromResult('hydration',r);assert.ok(Math.abs(iv.calories-28.8)<1e-12);assert.equal(iv.fluid,60);assert.equal(iv.protein,0);
 });
 for(const source of ['standard','individual','hydration','none'])for(const rate of [50,50.1])for(const calories of [109.9,110])for(const protein of [2.49,2.5])test(`régua ${source} ${rate}/${calories}/${protein}`,()=>{

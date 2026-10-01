@@ -227,6 +227,7 @@ function openHydration(){
   const app=openApp();
   const unit=value=>{app.el('hv-doseUnit').querySelector(`option[value="${value}"]`).selected=true;app.dispatch('hv-doseUnit','change');};
   unit('perKgDay');
+  app.el('hv-access').querySelector('[value="central"]').setAttribute('checked','');
   for(const [id,value] of Object.entries({weight:2000,fluid:100,vig:5,na:1.7,k:1.34,ca:0.5,mg:0.8}))app.set('hv-'+id,value);
   app.dispatch('tab-hydration','click');
   return {...app,unit,calculateHydration:()=>app.dispatch('hv-form','submit')};
@@ -404,6 +405,7 @@ function standardSetup(app,mode='fluid',value=60,access='central'){
  app.dispatch('std-form','submit');
 }
 function hydrationSetup(app,vig=5){
+ app.el('hv-access').querySelector('[value="central"]').setAttribute('checked','');
  for(const [id,v] of Object.entries({'hv-weight':1000,'hv-fluid':60,'hv-vig':vig,'hv-doseUnit':'perKgDay','hv-na':0,'hv-k':0,'hv-ca':0,'hv-mg':0}))app.set(id,v);
  app.dispatch('hv-form','submit');
 }
@@ -447,3 +449,14 @@ test('integração real: selecionar fonte é obrigatório e trocar fonte invalid
  enteralSetup(app,'none');assert.equal(app.el('en-result').hidden,false);app.set('en-source','standard');assert.equal(app.el('en-result').hidden,true);
 });
 
+test('interface 0.7.4: osmolaridade >900 em acesso periférico bloqueia PDF; acesso central libera',()=>{
+  // 800 g, 100 mL/kg/dia, AA 2 e VIG 8,5: glicose ~12,2% (abaixo de 12,5%) e osmolaridade ~967 mOsm/L.
+  const app=openApp();app.set('vig','8,5');app.access('peripheral');app.calculate();
+  assert.equal(app.el('export-pdf').disabled,true);
+  assert.equal(app.el('access-alert').hidden,true);
+  assert.match(app.el('result-alerts').textContent,/Osmolaridade estimada de \d+ mOsm\/L, acima de 900 mOsm\/L, em acesso periférico/);
+  assert.match(app.el('prescription-status').textContent,/Prescrição e PDF bloqueados/);
+  app.access('central');app.calculate();
+  assert.equal(app.el('export-pdf').disabled,false);
+  assert.doesNotMatch(app.el('result-alerts').textContent,/em acesso periférico\. É obrigatório/);
+});

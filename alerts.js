@@ -52,11 +52,11 @@ export function nutritionAlerts(input,{volumes,effective,totalVolume,glucosePerc
   if(Number.isFinite(osmolarity)&&osmolarity>900) {
     const accessGuidance=input.access==='central'
       ?'Mantenha o acesso venoso central selecionado e confira o protocolo institucional.'
-      :'Considere acesso venoso central e confira o protocolo institucional.';
+      :'Acesso periférico selecionado: prescrição e PDF bloqueados. Selecione acesso venoso central ou revise os parâmetros.';
     add('osmolarity-high','osmolarity','caution','concentration',osmolarity,900,
       `osmolaridade estimada: ${Math.round(osmolarity)} mOsm/L (>900 mOsm/L). ${accessGuidance}`);
   }
-  // Wang et al. (Pediatr Neonatol. 2020;61:339-345; PMID 32199865)
+  // Wang et al. (Pediatr Neonatol. 2020;61:331-337; PMID 32199865)
   // avaliaram gluconato de cálcio 50 mEq/L + glicerofosfato de sódio
   // 25 mmol/L em formulações neonatais. Esses valores delimitam a composição
   // diretamente estudada; não constituem um limite universal de solubilidade.

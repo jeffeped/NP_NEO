@@ -24,7 +24,7 @@ export function initHydration(document){
   function summary(label,value){const row=text('div','','summary-row');row.append(text('span',label),text('strong',value));return row;}
   form.addEventListener('submit',event=>{
     event.preventDefault();invalidate();form.querySelectorAll('.invalid').forEach(el=>el.classList.remove('invalid'));
-    const input={doseUnit:$('doseUnit').value,concentrations:{},glucoseOsmolarity:{sg5:$('osm-sg5').value,sg50:$('osm-sg50').value}};
+    const input={access:form.querySelector('[name="hv-access"]:checked')?.value,doseUnit:$('doseUnit').value,concentrations:{},glucoseOsmolarity:{sg5:$('osm-sg5').value,sg50:$('osm-sg50').value}};
     for(const id of ['weight','fluid','vig','na','k','ca','mg'])input[id]=$(id).value;
     input.weight=parseWeightGrams($('weight').value)/1000;
     for(const c of HYDRATION_COMPONENTS)input.concentrations[c.id]=$('concentration-'+c.id).value;

@@ -195,8 +195,10 @@ for(const changes of [{weight:0},{weight:-1},{weight:'NaN'},{day:0},{day:1.5},{a
   test(`entrada inválida mantém bloqueio: ${JSON.stringify(changes)}`,()=>assert.equal(calculate({...base,...changes}).ok,false));
 }
 test('limite periférico antigo: 12,5% exatos liberados; acima bloqueia',()=>{
-  const at=run({weight:1,fluid:100,vig:125/14.4,access:'peripheral'});
-  const above=run({weight:1,fluid:100,vig:125.5/14.4,access:'peripheral'});
+  // Sem aminoácidos, para isolar a regra da glicose da trava de osmolaridade (>900).
+  const at=run({weight:1,fluid:100,aa:0,vig:125/14.4,access:'peripheral'});
+  const above=run({weight:1,fluid:100,aa:0,vig:125.5/14.4,access:'peripheral'});
+  assert.ok(at.totals.osmolarity<900);
   assert.equal(at.totals.glucosePercent,12.5);assert.equal(at.canExport,true);
   assert.equal(above.canExport,false);assert.equal(above20(above),false);
 });
@@ -226,15 +228,29 @@ test('sódio: registra contribuição mesmo acima da dose ou sem NaCl adicional'
   assert.equal(run({weight:1,na:1,p:0.4,pSalt:'kphos'}).sodiumBreakdown,null);
   assert.equal(run({weight:1,na:1,p:0,pSalt:'glycero'}).sodiumBreakdown,null);
 });
-test('osmolaridade acima de 900 orienta acesso central nos dois cenários e não bloqueia',()=>{
+test('osmolaridade acima de 900: bloqueia em acesso periférico e só orienta em acesso central',()=>{
   const peripheral=run({weight:1,fluid:100,aa:3,vig:125/14.4,access:'peripheral'});
   assert.ok(peripheral.totals.osmolarity>900);
-  assert.equal(peripheral.canExport,true);
+  assert.equal(peripheral.canExport,false);
+  assert.ok(peripheral.blocks.some(b=>/^Osmolaridade estimada de \d+ mOsm\/L, acima de 900 mOsm\/L, em acesso periférico/.test(b)));
   assert.equal(alertFor(peripheral,'osmolarity').level,'caution');
-  assert.match(alertFor(peripheral,'osmolarity').message,/900 mOsm\/L.*acesso venoso central/);
+  assert.match(alertFor(peripheral,'osmolarity').message,/900 mOsm\/L.*Acesso periférico selecionado: prescrição e PDF bloqueados/);
   const central=run({weight:1,fluid:100,aa:3,vig:125/14.4,access:'central'});
   assert.equal(alertFor(central,'osmolarity').level,'caution');
   assert.match(alertFor(central,'osmolarity').message,/Mantenha o acesso venoso central selecionado/);
+  assert.equal(central.canExport,true);
+  assert.equal(central.blocks.some(b=>b.startsWith('Osmolaridade')),false);
+});
+test('osmolaridade periférica: fronteira em 900 mOsm/L, sem bloqueio no limite',()=>{
+  // Sem fósforo e sódio: osm = AA(g/L)×8 + glicose(g/L)×7 − 50. Com AA 20 g/L e
+  // glicose 112,5 g/L (VIG 112,5/14,4 em 1 kg, 100 mL/kg): 160 + 787,5 − 50 = 897,5.
+  const below=run({weight:1,fluid:100,aa:2,vig:112.5/14.4,access:'peripheral'});
+  assert.ok(below.totals.osmolarity<=900);
+  assert.equal(below.blocks.some(b=>b.startsWith('Osmolaridade')),false);
+  const above=run({weight:1,fluid:100,aa:2,vig:113/14.4,access:'peripheral'});
+  assert.ok(above.totals.osmolarity>900);
+  assert.equal(above.canExport,false);
+  assert.ok(above.blocks.some(b=>b.startsWith('Osmolaridade estimada de 901 mOsm/L')));
 });
 test('alertas não removem bloqueio por volume inviável',()=>{
   const r=run({fluid:20,aa:4,lip:5});assert.equal(r.canExport,false);
