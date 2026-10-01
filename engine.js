@@ -1,6 +1,6 @@
 import {nutritionAlerts,compareProducts} from './alerts.js';
 import {fluidGuidance} from './fluid-guidance.js';
-export const VERSION = '0.7.3';
+export const VERSION = '0.7.4';
 export const CONCENTRATIONS = Object.freeze({aa:0.1,lip:0.2,glucose:0.5,nacl:1.7,acetate:2,kcl:1.34,calcium:0.5,magnesium:0.8,kphosP:1.1,kphosK:2,glyceroP:1,glyceroNa:2,oligoZn:500,zinc:200,selenium:60});
 export const ENERGY = Object.freeze({aa:4,lip:9,glucose:4});
 export const round1 = n => Math.round((n + Number.EPSILON * Math.max(1, Math.abs(n))) * 10) / 10;
@@ -165,6 +165,10 @@ export function calculate(input) {
   const requiresCentral=Math.round(volumes.glucose*100)*4>adjustedTotalCents;
   const accessBlocked=requiresCentral&&input.access==='peripheral';
   if(accessBlocked) blocks.push('Concentração de glicose acima de 12,5%. É obrigatório acesso central. Revise o acesso ou os parâmetros.');
+  // Decisão do protocolo (01/10/2026): em acesso periférico, osmolaridade estimada
+  // acima de 900 mOsm/L bloqueia prescrição e PDF, como a glicose >12,5%.
+  const osmolarityBlocked=input.access==='peripheral'&&Number.isFinite(osmolarity)&&osmolarity>900;
+  if(osmolarityBlocked) blocks.push(`Osmolaridade estimada de ${Math.ceil(osmolarity)} mOsm/L, acima de 900 mOsm/L, em acesso periférico. É obrigatório acesso central. Revise o acesso ou os parâmetros.`);
   const rows=[];
   function row(id,name,v,quantity,unit,perKg,perUnit,group,status='') {rows.push({id,name,volume:v,quantity,unit,perKg,perUnit,group,status});}
   row('aa','Aminoped 10%',volumes.aa,grams.aa,'g',effective.aa,'g/kg/dia',0,omit.aa?'Não ofertado':'');

@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import {calculateHydration,formatHydrationNumber,formatHydrationVolume,HYDRATION_COMPONENTS} from '../hydration.js';
 import {CONCENTRATIONS} from '../engine.js';
 
-const base={weight:2,fluid:100,vig:5,doseUnit:'perKgDay',na:1.7,k:1.34,ca:0.5,mg:0.8,concentrations:{na:1.7,k:1.34,ca:0.5,mg:0.8}};
+const base={access:'central',weight:2,fluid:100,vig:5,doseUnit:'perKgDay',na:1.7,k:1.34,ca:0.5,mg:0.8,concentrations:{na:1.7,k:1.34,ca:0.5,mg:0.8}};
 const close=(actual,expected)=>assert.ok(Math.abs(actual-expected)<1e-10,`${actual} != ${expected}`);
 
 test('HV: exemplo independente das fórmulas confirmadas, incluindo os seis componentes',()=>{
@@ -91,7 +91,7 @@ test('HV: cadastro inicial preserva as equivalências existentes',()=>{
   assert.deepEqual(HYDRATION_COMPONENTS.map(c=>c.concentration),[1.7,1.34,0.5,0.8]);
 });
 
-for(const [field,values] of Object.entries({weight:['',0,-1,NaN,Infinity,'abc','1e3',1e13],fluid:['',0,-1],vig:['',-1],na:['',-1],k:['',-1],ca:['',-1],mg:['',-1],doseUnit:['','mEq']})){
+for(const [field,values] of Object.entries({weight:['',0,-1,NaN,Infinity,'abc','1e3',1e13],fluid:['',0,-1],vig:['',-1],na:['',-1],k:['',-1],ca:['',-1],mg:['',-1],doseUnit:['','mEq'],access:['','arterial',undefined]})){
   for(const value of values)test(`HV: rejeita entrada inválida ${field}=${String(value)}`,()=>{
     const r=calculateHydration({...base,[field]:value});assert.equal(r.ok,false);assert.ok(r.errors.some(e=>e.field===field));
   });
@@ -119,4 +119,36 @@ test('HV: volumes usam uma casa decimal com teto sem elevar décimos exatos',()=
 });
 test('HV: dois novos módulos integram o cache offline',()=>{
   const sw=readFileSync(new URL('../sw.js',import.meta.url),'utf8');assert.match(sw,/\.\/hydration\.js/);assert.match(sw,/\.\/hydration-ui\.js/);
+});
+
+// 0.7.4 · decisão do protocolo: acesso periférico com glicose final >12,5%
+// ou osmolaridade estimada >900 mOsm/L bloqueia preparo e PDF.
+const peripheral={...base,access:'peripheral',weight:1,doseUnit:'perKgDay',na:0,k:0,ca:0,mg:0};
+test('HV periférica: 12,5% exatos liberados; acima de 12,5% bloqueia',()=>{
+  // VIG 5 em 57,6 mL/kg/dia: 7,2 g em 57,6 mL = 12,5% exatos.
+  const at=calculateHydration({...peripheral,vig:5,fluid:57.6});
+  assert.equal(at.ok,true);assert.equal(at.mixture.glucosePercent,12.5);
+  assert.ok(at.mixture.osmolarity<900);assert.equal(at.canPrepare,true);assert.deepEqual(at.blocks,[]);
+  const above=calculateHydration({...peripheral,vig:5,fluid:57.5});
+  assert.equal(above.canPrepare,false);
+  assert.ok(above.blocks.some(b=>/^Concentração final de glicose de 12,6%, acima de 12,5%, em acesso periférico/.test(b)));
+  assert.ok(above.mixture.glucosePercent>12.5);
+});
+test('HV periférica: osmolaridade >900 bloqueia mesmo com glicose em 12,5%',()=>{
+  const r=calculateHydration({...peripheral,vig:5,fluid:57.6,na:8});
+  assert.equal(r.mixture.glucosePercent,12.5);assert.ok(r.mixture.osmolarity>900);
+  assert.equal(r.canPrepare,false);
+  assert.deepEqual(r.blocks.map(b=>b.split(',')[0]),[`Osmolaridade estimada de ${Math.ceil(r.mixture.osmolarity)} mOsm/L`]);
+});
+test('HV central: mesmas misturas não são bloqueadas',()=>{
+  for(const changes of [{vig:5,fluid:57.5},{vig:5,fluid:57.6,na:8},{vig:10,fluid:60}]){
+    const r=calculateHydration({...peripheral,...changes,access:'central'});
+    assert.equal(r.canPrepare,true);assert.deepEqual(r.blocks,[]);
+  }
+});
+test('HV periférica: glicose e osmolaridade acima dos limites geram os dois bloqueios',()=>{
+  const r=calculateHydration({...peripheral,vig:10,fluid:60});
+  assert.equal(r.canPrepare,false);
+  assert.equal(r.blocks.length,2);
+  assert.match(r.blocks[0],/^Concentração final de glicose de 24%/);assert.match(r.blocks[1],/^Osmolaridade estimada/);
 });

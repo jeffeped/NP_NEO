@@ -94,8 +94,9 @@
               <label class="field">Peso atual<div class="input-box"><input id="hv-weight" inputmode="decimal" type="text" placeholder="800" required aria-label="HV: peso atual em gramas"><span class="unit">g</span></div></label>
               <label class="field">Taxa hídrica<div class="input-box"><input id="hv-fluid" inputmode="decimal" type="text" placeholder="Informe a taxa" required aria-label="HV: taxa hídrica"><span class="unit">mL/kg/dia</span></div></label>
               <label class="field full">VIG desejada<div class="input-box"><input id="hv-vig" inputmode="decimal" type="text" placeholder="Informe a VIG" required aria-label="HV: VIG desejada"><span class="unit">mg/kg/min</span></div></label>
+              <fieldset id="hv-access" class="field full access-field"><legend>Acesso venoso</legend><div class="access"><label><input type="radio" name="hv-access" value="central"><span>Central</span></label><label><input type="radio" name="hv-access" value="peripheral"><span>Periférico</span></label></div></fieldset>
             </div>
-            <p class="help">VIG — velocidade de infusão de glicose.</p>
+            <p class="help">VIG — velocidade de infusão de glicose. Em acesso periférico, glicose final acima de 12,5% ou osmolaridade estimada acima de 900 mOsm/L bloqueia o preparo e o PDF.</p>
             <p class="help">O peso informado em g é dividido por 1000 para os cálculos por kg.<br>VT (mL/24 h) = taxa hídrica × (peso em g ÷ 1000).<br>Glicose (g/24 h) = VIG × (peso em g ÷ 1000) × 60 × 24 ÷ 1000.</p>
           </div></section>
           <section class="section"><div class="section-inner">
@@ -294,7 +295,7 @@
           <h2>Osmolaridade estimada da NP individualizada</h2>
           <p>A osmolaridade é estimada pela equação neonatal de Pereira-da-Silva et al., usando as concentrações finais de aminoácidos e glicose em g/L, sódio total em mEq/L e fósforo elementar em mg/L:</p>
           <p><strong>Osmolaridade (mOsm/L) = (AA × 8) + (glicose × 7) + (Na × 2) + (P × 0,2) − 50.</strong></p>
-          <p>O resultado é uma estimativa matemática e não corresponde à osmolalidade laboratorial medida. Valores acima de 900 mOsm/L geram orientação para acesso venoso central.</p>
+          <p>O resultado é uma estimativa matemática e não corresponde à osmolalidade laboratorial medida. Valores acima de 900 mOsm/L geram orientação em acesso central e bloqueiam prescrição e PDF em acesso periférico (decisão do protocolo do projeto), na NP individualizada e na HV.</p>
         </div></section>
         <section class="section"><div class="section-inner">
           <h2>Osmolaridade calculada da HV</h2>

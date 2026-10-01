@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {calculateHydration} from '../hydration.js';
 import {createHydrationReport} from '../hydration-pdf.js';
-const base={weight:1,fluid:144,vig:5,na:0,k:0,ca:0,mg:0,doseUnit:'totalDay',concentrations:{na:1.7,k:1.34,ca:0.5,mg:0.8}};
+const base={access:'central',weight:1,fluid:144,vig:5,na:0,k:0,ca:0,mg:0,doseUnit:'totalDay',concentrations:{na:1.7,k:1.34,ca:0.5,mg:0.8}};
 const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-8,`${a} != ${b}`);
 test('HV osmolarity: pure SG5 and pure SG50 reproduce their product labels',()=>{
   near(calculateHydration(base).mixture.osmolarity,252.3);

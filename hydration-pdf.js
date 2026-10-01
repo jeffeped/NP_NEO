@@ -18,7 +18,7 @@ export async function createHydrationReport(result){
   function row(label,value){room(25);text(label,49,y,10);right(value,y);y-=25;}
   function paragraph(s){let line='';for(const word of String(s).split(/\s+/)){const next=line?line+' '+word:word;if(regular.widthOfTextAtSize(next,8)>511&&line){room(12);text(line,42,y,8,regular,muted);y-=12;line=word;}else line=next;}if(line){room(12);text(line,42,y,8,regular,muted);y-=12;}y-=7;}
   newPage();
-  paragraph(`Peso: ${f(result.input.weight*1000)} g | Taxa hídrica: ${f(result.input.fluid)} mL/kg/dia | Sem identificação do paciente`);
+  paragraph(`Peso: ${f(result.input.weight*1000)} g | Taxa hídrica: ${f(result.input.fluid)} mL/kg/dia | Acesso: ${result.input.access==='central'?'central':'periférico'} | Sem identificação do paciente`);
   paragraph(`Doses informadas em ${result.input.doseUnit==='perKgDay'?'mEq/kg/dia':'mEq totais em 24 horas'}.`);
   page.drawRectangle({x:42,y:y-8,width:511,height:24,color:shade});text('Componente / quantidade',49,y,10,bold);right('Volume (mL)',y);y-=30;
   for(const item of result.rows){room(43);row(item.solution,fv(item.volume));text(`${f(item.amountMeq)} mEq/24 h | ${f(item.perKgDay)} mEq/kg/dia | ${f(item.concentration)} mEq/mL`,49,y+10,8,regular,muted);y-=16;}

@@ -14,6 +14,7 @@ function setup(){
  const event=(id,type)=>el(id).dispatchEvent(new window.Event(type,{bubbles:true,cancelable:true}));
  const set=(id,v)=>{el(id).value=String(v);event(id,'input');};
  el('doseUnit').querySelector('[value="perKgDay"]').selected=true;
+ el('access').querySelector('[value="central"]').setAttribute('checked','');
  for(const [id,v] of Object.entries({weight:2000,fluid:100,vig:5,na:1.7,k:1.34,ca:0.5,mg:0.8}))set(id,v);
  return {ui,el,event,set,calculate:()=>event('form','submit')};
 }
@@ -40,4 +41,21 @@ test('HV export: generation failure permits retry; reset invalidates state',asyn
  finally{globalThis.fetch=original;}
  // linkedom does not implement form.reset; simulate native reset for this check.
  a.el('form').reset=()=>{};a.ui.reset();assert.equal(a.ui.getResult(),null);assert.equal(a.el('export').disabled,true);
+});
+test('HV export: acesso periférico acima de 12,5% bloqueia composição e PDF',()=>{
+ const a=setup();
+ a.el('access').querySelector('[value="central"]').removeAttribute('checked');
+ a.el('access').querySelector('[value="peripheral"]').setAttribute('checked','');
+ a.set('vig',10);a.calculate();
+ assert.equal(a.el('export').disabled,true);
+ assert.equal(a.el('composition').hidden,true);
+ assert.match(a.el('blocks').textContent,/acima de 12,5%, em acesso periférico/);
+});
+test('HV export: sem acesso selecionado não calcula',()=>{
+ const a=setup();
+ a.el('access').querySelector('[value="central"]').removeAttribute('checked');
+ a.calculate();
+ assert.equal(a.el('export').disabled,true);
+ assert.match(a.el('errors').textContent,/Selecione o acesso venoso/);
+ assert.ok(a.el('access').classList.contains('invalid'));
 });

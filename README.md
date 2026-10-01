@@ -1,6 +1,6 @@
 # GROW_NEO by Prof. Jefferson
 
-Instrumento de apoio à terapia nutricional neonatal, com nutrição parenteral, hidratação venosa, avaliação da dieta enteral e acompanhamento do crescimento. Versão de avaliação 0.7.2.
+Instrumento de apoio à terapia nutricional neonatal, com nutrição parenteral, hidratação venosa, avaliação da dieta enteral e acompanhamento do crescimento. Versão de avaliação 0.7.4.
 
 As mudanças de cada versão estão documentadas em [CHANGELOG.md](CHANGELOG.md), além do histórico auditável de commits do repositório.
 
@@ -75,6 +75,7 @@ Os testes comparam todas as saídas anteriores do motor com amostras congeladas 
 - Orientação e atenção continuam informativas; doses e concentrações acima dos tetos bloqueantes exigem novos parâmetros e recálculo antes da exportação.
 - Doses solicitadas e efetivas são conferidas. Arredondar volumes de preparo pode elevar a oferta efetiva acima do teto, mesmo se a solicitação estiver no limite.
 - A glicose >12,5% em acesso periférico continua bloqueante. Se os componentes excederem o volume solicitado, o aplicativo sinaliza em amarelo, usa a soma dos componentes como volume efetivo, com água q.s.p. zero, e recalcula a vazão e as concentrações; não imprime um volume fisicamente impossível.
+- Osmolaridade estimada acima de 900 mOsm/L em acesso periférico bloqueia prescrição e PDF (decisão do protocolo do projeto, 0.7.4). Em acesso central, permanece apenas a orientação. Como a equação de Pereira-da-Silva soma aminoácidos, glicose, sódio e fósforo, esta trava costuma ser atingida antes da glicose de 12,5%: com 20 g/L de aminoácidos, sem sódio ou fósforo, o limite corresponde a cerca de 11,3% de glicose.
 
 Na infusão contínua de 24 horas, o limite lipídico bloqueante é 4 g/kg/dia, que corresponde exatamente a 4 ÷ 24 g/kg/h (aproximadamente 0,167 g/kg/h na tela). Uma oferta efetiva ligeiramente acima do limite pode surgir após arredondar o volume de preparo. A diretriz ESPGHAN/ESPEN/ESPR/CSPEN de lipídios recomenda infusão contínua por 24 horas e não ultrapassar 4 g/kg/dia em recém-nascidos (Lapillonne et al., Clin Nutr. 2018;37:2324–2336, doi:10.1016/j.clnu.2018.06.946). Os limites de concentração da bolsa de 4% e 25% são decisões do responsável clínico do projeto.
 
@@ -110,7 +111,7 @@ Vazão (mL/h) = VT / 24
 
 As comparações de viabilidade usam aritmética decimal racional, sem arredondamento intermediário. VT, vazão e volumes dos componentes são exibidos com uma casa decimal, arredondados para cima somente na apresentação; os cálculos internos preservam a precisão completa. SG 5% completa o VT. A oferta deve ser conferida após o arredondamento de preparo.
 
-Não há composição quando os eletrólitos consomem todo o VT ou quando a VIG exige SG 5% ou SG 50% negativo. A faixa possível informada é uma restrição matemática das duas soluções, não uma meta clínica. O módulo não acrescenta limites de dose, regras de acesso ou validação de compatibilidade físico-química da mistura. Formulários e resultados da NP e da HV são independentes. A NP individualizada e a NP padrão possuem exportação PDF independente.
+Não há composição quando os eletrólitos consomem todo o VT ou quando a VIG exige SG 5% ou SG 50% negativo. A faixa possível informada é uma restrição matemática das duas soluções, não uma meta clínica. O acesso venoso (central ou periférico) é obrigatório. Desde a 0.7.4, em acesso periférico, glicose final acima de 12,5% ou osmolaridade estimada acima de 900 mOsm/L bloqueia a composição e o PDF, como na NP individualizada; o acesso é registrado no PDF. O módulo não acrescenta limites de dose nem validação de compatibilidade físico-química da mistura. Formulários e resultados da NP e da HV são independentes. A NP individualizada e a NP padrão possuem exportação PDF independente.
 
 Verificação local: 177 testes aprovados, incluindo os 124 anteriores, 46 testes novos do motor de HV e 7 novos fluxos de interface simulada. Consulte `RELATORIO_HIDRATACAO_VENOSA.md` para o registro da entrega.
 
@@ -161,7 +162,7 @@ A tela e o PDF mostram a relação molar Ca/P (mmol/mmol) logo abaixo de proteí
 
 ### Concentrações finais de cálcio e fósforo (0.5.3)
 
-Na NP individualizada, a tela e o PDF mostram cálcio em mEq/L e fósforo em mmol/L, calculados com as quantidades efetivamente preparadas e o volume final da bolsa. Com gluconato de cálcio e glicerofosfato de sódio, valores acima de 50 mEq/L de cálcio ou 25 mmol/L de fósforo geram orientação para confirmar a compatibilidade físico-química com a farmácia. Esses valores correspondem à composição estudada por Wang et al. (Pediatr Neonatol. 2020;61:339-345; DOI 10.1016/j.pedneo.2020.02.004) e não constituem limite universal de solubilidade. Quando há cálcio associado a fosfato inorgânico, o aplicativo solicita conferência em curva específica da formulação. Os avisos não bloqueiam o cálculo ou a exportação.
+Na NP individualizada, a tela e o PDF mostram cálcio em mEq/L e fósforo em mmol/L, calculados com as quantidades efetivamente preparadas e o volume final da bolsa. Com gluconato de cálcio e glicerofosfato de sódio, valores acima de 50 mEq/L de cálcio ou 25 mmol/L de fósforo geram orientação para confirmar a compatibilidade físico-química com a farmácia. Esses valores correspondem à composição estudada por Wang et al. (Pediatr Neonatol. 2020;61:331-337; DOI 10.1016/j.pedneo.2020.02.004) e não constituem limite universal de solubilidade. Quando há cálcio associado a fosfato inorgânico, o aplicativo solicita conferência em curva específica da formulação. Os avisos não bloqueiam o cálculo ou a exportação.
 
 ## Integração intravenosa + enteral e metas de transição PN → EN — v0.5.0
 
