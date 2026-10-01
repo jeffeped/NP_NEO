@@ -1,6 +1,6 @@
 # GROW_NEO by Prof. Jefferson
 
-Instrumento de apoio à terapia nutricional neonatal, com nutrição parenteral, hidratação venosa, avaliação da dieta enteral e acompanhamento do crescimento. Versão de avaliação 0.7.4.
+Instrumento de apoio à terapia nutricional neonatal, com nutrição parenteral, hidratação venosa, avaliação da dieta enteral e acompanhamento do crescimento. Versão de avaliação 0.7.6.
 
 As mudanças de cada versão estão documentadas em [CHANGELOG.md](CHANGELOG.md), além do histórico auditável de commits do repositório.
 
@@ -93,6 +93,8 @@ Consulte `RELATORIO_ALERTAS_NP.md` para alterações, verificação e limitaçõ
 
 ## Hidratação venosa — terceira aba
 
+**Água para injetáveis (0.7.6):** selecione a opção de diluente para calcular VIG abaixo da oferta de SG 5% no volume residual. A emissão do PDF e a integração enteral de misturas com água exigem confirmação explícita do prescritor de que revisou composição, tonicidade e compatibilidade. Mudanças de entrada ou revogação da confirmação invalidam os resultados e downloads anteriores. Água isolada e as demais travas permanecem bloqueadas. Não há limite osmolar inferior numérico de liberação nem validação automática de compatibilidade. Consulte [implementação e verificação](docs/HV_WFI.md). O fluxo original abaixo permanece quando a opção está desligada ou não há água na mistura.
+
 O médico informa peso em g, taxa hídrica em mL/kg/dia, VIG em mg/kg/min e as doses de Na, K, Ca e Mg. Não há doses ou VIG preenchidas automaticamente. A unidade dos eletrólitos deve ser escolhida: mEq/kg/dia ou mEq totais em 24 horas; ao trocá-la, as doses são apagadas para evitar reinterpretar os mesmos números em outra unidade.
 
 Soluções: NaCl 10%, KCl 10%, gluconato de cálcio 10%, sulfato de magnésio 10%, SG 5% e SG 50%. As equivalências iniciais de eletrólitos vêm do cadastro existente (respectivamente 1,7; 1,34; 0,5; 0,8 mEq/mL), ficam visíveis e podem ser ajustadas conforme o rótulo. Não são tratadas como universais para todo fabricante; mudar uma equivalência na HV não modifica a NP.
@@ -114,6 +116,10 @@ As comparações de viabilidade usam aritmética decimal racional, sem arredonda
 Não há composição quando os eletrólitos consomem todo o VT ou quando a VIG exige SG 5% ou SG 50% negativo. A faixa possível informada é uma restrição matemática das duas soluções, não uma meta clínica. O acesso venoso (central ou periférico) é obrigatório. Desde a 0.7.4, em acesso periférico, glicose final acima de 12,5% ou osmolaridade estimada acima de 900 mOsm/L bloqueia a composição e o PDF, como na NP individualizada; o acesso é registrado no PDF. O módulo não acrescenta limites de dose nem validação de compatibilidade físico-química da mistura. Formulários e resultados da NP e da HV são independentes. A NP individualizada e a NP padrão possuem exportação PDF independente.
 
 Verificação local: 177 testes aprovados, incluindo os 124 anteriores, 46 testes novos do motor de HV e 7 novos fluxos de interface simulada. Consulte `RELATORIO_HIDRATACAO_VENOSA.md` para o registro da entrega.
+
+### Energia e proteína enterais negativas (0.7.6)
+
+Na composição conhecida/analisada, valores negativos de energia ou proteína são sinalizados como informação inválida e preservados no campo. O cálculo usa zero para o nutriente negativo, solicita revisão e recálculo, sem bloquear a emissão somente por esse motivo. Energia e proteína do FM85, quando selecionado, são acrescentadas separadamente. A condição inválida e o uso de zero acompanham a totalização e os PDFs nutricionais; zero calculado não é apresentado como valor medido. Entradas positivas e os fatores energéticos atuais permanecem iguais.
 
 ### NP padrão (0.6.5)
 

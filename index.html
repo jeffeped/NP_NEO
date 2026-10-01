@@ -122,7 +122,9 @@
                 <label class="field">Osmolaridade do SG 50%<div class="input-box"><input id="hv-osm-sg50" type="text" inputmode="decimal" value="2775" required><span class="unit">mOsm/L</span></div></label>
               </div>
               <p class="help">Confira a osmolaridade na bula do SG utilizado. Referências iniciais: SG 5% Halex Istar e SG 50% Isofarma. As apresentações podem diferir; consulte as Notas.</p>
-              <p class="help">SG 5%: 0,05 g de glicose/mL. SG 50%: 0,5 g de glicose/mL.<br>VR = VT − soma dos volumes dos eletrólitos.<br>SG 50% (mL) = [gG − (VR × 0,05)] ÷ 0,45.<br>SG 5% (mL) = VR − SG 50%.</p>
+              <p class="help">SG 5%: 0,05 g de glicose/mL. SG 50%: 0,5 g de glicose/mL.<br>VR = VT − soma dos volumes dos eletrólitos.<br>A partir da glicose de VR × 0,05: SG 50% (mL) = [gG − (VR × 0,05)] ÷ 0,45; SG 5% (mL) = VR − SG 50%.<br>Abaixo dessa quantidade, com a opção de água para injetáveis: SG 5% = gG ÷ 0,05; SG 50% = 0; água para injeção = VR − SG 5%.</p>
+              <label class="help"><input id="hv-allow-wfi" type="checkbox"> Incluir água para injetáveis como diluente quando necessário</label>
+              <p class="notice">Água para injetáveis nunca deve ser infundida isoladamente. Osmolaridade estimada não comprova tonicidade ou compatibilidade; não é usado um limite osmolar inferior numérico de liberação. A formulação exige revisão pelo prescritor e conferência farmacêutica conforme o protocolo do serviço.</p>
             </div>
           </details>
           <div id="hv-errors" class="notice danger" role="alert" hidden></div>
@@ -133,12 +135,18 @@
           <h2 class="page-title">Resultado da hidratação venosa</h2>
           <div id="hv-summary" class="summary"></div>
           <div id="hv-blocks" role="alert"></div>
+          <div id="hv-warnings" role="status"></div>
           <div id="hv-composition">
             <div class="table-wrap"><table aria-label="Composição calculada da hidratação venosa"><thead><tr><th>Componente / quantidade</th><th>Volume (mL)</th></tr></thead><tbody id="hv-rows"></tbody></table></div>
-            <p class="help">O volume dos eletrólitos está incluído no VT. A glicose calculada inclui SG 5% e SG 50%. VT, vazão e volumes são exibidos com uma casa decimal, arredondados para cima apenas na apresentação; os cálculos internos preservam a precisão completa. SG 5% completa o VT. Confira a oferta após o arredondamento de preparo.</p>
+            <p id="hv-volume-note" class="help">O volume dos eletrólitos está incluído no VT. A glicose calculada inclui SG 5% e SG 50%. VT, vazão e volumes são exibidos com uma casa decimal, arredondados para cima apenas na apresentação; os cálculos internos preservam a precisão completa. Confira a oferta após o arredondamento de preparo.</p>
             <div id="hv-final-summary" class="summary"></div>
           </div>
           <button id="hv-export" class="primary" type="button" disabled>Exportar PDF</button>
+          <div id="hv-review" class="notice" hidden>
+            <strong>Confirmação obrigatória do prescritor para mistura com água</strong>
+            <p>Um valor de osmolaridade próximo ao plasmático não estabelece tonicidade segura. A glicose é metabolizada; Na e K finais são informativos e não confirmam compatibilidade. Esta confirmação registra a revisão profissional; o app não confirma automaticamente a segurança da mistura.</p>
+            <label><input id="hv-review-ack" type="checkbox"> Como prescritor, confirmo que revisei a composição, a tonicidade e a compatibilidade desta mistura com água para injetáveis</label>
+          </div>
           <p id="hv-pdf-status" class="help" role="status"></p>
           <a id="hv-pdf-download" class="download-link" hidden>Baixar relatório em PDF</a>
         </section>
@@ -200,8 +208,8 @@
             <label id="en-fm85-custom-field" class="field full" hidden>FM85 — concentração média no volume total<div class="input-box"><input id="en-fm85-custom" inputmode="decimal" type="text"><span class="unit">g/25 mL</span></div></label>
           </div>
           <details class="section enteral-analyzed"><summary><h2>Composição conhecida/analisada</h2><span aria-hidden="true">⌄</span></summary><div class="section-inner field-grid">
-            <label class="field">Energia<div class="input-box"><input id="en-energy" inputmode="decimal" type="text"><span class="unit">kcal/100 mL</span></div></label>
-            <label class="field">Proteína<div class="input-box"><input id="en-protein" inputmode="decimal" type="text"><span class="unit">g/100 mL</span></div></label>
+            <label class="field">Energia<div class="input-box"><input id="en-energy" inputmode="decimal" type="text" aria-describedby="en-energy-warning"><span class="unit">kcal/100 mL</span></div><span id="en-energy-warning" class="notice danger" role="status" hidden></span></label>
+            <label class="field">Proteína<div class="input-box"><input id="en-protein" inputmode="decimal" type="text" aria-describedby="en-protein-warning"><span class="unit">g/100 mL</span></div><span id="en-protein-warning" class="notice danger" role="status" hidden></span></label>
             <p class="help full">Se ambos forem informados, substituem a composição estimada do leite sem FM85; o aplicativo acrescenta o fortificante selecionado. Se os valores já incluem FM85, selecione “Não” para evitar duplicação.</p>
           </div></details>
           <div id="en-errors" class="notice danger" hidden></div>
@@ -211,6 +219,7 @@
           <div id="en-context" class="context"></div>
           <div id="en-summary" class="summary"></div>
           <p id="en-estimated-note" class="help" hidden>Composição estimada — não corresponde à análise individual do leite.</p>
+          <div id="en-nutrient-result-warning" class="notice" role="status" hidden></div>
           <h2 class="page-title enteral-total-title">Oferta nutricional total</h2>
           <div class="table-wrap"><table class="enteral-total-table" aria-label="Oferta nutricional total"><thead><tr><th>Indicador</th><th id="en-iv-heading">IV</th><th>Enteral</th><th>Total</th></tr></thead><tbody id="en-total-rows"></tbody></table></div>
           <h2 class="page-title">Metas de transição PN → EN</h2>
@@ -309,11 +318,16 @@
           <p>É uma estimativa físico-química, não uma medição nem confirmação de compatibilidade ou adequação do acesso. Não contempla excipientes dos sais, interações não ideais ou alterações no preparo. A equação de NP individualizada não é aplicada à HV.</p>
           <p>As osmolaridades das soluções glicosadas são ajustáveis pelas bulas: referências iniciais de 252,3 mOsm/L para SG 5% Halex Istar e 2775 mOsm/L para SG 50% Isofarma. Produtos com glicose hidratada ou anidra podem diferir mesmo com a mesma porcentagem.</p>
           <p>A expressão implementada adapta o método aditivo abaixo: usa osmolaridades de bula para as soluções glicosadas e contagem estequiométrica ideal de partículas para os sais. Não corresponde a uma equação empírica validada especificamente para esta HV neonatal.</p>
+          <p><strong>Água para injetáveis:</strong> a água é diluente, contribui com zero osmoles no modelo ideal e compõe o VT. A infusão intravenosa isolada é contraindicada pelo risco de hemólise. A bula exige soluto suficiente para uma mistura aproximadamente isotônica, mas osmolaridade calculada não é sinônimo de tonicidade: glicose pode tornar a solução fisiologicamente hipotônica após metabolização. O aplicativo não adota um limite osmolar inferior numérico como autorização de uso. Toda mistura com água exige confirmação explícita do prescritor de que revisou composição, tonicidade e compatibilidade antes de exportar o PDF ou integrar os aportes. Alterações de entrada revogam essa confirmação. Confirmar não altera os demais bloqueios nem representa validação automática da mistura. Formulações, apresentações e arredondamentos exigem conferência pelo prescritor e pela farmácia conforme o protocolo do serviço.</p>
+          <p>Na e K finais em mmol/L = mEq totais × 1000 ÷ VT (mL), por serem monovalentes. Não são uma medida calculada de tonicidade efetiva.</p>
           <p><strong>Referências do cálculo da HV</strong></p>
           <ol>
             <li>RxKinetics. <a href="https://www.rxkinetics.com/iv_osmolarity.html" target="_blank" rel="noopener noreferrer">Calculating Osmolarity of an IV Admixture</a> [Internet]. [sem data; citado em 21 set 2026]. Base do método: somar os miliosmóis dos componentes e dividir pelo volume final em litros.</li>
             <li>Halex Istar. <a href="https://halexistar.com.br/wp-content/uploads/2025/10/glicose-halex-istar-bula-paciente-161212183.pdf" target="_blank" rel="noopener noreferrer">Glicose Halex Istar: solução injetável 5% (50 mg/mL). Bula do paciente</a> [Internet; citado em 21 set 2026]. Referência inicial de SG 5%: 252,3 mOsm/L.</li>
             <li>Halex Istar. <a href="https://halexistar.com.br/wp-content/uploads/2025/10/2-15915313-2.pdf" target="_blank" rel="noopener noreferrer">Isofarma – Solução de glicose: 250 mg/mL e 500 mg/mL. Bula profissional de saúde</a> [Internet; citado em 21 set 2026]. Referência inicial de SG 50%: 2775 mOsm/L.</li>
+            <li>Fresenius Kabi. <a href="https://www.fresenius-kabi.com/content/dam/fresenius-kabi/br/documents/bulas/medicamentos/%C3%81gua%20para%20Inje%C3%A7%C3%A3o%20-%20Bula%20Profissional%20de%20Sa%C3%BAde.pdf.coredownload.inline.pdf" target="_blank" rel="noopener noreferrer">Água para injeção, bula profissional BU09</a> (2025; consulta em 1 out 2026): contraindicação de administração IV direta, hemólise e conferência de compatibilidade.</li>
+            <li>DailyMed. <a href="https://dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=e71c6c83-d518-496c-b2ab-efd5987e4783" target="_blank" rel="noopener noreferrer">Sterile Water for Injection</a> (consulta em 1 out 2026): adicionar soluto suficiente para mistura aproximadamente isotônica.</li>
+            <li>NICE NG29. <a href="https://www.nice.org.uk/guidance/ng29/chapter/recommendations" target="_blank" rel="noopener noreferrer">Intravenous fluid therapy in children and young people, recomendações</a> (consulta em 1 out 2026): distinção entre osmolaridade e tonicidade, incluindo glicose 5%.</li>
           </ol>
         </div></section>
         <section class="section"><div class="section-inner">

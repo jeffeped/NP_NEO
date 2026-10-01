@@ -21,7 +21,7 @@ function setup(){
 async function finish(app){for(let i=0;i<100&&app.el('export').disabled;i++)await new Promise(r=>setTimeout(r,5));}
 test('HV export: display order, final line, current PDF download and invalidation',async()=>{
  const a=setup();a.calculate();assert.equal(a.el('export').disabled,false);
- assert.match(a.el('summary').textContent,/Concentração final de glicose7,2%Osmolaridade calculada453 mOsm\/L/);
+ assert.match(a.el('summary').textContent,/Concentração final de glicose7,2%Osmolaridade estimada453 mOsm\/L/);
  assert.match(a.el('final-summary').textContent,/200,0 mL \| 8,4 mL\/h/);
  a.event('export','click');await finish(a);assert.equal(a.el('pdf-download').hidden,false);assert.match(a.el('pdf-download').href,/^blob:/);
  a.set('osm-sg5',278);assert.equal(a.el('result').hidden,true);assert.equal(a.el('pdf-download').hasAttribute('href'),false);assert.equal(a.el('export').disabled,true);

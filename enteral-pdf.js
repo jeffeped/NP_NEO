@@ -1,7 +1,7 @@
 import {dosingWeightLabel} from './dosing-weight.js';
 import {stampPdfIssueDate} from './pdf-date.js';
 import {VERSION} from './engine.js';
-import {transitionLines,clinicalReferenceLines} from './enteral.js';
+import {transitionLines,clinicalReferenceLines,enteralNutrientWarnings} from './enteral.js';
 const fmt=(n,digits=1)=>Number.isFinite(n)?n.toFixed(digits).replace('.',','):'—';
 const fmtDose=n=>Number.isFinite(n)?new Intl.NumberFormat('pt-BR',{maximumFractionDigits:3}).format(n):'—';
 const pma=n=>{const days=Math.round(n*7);return `${Math.floor(days/7)} sem + ${days%7} d`;};
@@ -16,10 +16,13 @@ export async function createEnteralReport({enteral,integrated,clinical,growth}){
  text('GROW_NEO',L,744,16,bold);text('Avaliação nutricional integrada',L,722,13,bold);text('Versão '+VERSION,L,705,8,regular,muted);
  text(enteral.composition.label,L,674,10,bold);text(`${fmt(enteral.composition.energy)} kcal/100 mL · ${fmt(enteral.composition.protein,2)} g proteína/100 mL`,L,657,9);
  if(enteral.composition.fm85GramsPer100mL>0)text(`FM85: ${fmtDose(enteral.composition.fm85GramsPer100mL/4)} g/25 mL (média no volume total)`,L,640,9);
- text(enteral.composition.estimated?'Composição estimada.':'Composição informada/analisada.',L,623,8,regular,muted);
- text('Fonte: '+integrated.sourceLabel,L,602,9,bold);
- if(integrated.sourceLabel.includes('2:1'))text('Lipídios infundidos à parte não integram estes totais.',L,585,8,regular,muted);
- let y=integrated.sourceLabel.includes('2:1')?550:570;page.drawRectangle({x:L,y:y-8,width:R-L,height:25,color:shade});
+ const energyWarnings=enteralNutrientWarnings(enteral,integrated);
+ text(energyWarnings.length?'Composição com entrada inválida; confira o aviso abaixo.':enteral.composition.estimated?'Composição estimada.':'Composição informada/analisada.',L,623,8,regular,muted);
+ let warningY=609;for(const line of energyWarnings){text(line,L,warningY,8,bold);warningY-=12;}
+ const warningOffset=energyWarnings.length*12;
+ text('Fonte: '+integrated.sourceLabel,L,602-warningOffset,9,bold);
+ if(integrated.sourceLabel.includes('2:1'))text('Lipídios infundidos à parte não integram estes totais.',L,585-warningOffset,8,regular,muted);
+ let y=(integrated.sourceLabel.includes('2:1')?550:570)-warningOffset;page.drawRectangle({x:L,y:y-8,width:R-L,height:25,color:shade});
  text('Indicador',L+6,y,9,bold);right(integrated.source==='hydration'?'HV':integrated.source==='none'?'IV (zero)':'PN',300,y,9,bold);right('Enteral',430,y,9,bold);right('Total',R-6,y,9,bold);y-=30;
  const rows=[['Taxa hídrica','mL/kg/dia','fluid'],['Energia','kcal/kg/dia','calories'],['Proteína','g/kg/dia','protein']];
  for(const [name,unit,key] of rows){text(name,L+6,y,9,bold);text(unit,L+6,y-12,7.5,regular,muted);right(fmt(integrated.parenteral[key],key==='protein'?2:1),300,y,9);right(fmt(integrated.enteral[key],key==='protein'?2:1),430,y,9);right(fmt(integrated.total[key],key==='protein'?2:1),R-6,y,9,bold);y-=34;}

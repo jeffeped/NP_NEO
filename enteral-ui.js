@@ -1,18 +1,37 @@
 import {dosingWeightLabel} from './dosing-weight.js';
-import {calculateEnteral,integrateNutrition,transitionLines,clinicalReferenceLines,IV_SOURCES} from './enteral.js';
+import {calculateEnteral,integrateNutrition,enteralNutrientWarnings,transitionLines,clinicalReferenceLines,IV_SOURCES} from './enteral.js';
 import {createEnteralReport} from './enteral-pdf.js';
 const num=v=>{const s=String(v??'').trim();if(s==='')return null;const n=Number(s.replace(',','.'));return Number.isFinite(n)?n:null};
 const fmt=(n,digits=1)=>Number.isFinite(n)?n.toFixed(digits).replace('.',','):'—';
 export function initEnteral(doc,getParenteral,getGrowth=()=>null){
  let last=null,pdfUrl=null;
  const $=id=>doc.getElementById(id);
+ const energyInput=$('en-energy'),energyWarning=$('en-energy-warning');
+ const syncEnergyWarning=()=>{
+   const value=num(energyInput.value),invalid=value!==null&&value<0;
+   energyInput.setAttribute('aria-invalid',String(invalid));energyInput.closest('.field').classList.toggle('invalid',invalid);
+   energyWarning.hidden=!invalid;
+   energyWarning.textContent=invalid?'Energia negativa: informação inválida. Será usado 0 kcal/100 mL para a energia do leite no cálculo; o valor digitado será preservado. Revise o valor e recalcule. O FM85, se selecionado, é somado separadamente.':'';
+ };
+ for(const event of ['input','change'])energyInput.addEventListener(event,syncEnergyWarning);
+ syncEnergyWarning();
+ const proteinInput=$('en-protein'),proteinWarning=$('en-protein-warning');
+ const syncProteinWarning=()=>{
+   const value=num(proteinInput.value),invalid=value!==null&&value<0;
+   proteinInput.setAttribute('aria-invalid',String(invalid));proteinInput.closest('.field').classList.toggle('invalid',invalid);
+   proteinWarning.hidden=!invalid;
+   proteinWarning.textContent=invalid?'Proteína negativa: informação inválida. Será usado 0 g/100 mL para a proteína do leite no cálculo; o valor digitado será preservado. Revise o valor e recalcule. A proteína do FM85, se selecionado, é somada separadamente.':'';
+ };
+ for(const event of ['input','change'])proteinInput.addEventListener(event,syncProteinWarning);
+ syncProteinWarning();
  const invalidate=()=>{last=null;$('en-result').hidden=true;$('en-pdf-download').hidden=true;$('en-pdf-status').textContent='';if(pdfUrl){URL.revokeObjectURL(pdfUrl);pdfUrl=null;}};
  for(const [source,formId] of [['individual','npp-form'],['standard','std-form'],['hydration','hv-form']])for(const event of ['input','change','submit'])$(formId).addEventListener(event,()=>{if($('en-source').value===source)invalidate();});
+ $('hv-form').addEventListener('hv-review-change',()=>{if($('en-source').value==='hydration')invalidate();});
  for(const event of ['input','change'])$('enteral-form').addEventListener(event,invalidate);
  const type=$('en-type'),lact=$('en-lactation-field'),fmField=$('en-fm85-field'),fm=$('en-fm85'),fmCustom=$('en-fm85-custom-field');
  const sync=()=>{const milk=type.value==='lmo'||type.value==='lhop';lact.hidden=type.value!=='lmo';fmField.hidden=!milk;if(!milk){for(const option of fm.options)option.removeAttribute('selected');fm.options[0].selected=true;fmCustom.hidden=true;$('en-fm85-custom').value=''}};
  type.addEventListener('change',sync);fm.addEventListener('change',()=>fmCustom.hidden=fm.value!=='custom');sync();
- $('enteral-form').addEventListener('submit',e=>{e.preventDefault();const errors=[];
+ $('enteral-form').addEventListener('submit',e=>{e.preventDefault();syncEnergyWarning();syncProteinWarning();const errors=[];
    const source=$('en-source').value;if(!Object.hasOwn(IV_SOURCES,source))errors.push('Selecione o aporte intravenoso em uso.');
    if(!type.value)errors.push('Selecione o tipo de dieta.');
    const rate=num($('en-rate').value);if(rate===null||rate<0)errors.push('Informe uma taxa enteral válida.');
@@ -30,6 +49,9 @@ export function initEnteral(doc,getParenteral,getGrowth=()=>null){
      $('en-context').innerHTML=`<span>${en.composition.label}</span><span>${fmt(en.composition.energy)} kcal/100 mL</span><span>${fmt(en.composition.protein,2)} g proteína/100 mL</span>`;
      $('en-summary').innerHTML=`<div class="summary-row"><span>Taxa enteral</span><strong>${fmt(en.rate)} mL/kg/dia</strong></div><div class="summary-row"><span>Energia enteral</span><strong>${fmt(en.calories)} kcal/kg/dia</strong></div><div class="summary-row"><span>Proteína enteral</span><strong>${fmt(en.protein,2)} g/kg/dia</strong></div>`;
      $('en-estimated-note').hidden=!en.composition.estimated;
+     const nutrientWarnings=enteralNutrientWarnings(en,all);
+     $('en-nutrient-result-warning').hidden=!nutrientWarnings.length;
+     $('en-nutrient-result-warning').replaceChildren(...nutrientWarnings.map(line=>{const p=doc.createElement('p');p.textContent=line;return p;}));
      const rows=[['Taxa hídrica',all.parenteral.fluid,all.enteral.fluid,all.total.fluid,'mL/kg/dia'],['Energia',all.parenteral.calories,all.enteral.calories,all.total.calories,'kcal/kg/dia'],['Proteína',all.parenteral.protein,all.enteral.protein,all.total.protein,'g/kg/dia']];
      $('en-total-rows').innerHTML=rows.map(r=>`<tr><td>${r[0]}<span>${r[4]}</span></td><td>${fmt(r[1],r[0]==='Proteína'?2:1)}</td><td>${fmt(r[2],r[0]==='Proteína'?2:1)}</td><td><strong>${fmt(r[3],r[0]==='Proteína'?2:1)}</strong></td></tr>`).join('');
      $('en-iv-heading').textContent=source==='hydration'?'HV':source==='none'?'IV (zero)':'PN';

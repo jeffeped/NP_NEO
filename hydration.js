@@ -9,6 +9,10 @@ import {resolveDosingWeight} from './dosing-weight.js';
 // para sais; não é uma equação empírica validada para HV neonatal.
 // Bulas Halex Istar / Isofarma e unidades documentadas na aba Notas.
 export const HYDRATION_GLUCOSE_OSMOLARITY = Object.freeze({sg5:252.3,sg50:2775});
+// A prescriber must explicitly review any WFI admixture before clinical output.
+// This gate records that review; it does not validate compatibility or tonicity.
+export const HYDRATION_WFI_REVIEW_WARNING = 'Água para injetáveis é diluente da mistura, nunca para infusão isolada. Osmolaridade estimada não comprova tonicidade ou compatibilidade. A glicose é metabolizada; a composição, a tonicidade e a compatibilidade exigem revisão individual pelo prescritor e conferência farmacêutica conforme o protocolo do serviço.';
+export const HYDRATION_WFI_REVIEW_BLOCK = 'Confirme explicitamente que o prescritor revisou a composição, a tonicidade e a compatibilidade desta mistura antes de exportar o PDF ou integrar os aportes.';
 const SALT_OSMOLES_PER_MEQ = Object.freeze({na:2,k:2,ca:1.5,mg:1});
 
 export const HYDRATION_COMPONENTS = Object.freeze([
@@ -57,6 +61,10 @@ export function formatHydrationVolume(value){
 
 export function calculateHydration(input){
   const errors=[],n={},concentrations={},glucoseOsmolarity={};
+  const allowWfiReview=input.allowWfiReview===true;
+  const wfiClinicalReviewAcknowledged=input.wfiClinicalReviewAcknowledged===true;
+  if(input.wfiClinicalReviewAcknowledged!==undefined&&typeof input.wfiClinicalReviewAcknowledged!=='boolean')errors.push({field:'review-ack',message:'A confirmação de revisão pelo prescritor deve ser explícita.'});
+  if(input.allowWfiReview!==undefined&&typeof input.allowWfiReview!=='boolean')errors.push({field:'allow-wfi',message:'Selecione explicitamente a opção de cálculo com água para injeção.'});
   const labels={weight:'Peso atual',fluid:'Taxa hídrica',vig:'VIG',na:'Sódio',k:'Potássio',ca:'Cálcio',mg:'Magnésio'};
   for(const field of Object.keys(labels)){
     n[field]=parseNumber(input[field]);
@@ -94,31 +102,46 @@ export function calculateHydration(input){
   // VR = VT − soma dos volumes dos eletrólitos.
   const blocks=[];
   if(available.a<=0n)blocks.push(`Os eletrólitos ocupam ${formatHydrationVolume(num(electrolytesVolume))} mL e o VT é ${formatHydrationVolume(num(total))} mL. Não há volume disponível para as soluções glicosadas; reveja os parâmetros.`);
-  const minimum=mul(available,sg5Concentration),maximum=mul(available,sg50Concentration);
+  const sg5Baseline=mul(available,sg5Concentration);
+  const minimum=allowWfiReview?zero:sg5Baseline,maximum=mul(available,sg50Concentration);
   const vigRange=available.a>0n?{min:num(div(minimum,mul(weight,minutes))),max:num(div(maximum,mul(weight,minutes)))}:null;
   if(available.a>0n&&(sub(glucose,minimum).a<0n||sub(glucose,maximum).a>0n)){
     const relation=sub(glucose,minimum).a<0n?'abaixo':'acima';
-    blocks.push(`A VIG informada (${formatHydrationNumber(n.vig)} mg/kg/min) fica ${relation} da faixa matematicamente possível com SG 5% e SG 50% neste volume: ${formatHydrationNumber(vigRange.min)} a ${formatHydrationNumber(vigRange.max)} mg/kg/min. Reveja a VIG, a taxa hídrica ou os eletrólitos. Essa faixa não é uma recomendação clínica.`);
+    blocks.push(`A VIG informada (${formatHydrationNumber(n.vig)} mg/kg/min) fica ${relation} da faixa matematicamente possível com SG 5% e SG 50%${allowWfiReview?' e água para injetáveis':''} neste volume: ${formatHydrationNumber(vigRange.min)} a ${formatHydrationNumber(vigRange.max)} mg/kg/min. Reveja a VIG, a taxa hídrica ou os eletrólitos. Essa faixa não é uma recomendação clínica.`);
   }
+  if(allowWfiReview&&glucose.a===0n&&rows.every(row=>row.amountMeq===0))blocks.push('Água para injetáveis isolada: composição bloqueada. A infusão intravenosa direta pode causar hemólise; não administrar isoladamente.');
   const totalVolume=num(total);
   if(!Number.isFinite(totalVolume)||totalVolume<=0||totalVolume>Number.MAX_SAFE_INTEGER||rows.some(r=>!Number.isFinite(r.volume)||!Number.isFinite(r.amountMeq)||!Number.isFinite(r.perKgDay))||!Number.isFinite(num(glucose)))return {ok:false,errors:[{field:'weight',message:'Os parâmetros ultrapassam a capacidade numérica do cálculo. Revise os valores.'}]};
   // SG 50% (mL) = [gG − (VR × 0,05)] / 0,45.
   // A expressão equivalente em mg abaixo usa 50 e 500 mg/mL.
-  const sg50=blocks.length?null:div(sub(glucose,minimum),sub(sg50Concentration,sg5Concentration));
-  const sg5=sg50===null?null:sub(available,sg50);
-  const mixture=sg50===null?null:{sg5:num(sg5),sg50:num(sg50),glucoseGrams:num(div(glucose,ratio(1000n))),glucosePercent:num(div(glucose,mul(total,ratio(10n)))),vig:num(div(add(mul(sg5,sg5Concentration),mul(sg50,sg50Concentration)),mul(weight,minutes)))};
+  // Below the SG5 baseline: SG5 = glucose / 50 mg/mL; WFI = VR - SG5.
+  // At the baseline: only SG5. Above it: preserve SG5/SG50 interpolation.
+  const belowSg5=allowWfiReview&&sub(glucose,sg5Baseline).a<0n;
+  const sg50=blocks.length?null:belowSg5?zero:div(sub(glucose,sg5Baseline),sub(sg50Concentration,sg5Concentration));
+  const sg5=sg50===null?null:belowSg5?div(glucose,sg5Concentration):sub(available,sg50);
+  const water=sg50===null?null:belowSg5?sub(available,sg5):zero;
+  const mixture=sg50===null?null:{sg5:num(sg5),sg50:num(sg50),water:num(water),glucoseGrams:num(div(glucose,ratio(1000n))),glucosePercent:num(div(glucose,mul(total,ratio(10n)))),vig:num(div(add(mul(sg5,sg5Concentration),mul(sg50,sg50Concentration)),mul(weight,minutes)))};
   if(mixture){
     // Soma de partículas: NaCl e KCl = 2 por mmol; gluconato de
     // cálcio = 3 por mmol de Ca; MgSO4 = 2 por mmol de Mg.
     // Ca e Mg são divalentes: converter mEq em mmol antes da soma.
     const saltOsmoles=rows.reduce((sum,row)=>sum+row.amountMeq*SALT_OSMOLES_PER_MEQ[row.id],0);
     mixture.osmolarity=(mixture.sg5*glucoseOsmolarity.sg5+mixture.sg50*glucoseOsmolarity.sg50+saltOsmoles*1000)/totalVolume;
+    // Na+ and K+ are monovalent: mEq = mmol. Final concentration uses VT.
+    mixture.sodiumMmolL=rows.find(row=>row.id==='na').amountMeq*1000/totalVolume;
+    mixture.potassiumMmolL=rows.find(row=>row.id==='k').amountMeq*1000/totalVolume;
   }
+  if(mixture&&Object.values(mixture).some(value=>!Number.isFinite(value)))return {ok:false,errors:[{field:'fluid',message:'A mistura ultrapassa a capacidade numérica do cálculo. Revise os valores.'}]};
   // Preserve the published peripheral-access safety gates.
   if(mixture&&input.access==='peripheral'){
     if(sub(glucose,mul(total,ratio(125n))).a>0n)blocks.push(`Concentração final de glicose de ${formatHydrationNumber(Math.ceil(mixture.glucosePercent*10)/10)}%, acima de 12,5%, em acesso periférico. É obrigatório acesso central. Revise o acesso, a VIG ou a taxa hídrica.`);
     if(Number.isFinite(mixture.osmolarity)&&mixture.osmolarity>900)blocks.push(`Osmolaridade estimada de ${Math.ceil(mixture.osmolarity)} mOsm/L, acima de 900 mOsm/L, em acesso periférico. É obrigatório acesso central. Revise o acesso ou os parâmetros.`);
   }
-  return {ok:true,input:{...n,access:input.access,doseUnit:input.doseUnit,concentrations,glucoseOsmolarity},rows,blocks,canPrepare:blocks.length===0,mixture,vigRange,
+  const reviewRequired=Boolean(mixture&&water.a>0n);
+  const canReview=reviewRequired&&blocks.length===0;
+  const clinicalReviewAcknowledged=reviewRequired&&wfiClinicalReviewAcknowledged;
+  const warnings=reviewRequired?[HYDRATION_WFI_REVIEW_WARNING]:[];
+  if(reviewRequired&&!clinicalReviewAcknowledged)blocks.push(HYDRATION_WFI_REVIEW_BLOCK);
+  return {ok:true,input:{...n,access:input.access,doseUnit:input.doseUnit,concentrations,glucoseOsmolarity,allowWfiReview,wfiClinicalReviewAcknowledged},rows,blocks,warnings,clinicalReviewAcknowledged,canPrepare:blocks.length===0,canReview,reviewRequired,mixture,vigRange,
     totals:{totalVolume,infusion:totalVolume/24,glucoseGrams:num(div(glucose,ratio(1000n))),electrolytesVolume:num(electrolytesVolume),glucoseSolutionsVolume:num(available)}};
 }

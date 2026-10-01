@@ -22,13 +22,18 @@ export function compositionFor({type, lactationDays, analyzedEnergy, analyzedPro
   if(!base) throw new Error('Dieta enteral não reconhecida.');
   const hasAnalyzed=Number.isFinite(Number(analyzedEnergy))&&Number.isFinite(Number(analyzedProtein));
   let energy=hasAnalyzed?Number(analyzedEnergy):base.energy;
+  // Preserve invalid input separately: zero is a calculation fallback, not a measurement.
+  const energyValidation=hasAnalyzed&&energy<0?{status:'invalid-negative',enteredValue:energy,calculationValue:0}:null;
+  if(energyValidation)energy=energyValidation.calculationValue;
   let protein=hasAnalyzed?Number(analyzedProtein):base.protein;
+  const proteinValidation=hasAnalyzed&&protein<0?{status:'invalid-negative',enteredValue:protein,calculationValue:0}:null;
+  if(proteinValidation)protein=proteinValidation.calculationValue;
   const fortifier=Number(fm85GramsPer100mL)||0;
   if(fortifier<0) throw new Error('Concentração de FM85 inválida.');
   if(fortifier>0&&!['lmo','lhop'].includes(type)) throw new Error('FM85: selecione LMO ou LHOP; não acrescente o fortificante à fórmula.');
   energy+=fortifier*FM85.energyPerGram;
   protein+=fortifier*FM85.proteinPerGram;
-  return {label:base.label,energy,protein,estimated:!hasAnalyzed&&base.estimated,fm85GramsPer100mL:fortifier};
+  return {label:base.label,energy,protein,estimated:!hasAnalyzed&&base.estimated,fm85GramsPer100mL:fortifier,...(energyValidation?{energyValidation}:{}),...(proteinValidation?{proteinValidation}:{})};
 }
 export function calculateEnteral({rate,...options}){
   const r=Number(rate);
@@ -49,7 +54,7 @@ export function intravenousFromResult(source,result){
     if(result.blocks.length)throw new Error('Revise os impedimentos da NP padrão antes de integrar.');
     values={fluid:result.fluid,calories:result.rows.find(r=>r.label==='Energia total').perKg,protein:result.protein,weight:result.weight,formulation:result.formulation??'3in1'};
   }else{
-    if(!result.canPrepare)throw new Error('Revise os impedimentos da HV antes de integrar.');
+    if(!result.canPrepare||(result.reviewRequired&&!result.clinicalReviewAcknowledged))throw new Error('Revise os impedimentos da HV antes de integrar.');
     // Fator da glicose já utilizado no app: 4 kcal/g.
     values={fluid:result.input.fluid,calories:result.mixture.glucoseGrams*4/result.input.weight,protein:0,weight:result.input.weight};
   }
@@ -61,9 +66,48 @@ export function integrateNutrition({parenteral={},enteral,source='individual'}){
   if(!Object.hasOwn(IV_SOURCES,source))throw new Error('Selecione o aporte intravenoso em uso.');
   const p=source==='none'?{fluid:0,calories:0,protein:0}:{fluid:Number(parenteral.fluid)||0,calories:Number(parenteral.calories)||0,protein:source==='hydration'?0:Number(parenteral.protein)||0};
   const e=enteral||{rate:0,calories:0,protein:0};
+  // Also protect integration of a legacy/direct result that bypassed calculateEnteral.
+  const invalidCalories=Number(e.calories)<0;
+  const calories=invalidCalories?0:e.calories||0;
+  const energyValidation=e.composition?.energyValidation??(invalidCalories?{status:'invalid-negative-total',enteredValue:Number(e.calories),calculationValue:0}:null);
+  const invalidProtein=Number(e.protein)<0;
+  const protein=invalidProtein?0:e.protein||0;
+  const proteinValidation=e.composition?.proteinValidation??(invalidProtein?{status:'invalid-negative-total',enteredValue:Number(e.protein),calculationValue:0}:null);
   const twoChamber=source==='standard'&&parenteral.formulation==='2in1';
-  return {source,sourceLabel:twoChamber?'NP padrão (Numeta 2:1, sem lipídios)':IV_SOURCES[source],weight:source==='none'?null:parenteral.weight,weightContext:source==='none'?null:parenteral.weightContext??null,parenteral:p,enteral:{fluid:e.rate||0,calories:e.calories||0,protein:e.protein||0},
-    total:{fluid:p.fluid+(e.rate||0),calories:p.calories+(e.calories||0),protein:p.protein+(e.protein||0)}};
+  return {source,sourceLabel:twoChamber?'NP padrão (Numeta 2:1, sem lipídios)':IV_SOURCES[source],weight:source==='none'?null:parenteral.weight,weightContext:source==='none'?null:parenteral.weightContext??null,parenteral:p,enteral:{fluid:e.rate||0,calories,protein,...(energyValidation?{energyValidation}:{}),...(proteinValidation?{proteinValidation}:{})},
+    total:{fluid:p.fluid+(e.rate||0),calories:p.calories+calories,protein:p.protein+protein}};
+}
+
+// Shared by the on-screen summary and both nutritional PDF exports.
+export function enteralEnergyWarnings(enteral,integrated){
+  const validation=integrated?.enteral?.energyValidation??enteral?.composition?.energyValidation;
+  if(!validation)return [];
+  const entered=String(validation.enteredValue).replace('.',',');
+  if(validation.status==='invalid-negative-total')return [
+    `Energia enteral inválida recebida: ${entered} kcal/kg/dia.`,
+    'Usado 0 kcal/kg/dia no total; não é valor medido.',
+    'Revise o valor informado e recalcule.'];
+  if(validation.status!=='invalid-negative')return [];
+  return [`Energia analisada inválida: ${entered} kcal/100 mL.`,
+    'Usado 0 kcal/100 mL para a energia do leite; não é valor medido.',
+    'Revise o valor informado e recalcule.',
+    ...(enteral?.composition?.fm85GramsPer100mL>0?['Energia do FM85 acrescentada separadamente.']:[])];
+}
+
+export function enteralNutrientWarnings(enteral,integrated){
+  const protein=integrated?.enteral?.proteinValidation??enteral?.composition?.proteinValidation;
+  if(!protein)return enteralEnergyWarnings(enteral,integrated);
+  const energy=integrated?.enteral?.energyValidation??enteral?.composition?.energyValidation;
+  const lines=[];
+  for(const [label,unit,validation] of [['Energia','kcal',energy],['Proteína','g',protein]]){
+    if(!validation)continue;
+    const per=validation.status==='invalid-negative-total'?'kg/dia':'100 mL';
+    const kind=validation.status==='invalid-negative-total'?'enteral recebida':'analisada';
+    lines.push(`${label} ${kind} inválida: ${String(validation.enteredValue).replace('.',',')} ${unit}/${per}; usado 0.`);
+  }
+  lines.push('Zero no cálculo não é valor medido. Revise os valores e recalcule.');
+  if(enteral?.composition?.fm85GramsPer100mL>0)lines.push('FM85: energia e proteína acrescentadas separadamente.');
+  return lines;
 }
 
 // Metas aprovadas em 19/09/2026. Comparar valores internos, sem arredondar.

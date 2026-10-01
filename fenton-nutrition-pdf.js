@@ -1,7 +1,7 @@
 import {dosingWeightLabel} from './dosing-weight.js';
 import {stampPdfIssueDate} from './pdf-date.js';
 import {VERSION} from './engine.js';
-import {transitionLines,clinicalReferenceLines} from './enteral.js';
+import {transitionLines,clinicalReferenceLines,enteralNutrientWarnings} from './enteral.js';
 
 const fmt=(n,d=1)=>Number.isFinite(n)?n.toFixed(d).replace('.',','):'—';
 const ipm=(w,d)=>`${w} sem + ${d} d`;
@@ -47,7 +47,9 @@ export async function createFentonNutritionReport({nutrition,growth=null,chart})
  line(`Dieta: ${enteral.composition.label}`);
  line(`Composição final: ${fmt(enteral.composition.energy)} kcal/100 mL · ${fmt(enteral.composition.protein,2)} g proteína/100 mL`);
  if(enteral.composition.fm85GramsPer100mL>0)line(`FM85: ${fmt(enteral.composition.fm85GramsPer100mL/4,2)} g/25 mL (média no volume total).`);
- line(enteral.composition.estimated?'Composição estimada.':'Composição informada/analisada.',{color:muted});
+ const energyWarnings=enteralNutrientWarnings(enteral,integrated);
+ line(energyWarnings.length?'Composição com entrada inválida; confira o aviso abaixo.':enteral.composition.estimated?'Composição estimada.':'Composição informada/analisada.',{color:muted});
+ for(const warning of energyWarnings)line(warning,{size:8,font:bold,leading:11});
  if(integrated.sourceLabel.includes('2:1'))line('Lipídios infundidos à parte não integram estes totais.',{font:bold});
  y-=10;first.drawRectangle({x:L,y:y-7,width:R-L,height:22,color:shade});
  text(first,'Indicador / unidade',L+6,y,9,bold);

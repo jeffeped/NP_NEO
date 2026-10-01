@@ -79,3 +79,35 @@ for(const [source,label,column] of [['none','Sem aporte intravenoso','IV (zero)'
  if(source!=='none')assert.ok(lines.some(x=>x.includes('peso de cálculo 1.000 g')));
  if(source==='hydration'||source==='none'){assert.ok(lines.includes('0,00'));assert.ok(lines.some(x=>x.includes('Metas de transição não avaliadas: sem PN')));}
 });
+
+for(const fortifier of [0,2])test(`PDF negative energy: explicit fallback, export allowed, fortifier ${fortifier}`,async()=>{
+ const enteral=calculateEnteral({type:'lhop',rate:150,analyzedEnergy:-0.125,analyzedProtein:1.2,fm85GramsPer100mL:fortifier});
+ const integrated=integrateNutrition({source:'standard',enteral,parenteral:{fluid:60,calories:50,protein:2,formulation:'2in1'}});
+ const growth=calculateGrowth({sex:'female',birthWeight:1400,initialWeight:1100,finalWeight:1300,gaWeeks:28,gaDays:0,initialDay:17,finalDay:20});
+ const original=PDFLib.PDFPage.prototype.drawText,lines=[];
+ PDFLib.PDFPage.prototype.drawText=function(value,opts){
+  lines.push(value);assert.ok(opts.y>=14,value);assert.ok(opts.x+opts.font.widthOfTextAtSize(value,opts.size)<=this.getWidth()-25,value);
+  return original.call(this,value,opts);
+ };
+ try{assert.equal((await PDFLib.PDFDocument.load(await createEnteralReport({enteral,integrated,growth,clinical:{phase:'growth',birthWeight:1400,gestationalAge:28}}))).getPageCount(),2);}
+ finally{PDFLib.PDFPage.prototype.drawText=original;}
+ assert.ok(lines.includes('Energia analisada inválida: -0,125 kcal/100 mL.'));
+ assert.ok(lines.includes('Usado 0 kcal/100 mL para a energia do leite; não é valor medido.'));
+ assert.ok(!lines.includes('Composição informada/analisada.'));
+ assert.equal(lines.includes('Energia do FM85 acrescentada separadamente.'),fortifier>0);
+ assert.equal(integrated.total.calories,50+1.5*fortifier*4.3);
+});
+
+for(const analyzedEnergy of [70,-1])for(const fortifier of [0,4])test(`PDF protein invalid: energy ${analyzedEnergy}, fortifier ${fortifier}, explicit recalculation`,async()=>{
+ const enteral=calculateEnteral({type:'lhop',rate:150,analyzedEnergy,analyzedProtein:-.125,fm85GramsPer100mL:fortifier});
+ const integrated=integrateNutrition({source:'standard',enteral,parenteral:{fluid:60,calories:50,protein:2,formulation:'2in1'}});
+ const growth=calculateGrowth({sex:'female',birthWeight:1400,initialWeight:1100,finalWeight:1300,gaWeeks:28,gaDays:0,initialDay:17,finalDay:20});
+ const original=PDFLib.PDFPage.prototype.drawText,lines=[];
+ PDFLib.PDFPage.prototype.drawText=function(value,opts){lines.push(value);assert.ok(opts.y>=14,value);assert.ok(opts.x+opts.font.widthOfTextAtSize(value,opts.size)<=this.getWidth()-25,value);return original.call(this,value,opts);};
+ try{assert.equal((await PDFLib.PDFDocument.load(await createEnteralReport({enteral,integrated,growth}))).getPageCount(),1);}
+ finally{PDFLib.PDFPage.prototype.drawText=original;}
+ assert.ok(lines.includes('Proteína analisada inválida: -0,125 g/100 mL; usado 0.'));
+ assert.ok(lines.includes('Zero no cálculo não é valor medido. Revise os valores e recalcule.'));
+ assert.equal(lines.some(s=>s.startsWith('Energia analisada inválida')),analyzedEnergy<0);
+ assert.equal(lines.includes('FM85: energia e proteína acrescentadas separadamente.'),fortifier>0);
+});

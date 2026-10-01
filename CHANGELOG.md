@@ -1,5 +1,14 @@
 # Histórico de versões
 
+## 0.7.6 - 01/10/2026
+
+- HV: opção de água para injetáveis para atingir VIG abaixo do patamar matemático de SG 5%, mantendo SG 5%/SG 50% nas demais faixas.
+- Misturas com água exigem confirmação explícita do prescritor de revisão da composição, tonicidade e compatibilidade para PDF e integração. A confirmação é revogada por qualquer edição; revogá-la invalida também a totalização enteral. Água isolada, impossibilidades e limites periféricos continuam bloqueados.
+- Tela e PDF mostram diluente, glicose final, Na/K em mmol/L e osmolaridade estimada. A estimativa não valida tonicidade ou compatibilidade; nenhum limiar osmolar inferior numérico foi adotado.
+- Energia e proteína enterais negativas passam a zero de cálculo com entrada preservada, aviso de invalidade e solicitação de revisão/recálculo, inclusive nos PDFs. FM85 é acrescentado separadamente e o aviso não bloqueia sozinho a prescrição.
+- Versão e cache offline atualizados. Sem alteração do arredondamento de acetato, INTERGROWTH, fatores energéticos 4/9/4 ou composição de Numeta.
+- Verificações técnicas detalhadas em docs/RELEASE_0.7.6.md; não equivalem a validação clínica.
+
 ## 0.7.5 - preparada em 01/10/2026; publicação pendente
 
 - Protocolo institucional: peso ao nascer para NP individualizada, Numeta e HV em D1-D7; peso atual desde D8. PN obrigatório na primeira semana; pesos medidos e crescimento preservados.

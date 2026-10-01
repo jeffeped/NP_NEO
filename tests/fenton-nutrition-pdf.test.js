@@ -47,3 +47,31 @@ test('optional growth is explicitly absent',async()=>{
  const bytes=await createFentonNutritionReport({nutrition:nutrition(),chart});
  assert.equal((await PDFLib.PDFDocument.load(bytes)).getPageCount(),2);
 });
+
+for(const source of ['none','individual','standard','hydration'])for(const phase of ['growth','transition','oligoanuria'])test(`negative energy combined PDF / ${source} / ${phase}: explicit and within page`,async()=>{
+ const enteral=calculateEnteral({type:'lhop',rate:165,analyzedEnergy:-0.125,analyzedProtein:1.2,fm85GramsPer100mL:2});
+ const input=nutrition(source,phase);input.enteral=enteral;input.integrated=integrateNutrition({source,enteral,parenteral:{fluid:60,calories:45,protein:2,weight:1.3,formulation:source==='standard'?'2in1':undefined}});
+ const original=PDFLib.PDFPage.prototype.drawText,lines=[];
+ PDFLib.PDFPage.prototype.drawText=function(value,opts){
+  lines.push(value);assert.ok(opts.y>=14,value);assert.ok(opts.x+opts.font.widthOfTextAtSize(value,opts.size)<=this.getWidth()-25,value);
+  return original.call(this,value,opts);
+ };
+ try{assert.equal((await PDFLib.PDFDocument.load(await createFentonNutritionReport({nutrition:input,growth,chart}))).getPageCount(),2);}
+ finally{PDFLib.PDFPage.prototype.drawText=original;}
+ assert.ok(lines.includes('Energia analisada inválida: -0,125 kcal/100 mL.'));
+ assert.ok(lines.includes('Usado 0 kcal/100 mL para a energia do leite; não é valor medido.'));
+ assert.ok(lines.includes('Energia do FM85 acrescentada separadamente.'));
+ assert.ok(!lines.includes('Composição informada/analisada.'));
+});
+
+for(const source of ['none','individual','standard','hydration'])for(const phase of ['growth','transition','oligoanuria'])test(`both nutrients invalid combined PDF / ${source} / ${phase}`,async()=>{
+ const enteral=calculateEnteral({type:'lhop',rate:165,analyzedEnergy:-Number.MAX_VALUE,analyzedProtein:-Number.MAX_VALUE,fm85GramsPer100mL:4});
+ const input=nutrition(source,phase);input.enteral=enteral;input.integrated=integrateNutrition({source,enteral,parenteral:{fluid:60,calories:45,protein:2,weight:1.3,formulation:source==='standard'?'2in1':undefined}});
+ const original=PDFLib.PDFPage.prototype.drawText,lines=[];
+ PDFLib.PDFPage.prototype.drawText=function(value,opts){lines.push(value);assert.ok(opts.y>=14,value);assert.ok(opts.x+opts.font.widthOfTextAtSize(value,opts.size)<=this.getWidth()-25,value);return original.call(this,value,opts);};
+ try{assert.equal((await PDFLib.PDFDocument.load(await createFentonNutritionReport({nutrition:input,growth,chart}))).getPageCount(),2);}
+ finally{PDFLib.PDFPage.prototype.drawText=original;}
+ assert.ok(lines.some(s=>s.startsWith('Energia analisada inválida')));assert.ok(lines.some(s=>s.startsWith('Proteína analisada inválida')));
+ assert.ok(lines.includes('Zero no cálculo não é valor medido. Revise os valores e recalcule.'));
+ assert.ok(lines.includes('FM85: energia e proteína acrescentadas separadamente.'));
+});
