@@ -7,6 +7,7 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {parseHTML} from 'linkedom';
 import * as engine from '../engine.js';
+import {resolveDosingWeight,dosingWeightLabel,measuredWeightLabel} from '../dosing-weight.js';
 import {macroReference,formatAlertNumber} from '../alerts.js';
 import {initStandard} from '../standard-ui.js';
 import {initHydration} from '../hydration-ui.js';
@@ -41,7 +42,7 @@ function openApp() {
   const {document,window}=parseHTML(html);
   window.HTMLElement.prototype.scrollIntoView=function(){};
   const context={document,window:{addEventListener(){},scrollTo(){}},navigator:{},
-    console,URL,Blob,MessageChannel,initFentonNutritionReport,initAppUpdate,intravenousFromResult,...engine,macroReference,formatAlertNumber,initHydration,initStandard,initEnteral,initGrowth,initIntergrowth,
+    console,URL,Blob,MessageChannel,resolveDosingWeight,dosingWeightLabel,measuredWeightLabel,initFentonNutritionReport,initAppUpdate,intravenousFromResult,...engine,macroReference,formatAlertNumber,initHydration,initStandard,initEnteral,initGrowth,initIntergrowth,
     createReport:async()=>new Uint8Array()};
   vm.runInNewContext(source,context);
   // O DOM simulado não seleciona implicitamente a primeira opção como o navegador.
@@ -57,7 +58,7 @@ function openApp() {
 test('interface: dia 1 na referência, orientação e exportação disponível',()=>{
   const app=openApp();app.calculate();
   assert.equal(app.el('calculated-result').hidden,false);assert.equal(app.el('export-pdf').disabled,false);
-  assert.match(app.el('result-context').textContent,/Peso: 800 gPeso ao nascer: 800 g/);
+  assert.match(app.el('result-context').textContent,/Peso atual: 800 g.*PN: 800 g.*Peso de cálculo: 800 g/);
   assert.deepEqual(app.alerts().map(a=>a.level),['info','info']);
   assert.match(app.el('reference-aa').textContent,/2,0 g\/kg\/dia/);
   assert.match(app.el('reference-vig').textContent,/velocidade de infusão de glicose/);
@@ -74,12 +75,12 @@ test('pesos de NP individualizada, Numeta e HV são informados em gramas e conve
   assert.match(app.el('form-errors').textContent,/Peso atual fora da faixa de conferência \(100 a 20\.000 g\)/);
   app.set('weight',800);app.calculate();assert.match(app.el('result-summary').textContent,/Volume total80,0 mL/);
   app.set('weight','1.000');app.set('birth-weight','1.000');app.calculate();
-  assert.match(app.el('result-context').textContent,/Peso: 1\.000 gPeso ao nascer: 1\.000 g/);
+  assert.match(app.el('result-context').textContent,/Peso atual: 1\.000 g.*PN: 1\.000 g.*Peso de cálculo: 1\.000 g/);
   assert.match(app.el('result-summary').textContent,/Volume total100,0 mL/);
-  app.set('std-weight',800);app.set('std-day',2);app.set('std-value',100);app.set('std-access','central');app.dispatch('std-form','submit');
-  assert.match(app.el('std-context').textContent,/Peso: 800 g/);
+  app.set('std-birth-weight',800);app.set('std-weight',800);app.set('std-day',2);app.set('std-value',100);app.set('std-access','central');app.dispatch('std-form','submit');
+  assert.match(app.el('std-context').textContent,/Peso atual: 800 g/);
   assert.match(app.el('std-prescription').textContent,/80,0 mL/);
-  app.set('std-weight','1.000');app.dispatch('std-form','submit');
+  app.set('std-birth-weight','1.000');app.set('std-weight','1.000');app.dispatch('std-form','submit');
   assert.match(app.el('std-prescription').textContent,/100,0 mL/);
   const hv=openHydration();hv.calculateHydration();
   assert.match(hv.el('hv-summary').textContent,/2000 g ÷ 1000/);
@@ -92,7 +93,7 @@ test('pesos de NP individualizada, Numeta e HV são informados em gramas e conve
   assert.match(hv.el('hv-errors').textContent,/100 a 20\.000 g/);
 });
 test('Numeta troca entre 3:1 e 2:1, apresenta composição por 100 mL e invalida PDF anterior',()=>{
- const app=openApp();app.set('std-weight',1000);app.set('std-day',2);app.set('std-value',80);app.set('std-access','central');app.dispatch('std-form','submit');
+ const app=openApp();app.set('std-birth-weight',1000);app.set('std-weight',1000);app.set('std-day',2);app.set('std-value',80);app.set('std-access','central');app.dispatch('std-form','submit');
  assert.match(app.el('std-prescription').textContent,/3:1.*80,0 mL/);
  assert.match(app.el('std-rows').textContent,/Lipídios2,5 g/);
  app.set('std-formulation','2in1');
@@ -106,7 +107,7 @@ test('Numeta troca entre 3:1 e 2:1, apresenta composição por 100 mL e invalida
  assert.equal(app.el('std-export').disabled,false);
 });
 test('interface: contribuição do glicerofosfato exige aceite do sódio total para PDF',()=>{
-  const app=openApp();app.set('weight',1000);app.set('na',1);app.set('p','0,4');app.set('salt-p','glycero');app.calculate();
+  const app=openApp();app.set('day',8);app.set('birth-weight',1000);app.set('weight',1000);app.set('na',1);app.set('p','0,4');app.set('salt-p','glycero');app.calculate();
   const check=app.document.querySelector('[data-ack="na"]');
   assert.ok(check);
   assert.match(app.el('acknowledgements').textContent,/solicitado 1,00.*efetivo 0,97.*Glicerofosfato de sódio: 0,80.*cloreto de sódio 10%: 0,17/);
@@ -121,8 +122,27 @@ test('interface: contribuição do glicerofosfato exige aceite do sódio total p
   assert.equal(app.document.querySelector('[data-ack="na"]'),null);
   assert.equal(app.el('export-pdf').disabled,false);
 });
+test('interface: 920 g residual requires acceptance, editing resets it, other blocks remain',()=>{
+  const app=openApp();
+  for(const [id,value] of Object.entries({day:8,weight:920,'birth-weight':990,na:2,p:1,'salt-p':'glycero'}))app.set(id,value);
+  app.calculate();
+  assert.match(app.el('result-alerts').textContent,/0,024 mL.*não foi acrescentado/);
+  assert.match(app.el('acknowledgements').textContent,/efetivo 1,96/);
+  assert.equal(app.el('export-pdf').disabled,true);
+  const check=app.document.querySelector('[data-ack="na"]');
+  check.checked=true;check.dispatchEvent(new app.window.Event('change',{bubbles:true}));
+  assert.equal(app.el('export-pdf').disabled,false);
+  app.set('na',2);app.calculate();
+  assert.ok(!app.document.querySelector('[data-ack="na"]').checked);
+  assert.equal(app.el('export-pdf').disabled,true);
+  app.set('vig',13);app.calculate();
+  const blockedCheck=app.document.querySelector('[data-ack="na"]');
+  blockedCheck.checked=true;blockedCheck.dispatchEvent(new app.window.Event('change',{bubbles:true}));
+  assert.equal(app.el('export-pdf').disabled,true);
+});
+
 test('interface: excesso de sódio pelo glicerofosfato pede apenas um aceite',()=>{
-  const app=openApp();app.set('weight',1000);app.set('na',0);app.set('p','0,4');app.set('salt-p','glycero');app.calculate();
+  const app=openApp();app.set('birth-weight',1000);app.set('weight',1000);app.set('na',0);app.set('p','0,4');app.set('salt-p','glycero');app.calculate();
   assert.equal(app.document.querySelectorAll('[data-ack="na"]').length,1);
   assert.match(app.el('acknowledgements').textContent,/efetivo 0,80.*glicerofosfato de sódio: 0,80/i);
   assert.equal(app.el('export-pdf').disabled,true);
@@ -228,10 +248,35 @@ function openHydration(){
   const unit=value=>{app.el('hv-doseUnit').querySelector(`option[value="${value}"]`).selected=true;app.dispatch('hv-doseUnit','change');};
   unit('perKgDay');
   app.el('hv-access').querySelector('[value="central"]').setAttribute('checked','');
-  for(const [id,value] of Object.entries({weight:2000,fluid:100,vig:5,na:1.7,k:1.34,ca:0.5,mg:0.8}))app.set('hv-'+id,value);
+  for(const [id,value] of Object.entries({day:8,weight:2000,fluid:100,vig:5,na:1.7,k:1.34,ca:0.5,mg:0.8}))app.set('hv-'+id,value);
   app.dispatch('tab-hydration','click');
   return {...app,unit,calculateHydration:()=>app.dispatch('hv-form','submit')};
 }
+
+test('protocol: NP switches PN at D7 to measured weight at D8, invalidates and requires PN',()=>{
+ const app=openApp();
+ for(const [id,value] of Object.entries({weight:920,'birth-weight':990,day:7}))app.set(id,value);
+ app.calculate();assert.match(app.el('result-summary').textContent,/Volume total99,0 mL/);
+ assert.match(app.el('result-context').textContent,/Peso atual: 920 g.*PN: 990 g.*-7,1%.*Peso de cálculo: 990 g/);
+ app.set('day',8);assert.equal(app.el('calculated-result').hidden,true);
+ app.calculate();assert.match(app.el('result-summary').textContent,/Volume total92,0 mL/);
+ assert.match(app.el('result-context').textContent,/Peso de cálculo: 920 g/);
+ app.set('day',7);app.set('birth-weight','');app.dispatch('npp-form','submit');
+ assert.equal(app.el('form-errors').hidden,false);assert.equal(app.el('export-pdf').disabled,true);
+});
+test('protocol: HV and Numeta collect birth weight and day separately',()=>{
+ const app=openApp();
+ for(const [id,value] of Object.entries({'std-weight':920,'std-birth-weight':990,'std-day':7,'std-value':100,'std-access':'central'}))app.set(id,value);
+ app.dispatch('std-form','submit');assert.equal(app.el('std-errors').hidden,true);
+ assert.match(app.el('std-prescription').textContent,/99,0 mL/);
+ app.set('std-day',8);assert.equal(app.el('std-result').hidden,true);
+ app.dispatch('std-form','submit');assert.match(app.el('std-prescription').textContent,/92,0 mL/);
+ const hv=openHydration();hv.set('hv-weight',920);hv.set('hv-birth-weight',990);hv.set('hv-day',7);hv.calculateHydration();
+ assert.match(hv.el('hv-final-summary').textContent,/99,0 mL/);
+ assert.match(hv.el('hv-summary').textContent,/Peso de cálculo: 990 g/);
+ hv.set('hv-day',8);hv.calculateHydration();assert.match(hv.el('hv-final-summary').textContent,/92,0 mL/);
+ hv.set('hv-day',7);hv.set('hv-birth-weight','');hv.calculateHydration();assert.equal(hv.el('hv-errors').hidden,false);
+});
 
 test('interface HV: calcula com as fórmulas confirmadas e mostra seis componentes',()=>{
   const app=openHydration();app.calculateHydration();
@@ -322,7 +367,7 @@ test('interface crescimento: calcula peso médio e mostra cautela antes de recup
 
 test('interface: NP padrão calcula por taxa, troca para proteína e invalida saída',()=>{
  const app=openApp();app.dispatch('tab-standard','click');
- for(const [id,value] of Object.entries({'std-weight':'800','std-day':2,'std-value':100,'std-access':'central'}))app.set(id,value);
+ for(const [id,value] of Object.entries({'std-birth-weight':'800','std-weight':'800','std-day':2,'std-value':100,'std-access':'central'}))app.set(id,value);
  app.dispatch('std-form','submit');assert.equal(app.el('std-errors').hidden,true);assert.equal(app.el('std-result').hidden,false);
  assert.match(app.el('std-prescription').textContent,/80,0 mL/);assert.equal(app.el('std-export').disabled,false);assert.match(app.el('std-summary').textContent,/Concentração de glicose13,3%/);
  app.set('std-mode','protein');app.dispatch('std-mode','change');assert.equal(app.el('std-result').hidden,true);assert.equal(app.el('std-value').value,'');assert.equal(app.el('std-export').disabled,true);assert.equal(app.el('std-pdf-download').hidden,true);
@@ -401,12 +446,12 @@ test('interface Enteral: tabela total usa classe responsiva dedicada',()=>{
 
 function enteralSetup(app,source){app.set('en-source',source);app.set('en-type','lhop');app.set('en-rate',80);app.dispatch('enteral-form','submit');}
 function standardSetup(app,mode='fluid',value=60,access='central'){
- for(const [id,v] of Object.entries({'std-weight':1000,'std-day':2,'std-mode':mode,'std-value':value,'std-access':access}))app.set(id,v);
+ for(const [id,v] of Object.entries({'std-birth-weight':1000,'std-weight':1000,'std-day':2,'std-mode':mode,'std-value':value,'std-access':access}))app.set(id,v);
  app.dispatch('std-form','submit');
 }
 function hydrationSetup(app,vig=5){
  app.el('hv-access').querySelector('[value="central"]').setAttribute('checked','');
- for(const [id,v] of Object.entries({'hv-weight':1000,'hv-fluid':60,'hv-vig':vig,'hv-doseUnit':'perKgDay','hv-na':0,'hv-k':0,'hv-ca':0,'hv-mg':0}))app.set(id,v);
+ for(const [id,v] of Object.entries({'hv-day':8,'hv-weight':1000,'hv-fluid':60,'hv-vig':vig,'hv-doseUnit':'perKgDay','hv-na':0,'hv-k':0,'hv-ca':0,'hv-mg':0}))app.set(id,v);
  app.dispatch('hv-form','submit');
 }
 function totalCells(app){return Array.from(app.el('en-total-rows').children).map(row=>Array.from(row.children).slice(1).map(cell=>cell.textContent));}

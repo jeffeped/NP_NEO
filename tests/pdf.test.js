@@ -37,7 +37,7 @@ test('PDF recusa as novas travas mesmo que solicitado diretamente',async()=>{
 test('PDF Numeta inclui ofertas e mantém autoria; bloqueios não exportam',async()=>{
  const {calculateStandard}=await import('../standard.js');
  const {createStandardReport}=await import('../standard-pdf.js');
- const r=calculateStandard({weight:.8,day:1,mode:'protein',value:3.5,access:'central'});
+ const r=calculateStandard({birthWeight:.8,weight:.8,day:1,mode:'protein',value:3.5,access:'central'});
  const bytes=await createStandardReport(r);const doc=await PDFLib.PDFDocument.load(bytes);
  assert.equal(doc.getPageCount(),2);assert.equal(doc.getAuthor(),'Jefferson Guilherme');
  await assert.rejects(()=>createStandardReport({...r,blocks:['Acesso periférico']}),/not exportable/);
@@ -46,10 +46,10 @@ test('PDF Numeta inclui ofertas e mantém autoria; bloqueios não exportam',asyn
 test('PDF Numeta 2:1 é exportável, identifica versão e recusa bloqueio clínico',async()=>{
  const {calculateStandard}=await import('../standard.js');
  const {createStandardReport}=await import('../standard-pdf.js');
- const r=calculateStandard({weight:.8,day:2,formulation:'2in1',mode:'protein',value:3,access:'central'});
+ const r=calculateStandard({birthWeight:.8,weight:.8,day:2,formulation:'2in1',mode:'protein',value:3,access:'central'});
  const bytes=await createStandardReport(r),doc=await PDFLib.PDFDocument.load(bytes);
  assert.equal(doc.getPageCount(),2);assert.match(doc.getTitle(),/2:1/);
- const blocked=calculateStandard({weight:.8,day:2,formulation:'2in1',mode:'fluid',value:100,access:'central'});
+ const blocked=calculateStandard({birthWeight:.8,weight:.8,day:2,formulation:'2in1',mode:'fluid',value:100,access:'central'});
  assert.ok(blocked.blocks.some(x=>x.includes('Aminoácidos acima de 3,5')));
  await assert.rejects(()=>createStandardReport(blocked),/not exportable/);
 });

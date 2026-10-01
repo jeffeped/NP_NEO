@@ -13,9 +13,9 @@ function setup(){
  const ui=initHydration(document),el=id=>document.getElementById('hv-'+id);
  const event=(id,type)=>el(id).dispatchEvent(new window.Event(type,{bubbles:true,cancelable:true}));
  const set=(id,v)=>{el(id).value=String(v);event(id,'input');};
- el('doseUnit').querySelector('[value="perKgDay"]').selected=true;
  el('access').querySelector('[value="central"]').setAttribute('checked','');
- for(const [id,v] of Object.entries({weight:2000,fluid:100,vig:5,na:1.7,k:1.34,ca:0.5,mg:0.8}))set(id,v);
+ el('doseUnit').querySelector('[value="perKgDay"]').selected=true;
+ for(const [id,v] of Object.entries({day:8,weight:2000,fluid:100,vig:5,na:1.7,k:1.34,ca:0.5,mg:0.8}))set(id,v);
  return {ui,el,event,set,calculate:()=>event('form','submit')};
 }
 async function finish(app){for(let i=0;i<100&&app.el('export').disabled;i++)await new Promise(r=>setTimeout(r,5));}

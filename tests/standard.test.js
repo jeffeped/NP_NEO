@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {calculateStandard} from '../standard.js';
-const calc=(changes={})=>calculateStandard({weight:1,day:2,mode:'fluid',value:100,access:'central',...changes});
+const calc=(changes={})=>calculateStandard({birthWeight:changes.weight??1,weight:1,day:2,mode:'fluid',value:100,access:'central',...changes});
 const near=(actual,expected)=>assert.ok(Math.abs(actual-expected)<1e-10,`${actual} != ${expected}`);
 test('Numeta: whole bag composition scales to 100 mL without rounded concentration drift',()=>{
  const r=calc();near(r.protein,9.4/3);near(r.volume,100);near(r.rate,100/24);near(r.vig,9.25925925925926);

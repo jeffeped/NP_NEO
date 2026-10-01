@@ -34,7 +34,7 @@ test('PDF Enteral: inclui o cálculo válido de crescimento',async()=>{
  assert.ok(lines.some(line=>line.includes('Fenton 2025 · 28–31 sem · P50 16,6 g/kg/dia · 100% da referência')));
 });
 test('PDF integrado 2:1 identifica ausência de lipídios na bolsa e no total',async()=>{
- const standard=calculateStandard({weight:1,day:2,formulation:'2in1',mode:'protein',value:3,access:'central'});
+ const standard=calculateStandard({birthWeight:1,weight:1,day:2,formulation:'2in1',mode:'protein',value:3,access:'central'});
  const enteral=calculateEnteral({type:'lhop',rate:60});
  const integrated=integrateNutrition({source:'standard',parenteral:intravenousFromResult('standard',standard),enteral});
  const original=PDFLib.PDFPage.prototype.drawText,lines=[];
@@ -76,6 +76,6 @@ for(const [source,label,column] of [['none','Sem aporte intravenoso','IV (zero)'
  PDFLib.PDFPage.prototype.drawText=function(value,opts){lines.push(value);assert.ok(opts.x+opts.font.widthOfTextAtSize(value,opts.size)<=this.getWidth(),value);return original.call(this,value,opts);};
  try{const pdf=await PDFLib.PDFDocument.load(await createEnteralReport({enteral:en,integrated}));assert.equal(pdf.getPageCount(),1);assert.equal(pdf.getAuthor(),'Jefferson P Guilherme');}finally{PDFLib.PDFPage.prototype.drawText=original;}
  assert.ok(lines.includes('Fonte: '+label));assert.ok(lines.includes(column));
- if(source!=='none')assert.ok(lines.some(x=>x.includes('peso 1.000 g')));
+ if(source!=='none')assert.ok(lines.some(x=>x.includes('peso de cálculo 1.000 g')));
  if(source==='hydration'||source==='none'){assert.ok(lines.includes('0,00'));assert.ok(lines.some(x=>x.includes('Metas de transição não avaliadas: sem PN')));}
 });

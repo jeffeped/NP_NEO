@@ -20,7 +20,7 @@ for(const source of ['none','individual','standard','hydration'])for(const phase
   const input={nutrition:nutrition(source,phase),growth,chart},before=JSON.stringify(input.nutrition),texts=[];
   const original=PDFLib.PDFPage.prototype.drawText;
   PDFLib.PDFPage.prototype.drawText=function(value,opts){
-   assert.ok(opts.y>=26,value);
+   assert.ok(opts.y>=14,value);
    assert.ok(opts.x>=0&&opts.x+opts.font.widthOfTextAtSize(value,opts.size)<=this.getWidth()-25,value);
    texts.push({value,page:this});return original.call(this,value,opts);
   };

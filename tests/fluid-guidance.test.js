@@ -33,8 +33,8 @@ test('taxa solicitada e efetiva: igualdade permitida, excesso bloqueia mesmo com
   const above=calculate({...base,fluid:100.1});assert.equal(above.canExport,false);
   assert.ok(above.blocks.some(b=>b.includes('Taxa hídrica da NPP acima de 100')));
   const adjusted=calculate({...base,aa:3.5,lip:4,vig:50/2.88});
-  assert.equal(adjusted.totals.requestedVolume,100);
-  assert.ok(adjusted.totals.totalVolume>100);
+  assert.equal(adjusted.totals.requestedVolume,80);
+  assert.ok(adjusted.totals.totalVolume>80);
   assert.ok(adjusted.notices.some(n=>n.includes('volume efetivo')));
   assert.ok(adjusted.blocks.some(b=>b.includes('Taxa hídrica da NPP acima de 100')));
 });

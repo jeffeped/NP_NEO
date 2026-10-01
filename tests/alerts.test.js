@@ -5,7 +5,8 @@ import {calculate,parseNumber,VERSION} from '../engine.js';
 import {nutritionAlerts} from '../alerts.js';
 
 const base={weight:0.8,birthWeight:0.8,fluidPhase:'stable',day:1,gaWeeks:27,gaDays:0,fluid:100,aa:2,lip:2,vig:5,na:0,k:0,ca:0,mg:0,p:0,znDose:400,seDose:2,naSalt:'nacl',pSalt:'glycero',access:'central',omit:{va:true,vb:true,oligo:true,zn:true,se:true}};
-const run=changes=>{const r=calculate({...base,...changes});assert.equal(r.ok,true);return r;};
+// Formula-only fixtures default to D8; explicit day tests retain their day.
+const run=changes=>{const r=calculate({...base,day:8,birthWeight:changes.weight<=10?changes.weight:base.weight,...changes});assert.equal(r.ok,true,JSON.stringify(r.errors));return r;};
 const alertFor=(r,id)=>r.alerts.find(a=>a.nutrient===id);
 const above20=r=>!!alertFor(r,'glucose');
 
@@ -46,7 +47,7 @@ test('validação: erros grosseiros de entrada impedem cálculo sem restringir d
     [{gaWeeks:17},'gaWeeks'],[{gaWeeks:46},'gaWeeks'],
     [{day:366},'day'],[{fluid:500.01},'fluid']
   ];
-  for(const [changes,field] of cases){const r=calculate({...base,...changes});assert.equal(r.ok,false,JSON.stringify(changes));assert.ok(r.errors.some(e=>e.field===field));}
+  for(const [changes,field] of cases){const r=calculate({...base,birthWeight:changes.weight??base.weight,...changes});assert.equal(r.ok,false,JSON.stringify(changes));assert.ok(r.errors.some(e=>e.field===field));}
   const boundary=run({weight:20,birthWeight:10,gaWeeks:45,day:365,fluid:500,aa:0,lip:0,vig:0});
   assert.equal(boundary.ok,true);
 });
@@ -80,7 +81,9 @@ for(const weight of [0.8,0.999,1,1.2])for(const day of [1,2,8])for(const aa of [
     const r=run({weight,day,aa});const a=alertFor(r,'aa');
     const high=aa>3.5 || (weight===0.999&&aa===3.5); // 35,0 mL a 999 g aumenta a oferta efetiva.
     assert.equal(a.level,high?'high':aa===(day===1?2:3)?'info':'caution');
-    assert.equal(a.blocking,false);assert.equal(r.canExport,!high);
+    assert.equal(a.blocking,false);
+    // At D1, PN >=1000 g also activates the 80 mL/kg/day fluid ceiling.
+    assert.equal(r.canExport,!high&&!(day===1&&weight>=1));
     assert.equal(a.weightKg,weight);assert.equal(a.day,day);
     assert.doesNotMatch(a.message,/Peso atual:|dia de vida:\s*\d+\s*[.;]/);
     assert.match(a.message,day===1?/inicial no 1º dia de vida.*2,0/:/progressão após o 1º dia de vida.*3,0/);
@@ -124,7 +127,7 @@ for(const [day,ca,p,id,level] of [
   [2,2.6,1,'CAP_LATE_INFO','info'],     // 1,3:1
   [2,2.8,1,'CAP_LATE_HIGH','caution']  // 1,4:1
 ]) test(`relação molar Ca:P · dia ${day} · ${(ca/2/p).toFixed(1)}:1`,()=>{
-  const r=run({weight:1,day,ca,p});
+  const r=run({weight:1,day,ca,p,fluid:day===1?80:100});
   const a=r.alerts.find(item=>item.nutrient==='ca-p');
   assert.equal(a?.id??null,id);assert.equal(a?.level??null,level);
   if(a){assert.equal(a.blocking,false);assert.equal(r.canExport,true);assert.match(a.message,/relação molar Ca:P/);}
@@ -149,7 +152,7 @@ for(const [ca,p,reason] of [[5.05,2.5,'cálcio'],[5,2.6,'fósforo'],[5.05,2.6,'a
   });
 }
 test('compatibilidade Ca/P: valor interno imediatamente acima aparece arredondado para cima',()=>{
-  const input={...base,pSalt:'glycero',weight:1};
+  const input={...base,pSalt:'glycero',weight:1,birthWeight:1};
   const calculated={volumes:{glucose:0,aa:0,lip:0},effective:{aa:0,lip:0,ca:5.000000001,p:2.5},totalVolume:100,
     glucosePercent:0,osmolarity:0,calciumConcentration:50.00000001,phosphorusConcentration:25};
   const a=nutritionAlerts(input,calculated).find(x=>x.id==='CAP_CONCENTRATION_STUDIED_RANGE');
@@ -192,7 +195,7 @@ test('VIG: teto 12 estrito na solicitação e na oferta efetiva após arredondar
   assert.ok(rounded.blocks.some(b=>b.includes('VIG acima de 12')));
 });
 for(const changes of [{weight:0},{weight:-1},{weight:'NaN'},{day:0},{day:1.5},{aa:-2},{aa:Infinity},{lip:'3x'},{vig:'1e309'},{access:'unknown'}]) {
-  test(`entrada inválida mantém bloqueio: ${JSON.stringify(changes)}`,()=>assert.equal(calculate({...base,...changes}).ok,false));
+  test(`entrada inválida mantém bloqueio: ${JSON.stringify(changes)}`,()=>assert.equal(calculate({...base,birthWeight:changes.weight??base.weight,...changes}).ok,false));
 }
 test('limite periférico antigo: 12,5% exatos liberados; acima bloqueia',()=>{
   // Sem aminoácidos, para isolar a regra da glicose da trava de osmolaridade (>900).
@@ -305,7 +308,7 @@ test('travas de concentração final e taxa lipídica usam valores efetivos e li
 const baseline=JSON.parse(readFileSync(new URL('./fixtures/baseline-0.3.5.json',import.meta.url)));
 for(const {name,input,expected} of baseline.records.filter(record=>!['volume-insuficiente','volume-traco-zero'].includes(record.name)))test(`regressão 0.3.5: ${name}`,()=>{
   const actual=calculate({...input,birthWeight:input.weight,fluidPhase:'stable'});
-  delete actual.alerts;delete actual.version;delete actual.sodiumBreakdown;delete actual.fluidReference;delete actual.input.birthWeight;delete actual.input.fluidPhase;delete actual.totals.osmolarity;delete actual.totals.calciumConcentration;delete actual.totals.phosphorusConcentration;delete actual.totals.aminoAcidPercent;delete actual.totals.lipidRate;delete actual.totals.requestedVolume;delete actual.totals.volumeAdjusted;
+  delete actual.weightContext;delete actual.input.currentWeight;delete actual.alerts;delete actual.version;delete actual.sodiumBreakdown;delete actual.fluidReference;delete actual.input.birthWeight;delete actual.input.fluidPhase;delete actual.totals.osmolarity;delete actual.totals.calciumConcentration;delete actual.totals.phosphorusConcentration;delete actual.totals.aminoAcidPercent;delete actual.totals.lipidRate;delete actual.totals.requestedVolume;delete actual.totals.volumeAdjusted;
   const previous=structuredClone(expected);delete actual.blocks;delete actual.canExport;delete previous.blocks;delete previous.canExport;
   assert.deepEqual(actual,previous); // Fórmulas e demais saídas antigas, excluindo as novas decisões de segurança.
 });
