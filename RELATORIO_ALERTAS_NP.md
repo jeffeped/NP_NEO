@@ -99,3 +99,19 @@ Para testes: Node.js ≥20; `npm ci --ignore-scripts`; `npm test`.
 Os pacotes de recuperação preparados antes da publicação continuam sendo registros da atualização a partir da base 0.1.2. Não é necessário aplicá-los novamente ao repositório já atualizado. Para executar a versão atual, obter a branch `main` do GitHub.
 
 A integração e a publicação foram concluídas. A pendência técnica restante é a conferência manual dos cenários na versão 0.1.3 e da ativação do cache offline, detalhada na seção 5. Os testes automatizados não substituem essa conferência nem a validação clínica pelo responsável.
+
+## 9. Atualização 0.7.4 (01/10/2026): osmolaridade em acesso periférico
+
+**Mudança de regra.** A osmolaridade estimada acima de 900 mOsm/L, que até a 0.7.3 gerava apenas orientação, passa a **bloquear prescrição e PDF quando o acesso selecionado é periférico**. Em acesso central, permanece como orientação (nível ATENÇÃO), sem bloqueio. Decisão do responsável clínico em 01/10/2026, após revisão de código que apontou a assimetria com a glicose >12,5% (já bloqueante em acesso periférico).
+
+**Implementação.** `engine.js` acrescenta o bloqueio depois do cálculo da osmolaridade, com a mensagem: “Osmolaridade estimada de X mOsm/L, acima de 900 mOsm/L, em acesso periférico. É obrigatório acesso central. Revise o acesso ou os parâmetros.” O valor exibido é arredondado para cima, para não mostrar 900 quando o limite foi ultrapassado. Em `alerts.js`, o texto do alerta em acesso periférico passa a informar o bloqueio. A equação permanece a de Pereira-da-Silva et al. (JPEN 2004;28:34-37; PMID 14763792; DOI 10.1177/014860710402800134), conferida no PubMed na forma adaptada: AA (g/L) × 8 + glicose (g/L) × 7 + sódio (mEq/L) × 2 + fósforo (mg/L) × 0,2 − 50.
+
+**Consequência clínica a considerar.** Como a equação soma aminoácidos, glicose, sódio e fósforo, a trava de osmolaridade costuma ser atingida antes da glicose de 12,5%. Com aminoácidos a 20 g/L, sem sódio nem fósforo, o limite corresponde a cerca de 11,3% de glicose (160 + 7G − 50 = 900, G ≈ 112,9 g/L). Exemplo testado: 800 g, 100 mL/kg/dia, AA 2 g/kg/dia e VIG 8,5 mg/kg/min resultam em glicose de cerca de 12,2% e osmolaridade de cerca de 967 mOsm/L: antes liberado, agora bloqueado em acesso periférico.
+
+**Testes.** Dois testes anteriores foram reescritos porque a premissa mudou: o teste da fronteira de 12,5% passou a usar AA zero, para isolar a regra da glicose da regra da osmolaridade; o teste de osmolaridade passou a esperar bloqueio em acesso periférico e ausência de bloqueio em acesso central. Novos testes: fronteira de 900 mOsm/L (897,5 liberado; 901 bloqueado, já com o volume de SG 50% arredondado no preparo) e fluxo de interface (bloqueio em periférico, liberação ao trocar para central).
+
+**Correção de referência.** A paginação de Wang et al. foi corrigida para Pediatr Neonatol. 2020;61:331-337 (PMID 32199865; DOI 10.1016/j.pedneo.2020.02.004), conforme o PubMed; o código e o README citavam 339-345.
+
+**Verificação.** 492 testes locais aprovados, sem falhas (480 anteriores, dois reescritos, e 12 novos, incluindo os da HV). Testes aprovados também no GitHub Actions. Integração pela PR #29 e implantação no GitHub Pages confirmada pelo cache `npp-neo-static-0.7.4` no endereço publicado. A partir desta versão, o workflow de testes roda também em push para a `main`, não só em pull request.
+
+**Pendências.** A conferência manual em navegador real dos cenários periféricos não foi feita nesta etapa; os fluxos de interface foram verificados em DOM simulado. Os testes são verificação técnica e não validação clínica formal.

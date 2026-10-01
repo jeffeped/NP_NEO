@@ -78,3 +78,24 @@ Endereço do aplicativo: https://jeffeped.github.io/NP_NEO/. A terceira aba corr
 Execução local: `python3 -m http.server 8765` (Windows: `py -m http.server 8765`), abrindo http://localhost:8765. Testes: Node.js 20 ou superior, `npm ci --ignore-scripts` e `npm test`.
 
 Ao receber “Atualização disponível · reiniciar”, concluir ou anotar os parâmetros antes de reiniciar, pois os formulários serão descartados. Nenhuma nova biblioteca de execução foi adicionada.
+
+## Atualização 0.7.4 (01/10/2026): acesso venoso e bloqueios em acesso periférico
+
+**Mudança de escopo.** A seção “Equivalências e limites do módulo” registrava que a HV não tinha regras de acesso venoso. Revisão de código em 01/10/2026 mostrou que uma HV de 1.000 g, 60 mL/kg/dia e VIG 10 mg/kg/min resultava em glicose final de 24,0% e osmolaridade de cerca de 1.317 mOsm/L sem nenhum alerta, com PDF liberado. Por decisão do responsável clínico, a HV passa a seguir a mesma regra da NP individualizada.
+
+**Regras implementadas.**
+
+- Acesso venoso (central ou periférico) obrigatório. Sem acesso selecionado, o cálculo não é feito e o campo é destacado.
+- Em acesso periférico, bloqueiam composição e PDF: glicose final acima de 12,5% e osmolaridade estimada acima de 900 mOsm/L. Os dois bloqueios podem aparecer juntos.
+- A glicose é comparada em aritmética racional exata (12,5% = 125 mg/mL), coerente com o restante do motor: 12,5% exatos são liberados; qualquer ultrapassagem bloqueia.
+- A osmolaridade usa o método aditivo já existente (soluções glicosadas pela bula e sais por dissociação ideal); continua sendo estimativa, não medição.
+- Em acesso central, nenhuma das duas regras bloqueia.
+- O PDF registra o acesso selecionado. O motor recusa gerar PDF de mistura bloqueada.
+
+**Arquivos alterados.** `hydration.js` (validação do acesso e bloqueios), `hydration-ui.js` (leitura do acesso), `hydration-pdf.js` (linha de acesso), `index.html` (campo de acesso e texto de ajuda), testes da HV (fixtures com `access: 'central'` para preservar o comportamento anterior e testes novos), README e CHANGELOG.
+
+**Testes novos.** Fronteira exata de 12,5% (VIG 5 em 57,6 mL/kg/dia liberada; 57,5 mL/kg/dia bloqueada); osmolaridade acima de 900 com glicose em 12,5% exatos (bloqueio isolado da osmolaridade); ausência de bloqueio em acesso central nas mesmas misturas; ocorrência simultânea dos dois bloqueios; rejeição de acesso vazio, inválido ou ausente; fluxos de interface (bloqueio e campo obrigatório); PDF com a linha de acesso e recusa de mistura bloqueada.
+
+**Verificação.** 492 testes aprovados no total, sem falhas; GitHub Actions aprovado; publicação pela PR #29 confirmada no endereço do aplicativo (versão 0.7.4).
+
+**Pendências.** Conferência manual em navegador real ainda não realizada nesta etapa. Continua não havendo validação de compatibilidade físico-química da mistura.
