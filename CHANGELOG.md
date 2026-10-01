@@ -1,5 +1,13 @@
 # Histórico de versões
 
+## 0.7.5 - preparada em 01/10/2026; publicação pendente
+
+- Protocolo institucional: peso ao nascer para NP individualizada, Numeta e HV em D1-D7; peso atual desde D8. PN obrigatório na primeira semana; pesos medidos e crescimento preservados.
+- Resultados e PDFs identificam peso de cálculo, base utilizada e pesos medidos; a integração enteral conserva a mesma base.
+- Data e hora de emissão de Manaus em todas as páginas dos PDFs produzidos pelo app. O PDF original da Fenton mantém a data emitida pelo próprio serviço.
+- Resíduo de NaCl causado apenas pelo arredondamento do glicerofosfato passa a aviso explícito, com aceite obrigatório do sódio total efetivo na interface. Doses pequenas reais e demais travas continuam bloqueadas.
+- Testes de D1, D6, D7, D8, ausência de PN, integrações, aceite, invalidação e datas nos sete tipos de PDF. Publicação automática recusada pela política de aprovação da sessão; pacote preparado para envio manual.
+
 ## 0.7.4 · publicada em 01/10/2026 (Manaus)
 
 - NP individualizada: osmolaridade estimada acima de 900 mOsm/L em acesso periférico passa a bloquear prescrição e PDF. Em acesso central, segue como orientação. Decisão do responsável clínico em 01/10/2026.
@@ -243,4 +251,3 @@ Registro das mudanças publicadas do NP_NEO. O histórico detalhado e auditável
 ## 0.1.2
 
 - Consolida a versão inicial de avaliação da calculadora de NP neonatal individualizada.
-

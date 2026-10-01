@@ -1,3 +1,4 @@
+import {resolveDosingWeight,dosingWeightLabel,measuredWeightLabel} from './dosing-weight.js';
 import {initFentonNutritionReport} from './fenton-nutrition-ui.js';
 import {initAppUpdate} from './app-update.js';
 import {initStandard} from './standard-ui.js';
@@ -20,13 +21,17 @@ const salts=[{id:'na',name:'Sódio',unit:'mEq/kg/dia',options:[['nacl','Cloreto 
 const omitHTML=(id,name)=>`<label class="omit"><input id="omit-${id}" type="checkbox" data-omit="${id}" aria-label="Não ofertar ${name}">Não ofertar</label>`;
 function doseHTML(d){return `<div class="dose" data-dose="${d.id}"><div class="dose-top"><label class="dose-name" for="${d.id}">${d.name}</label>${omitHTML(d.id,d.name)}</div><div class="dose-controls">${d.options?`<select id="salt-${d.id}" aria-label="Sal de ${d.name}">${d.options.map(([v,s])=>`<option value="${v}">${s}</option>`).join('')}</select>`:d.salt?`<p class="help">${d.salt}</p>`:''}<div class="input-box"><input id="${d.id}" type="text" inputmode="decimal" placeholder="0,0" aria-label="Dose de ${d.name}"><span class="unit">${d.unit}</span></div></div></div>`;}
 $('macros').innerHTML=macros.map(doseHTML).join('');$('electrolytes').innerHTML=salts.map(doseHTML).join('');
+const sodiumHelp=document.createElement('p');sodiumHelp.className='help';sodiumHelp.id='sodium-target-help';sodiumHelp.textContent='Meta de sódio total, incluindo o sódio fornecido pelo glicerofosfato. O NaCl ou acetato complementa essa meta.';$('na').closest('.dose-controls').append(sodiumHelp);$('na').setAttribute('aria-describedby',sodiumHelp.id);
 for(const id of ['aa','lip','vig']){const help=document.createElement('p');help.className='help';help.id='reference-'+id;$(id).closest('.dose-controls').append(help);$(id).setAttribute('aria-describedby',help.id);}
 $('reference-vig').textContent='VIG — velocidade de infusão de glicose, em mg/kg/min. Teto: 12 mg/kg/min na dose solicitada e na oferta efetiva. Concentração final >20%: cautela, inclusive em acesso central.';
 const micros=[{id:'va',name:'Polivit A Ped',rule:'2 mL/kg · máximo 5 mL',time:'A partir do 3º dia de vida'},{id:'vb',name:'Polivit B Ped',rule:'2 mL/kg · máximo 5 mL',time:'A partir do 3º dia de vida'},{id:'oligo',name:'Solução de oligoelementos',rule:'0,2 mL/kg/dia',time:'A partir do 8º dia de vida'},{id:'zn',name:'Sulfato de zinco',rule:'Dose conforme a idade gestacional',time:'Desconta o zinco já ofertado pelos oligoelementos'},{id:'se',name:'Selênio',rule:'Dose conforme a idade gestacional',time:'Desde o 1º dia de vida'}];
 $('micros').innerHTML=micros.map(d=>`<div class="dose" data-dose="${d.id}"><div class="dose-top"><span class="dose-name">${d.name}</span>${omitHTML(d.id,d.name)}</div><div class="dose-controls"><span class="auto" id="rule-${d.id}">${d.rule}</span><p class="help" id="timing-${d.id}">${d.time}</p>${['zn','se'].includes(d.id)?`<div class="input-box"><input id="${d.id}Dose" inputmode="decimal" type="text" value="${d.id==='zn'?'400':'7'}" aria-label="Dose de ${d.id==='zn'?'zinco':'selênio'}"><span class="unit">mcg/kg/dia</span></div>`:''}</div></div>`).join('');
 $('app-version').textContent=VERSION;
 function updateRules(){
-  const w=parseWeightGrams($('weight').value)/1000,day=parseNumber($('day').value),ga=parseNumber($('ga').value);
+  const day=parseNumber($('day').value),ga=parseNumber($('ga').value);
+  const context=resolveDosingWeight({weight:parseWeightGrams($('weight').value)/1000,birthWeight:$('birth-weight').value.trim()===''?null:parseWeightGrams($('birth-weight').value)/1000,day});
+  const w=context.ok?context.calculationWeight:NaN;
+  $('dosing-weight-status').textContent=context.ok?dosingWeightLabel(context):'Protocolo institucional: peso ao nascer do 1º ao 7º dia; peso atual a partir do 8º dia.';
   $('fluid-phase-field').hidden=!(Number.isInteger(day)&&day>=6&&day<=30);
   for(const id of ['aa','lip']){
     if(!Number.isFinite(w)||w<=0||!Number.isInteger(day)||day<1){$('reference-'+id).textContent='Informe peso e dia de vida para exibir a referência de dose.';continue;}
@@ -57,7 +62,7 @@ function textElement(tag,text,cls){const e=document.createElement(tag);e.textCon
 function summaryRow(label,value,highlight=false){const row=document.createElement('div');row.className='summary-row'+(highlight?' highlight':'');row.append(textElement('span',label),textElement('strong',value));return row;}
 function render(r){
   $('empty-result').hidden=true;$('calculated-result').hidden=false;
-  $('result-context').replaceChildren(...[`Peso: ${weightFormat(r.input.weight)} g`,...(r.input.birthWeight?[`Peso ao nascer: ${weightFormat(r.input.birthWeight)} g`]:[]),`Dia de vida: ${r.input.day}`,`IG: ${r.input.gaWeeks} sem + ${r.input.gaDays} d`,`Acesso: ${r.input.access==='central'?'central':'periférico'}`].map(t=>textElement('span',t)));
+  $('result-context').replaceChildren(...[measuredWeightLabel(r.weightContext),dosingWeightLabel(r.weightContext),`Dia de vida: ${r.input.day}`,`IG: ${r.input.gaWeeks} sem + ${r.input.gaDays} d`,`Acesso: ${r.input.access==='central'?'central':'periférico'}`].map(t=>textElement('span',t)));
   const tbody=$('result-rows');tbody.replaceChildren();let group=0;
   for(const item of r.rows){if(item.group!==group&&item.group<3){const spacer=document.createElement('tr');spacer.className='spacer';spacer.setAttribute('aria-hidden','true');const cell=document.createElement('td');cell.colSpan=2;spacer.append(cell);tbody.append(spacer);}group=item.group;const tr=document.createElement('tr');tr.dataset.component=item.id;if(item.volume===0)tr.className='inactive';const name=textElement('td',item.name);name.append(textElement('span',item.id==='water'?'q.s.p. o volume total':`${f(item.quantity)} ${item.unit} · ${f(item.perKg)} ${item.perUnit}`));if(item.status)name.append(textElement('span',item.status));tr.append(name,textElement('td',item.volume===null?'Rever':formatVolume(item.volume,item.id)));tbody.append(tr);}
   const t=r.totals;$('result-summary').replaceChildren(

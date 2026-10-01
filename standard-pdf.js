@@ -1,3 +1,5 @@
+import {dosingWeightLabel,measuredWeightLabel} from './dosing-weight.js';
+import {stampPdfIssueDate} from './pdf-date.js';
 import {VERSION} from './engine.js';
 import {standardSummary,formatStandard,formatStandardPer100,formatStandardVolume,NUMETA_SOURCE,STANDARD_FORMULATIONS} from './standard.js';
 export async function createStandardReport(result){
@@ -20,7 +22,9 @@ export async function createStandardReport(result){
   function row(label,value){room(24);text(label,49,y,10);right(value,546,y,10,bold);y-=24;}
   const f=formatStandard;
   newPage('Prescrição calculada - infusão em 24 horas');
-  paragraph(`Peso: ${f(result.weight*1000)} g | Dia de vida: ${result.day} | Acesso central | Cálculo por ${result.mode==='protein'?'proteína':'taxa hídrica'}`);
+  paragraph(dosingWeightLabel(result.weightContext));
+  paragraph(measuredWeightLabel(result.weightContext));
+  paragraph(`Dia de vida: ${result.day} | Acesso central | Cálculo por ${result.mode==='protein'?'proteína':'taxa hídrica'}`);
   paragraph(`${bag.chambers}, solução de ${bag.bagVolume} mL, sem diluição.`);
   page.drawRectangle({x:42,y:y-8,width:511,height:24,color:shade});text('Componente',49,y,10,bold);right('Volume (mL)',546,y,10,bold);y-=29;
   row(`Numeta G13%E ${bag.label}`,formatStandardVolume(result.volume));y-=8;
@@ -38,5 +42,6 @@ export async function createStandardReport(result){
   paragraph('Fonte: Baxter, SmPC Numeta G13%E, atualização 19/05/2026, seções 2 e 4.2.');paragraph(NUMETA_SOURCE,8);
   paragraph('Versão de avaliação. Relatório de cálculo sujeito à revisão clínica antes do uso assistencial.',8);
   const pages=doc.getPages();pages.forEach((p,i)=>{page=p;text('GROW_NEO - versão '+VERSION+' | Jefferson Guilherme',42,34,8);right(`${i+1}/${pages.length}`,553,34,8);});
-  return doc.save();
+  await stampPdfIssueDate(doc);
+ return doc.save();
 }

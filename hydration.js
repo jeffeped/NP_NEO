@@ -1,4 +1,5 @@
 import {CONCENTRATIONS,parseNumber} from './engine.js';
+import {resolveDosingWeight} from './dosing-weight.js';
 
 // Osmolaridades de referência das soluções glicosadas, em mOsm/L.
 // Conferir a apresentação: glicose hidratada e anidra podem diferir.
@@ -73,7 +74,10 @@ export function calculateHydration(input){
     glucoseOsmolarity[id]=parseNumber(input.glucoseOsmolarity?.[id]??HYDRATION_GLUCOSE_OSMOLARITY[id]);
     if(!Number.isFinite(glucoseOsmolarity[id])||glucoseOsmolarity[id]<=0||glucoseOsmolarity[id]>1e6)errors.push({field:`osm-${id}`,message:`${id==='sg5'?'SG 5%':'SG 50%'}: informe a osmolaridade da bula em mOsm/L, maior que zero.`});
   }
+  const weightContext=resolveDosingWeight({weight:n.weight,day:parseNumber(input.day),birthWeight:input.birthWeight==null||input.birthWeight===''?null:parseNumber(input.birthWeight)});
+  if(!weightContext.ok)errors.push(...weightContext.errors);
   if(errors.length)return {ok:false,errors};
+  n.currentWeight=n.weight;n.weight=weightContext.calculationWeight;n.day=weightContext.day;n.birthWeight=weightContext.birthWeight;n.weightContext=weightContext;
 
   const zero=ratio(0n),weight=decimal(n.weight),total=mul(weight,decimal(n.fluid));
   const minutes=ratio(60n*24n),sg5Concentration=ratio(50n),sg50Concentration=ratio(500n);
@@ -110,10 +114,7 @@ export function calculateHydration(input){
     const saltOsmoles=rows.reduce((sum,row)=>sum+row.amountMeq*SALT_OSMOLES_PER_MEQ[row.id],0);
     mixture.osmolarity=(mixture.sg5*glucoseOsmolarity.sg5+mixture.sg50*glucoseOsmolarity.sg50+saltOsmoles*1000)/totalVolume;
   }
-  // Decisão do protocolo (01/10/2026), igual à NP individualizada: em acesso
-  // periférico, glicose final >12,5% ou osmolaridade estimada >900 mOsm/L
-  // bloqueiam o preparo e o PDF. A glicose é comparada em aritmética exata
-  // (12,5% = 125 mg/mL); a osmolaridade é uma estimativa.
+  // Preserve the published peripheral-access safety gates.
   if(mixture&&input.access==='peripheral'){
     if(sub(glucose,mul(total,ratio(125n))).a>0n)blocks.push(`Concentração final de glicose de ${formatHydrationNumber(Math.ceil(mixture.glucosePercent*10)/10)}%, acima de 12,5%, em acesso periférico. É obrigatório acesso central. Revise o acesso, a VIG ou a taxa hídrica.`);
     if(Number.isFinite(mixture.osmolarity)&&mixture.osmolarity>900)blocks.push(`Osmolaridade estimada de ${Math.ceil(mixture.osmolarity)} mOsm/L, acima de 900 mOsm/L, em acesso periférico. É obrigatório acesso central. Revise o acesso ou os parâmetros.`);

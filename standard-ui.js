@@ -1,3 +1,4 @@
+import {dosingWeightLabel,measuredWeightLabel} from './dosing-weight.js';
 import {calculateStandard,standardSummary,formatStandard,formatStandardPer100,formatStandardVolume,STANDARD_FORMULATIONS} from './standard.js';
 import {createStandardReport} from './standard-pdf.js';
 import {parseWeightGrams} from './engine.js';
@@ -11,7 +12,7 @@ export function initStandard(document){
   $('std-form').addEventListener('input',invalidate);$('std-form').addEventListener('change',invalidate);
   $('std-form').addEventListener('submit',event=>{
     event.preventDefault();invalidate();
-    const r=calculateStandard({weight:parseWeightGrams($('std-weight').value)/1000,day:$('std-day').value,mode:$('std-mode').value,value:$('std-value').value,access:$('std-access').value,formulation:$('std-formulation').value});
+    const r=calculateStandard({weight:parseWeightGrams($('std-weight').value)/1000,birthWeight:$('std-birth-weight').value.trim()===''?null:parseWeightGrams($('std-birth-weight').value)/1000,day:$('std-day').value,mode:$('std-mode').value,value:$('std-value').value,access:$('std-access').value,formulation:$('std-formulation').value});
     if(!r.ok){$('std-errors').textContent=r.errors.join(' ');$('std-errors').hidden=false;return;}
     const bag=STANDARD_FORMULATIONS[r.formulation];
     result=r;$('std-export').disabled=Boolean(r.blocks.length);
@@ -19,7 +20,7 @@ export function initStandard(document){
     $('std-status').textContent=r.blocks.length?'Cálculo para revisão — prescrição bloqueada':`Prescrição calculada de Numeta ${bag.label} · 24 horas`;
     $('std-prescription').textContent=r.blocks.length?'Revise os impedimentos abaixo.':`Numeta G13%E ${bag.label}, ${bag.chambers.toLowerCase()}, sem diluição: ${formatStandardVolume(r.volume)} mL em 24 horas, por acesso central. Vazão média calculada: ${formatStandardVolume(r.rate)} mL/h.`;
     const element=(tag,text)=>{const el=document.createElement(tag);el.textContent=text;return el;};
-    $('std-context').replaceChildren(...[`Peso: ${new Intl.NumberFormat('pt-BR',{maximumFractionDigits:3}).format(r.weight*1000)} g`,`Dia de vida: ${r.day}`,`Acesso: ${$('std-access').value==='central'?'central':'periférico'}`].map(x=>element('span',x)));
+    $('std-context').replaceChildren(...[measuredWeightLabel(r.weightContext),dosingWeightLabel(r.weightContext),`Dia de vida: ${r.day}`,`Acesso: ${$('std-access').value==='central'?'central':'periférico'}`].map(x=>element('span',x)));
     const prescriptionRow=document.createElement('tr');
     const component=element('td',`Numeta G13%E ${bag.label}`);component.append(element('span',`${bag.chambers} · sem diluição`));
     prescriptionRow.append(component,element('td',formatStandardVolume(r.volume)));$('std-prescription-rows').replaceChildren(prescriptionRow);

@@ -1,0 +1,49 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
+import {calculateEnteral,integrateNutrition} from '../enteral.js';
+import {calculateGrowth} from '../growth.js';
+import {createFentonNutritionReport} from '../fenton-nutrition-pdf.js';
+vm.runInThisContext(readFileSync(new URL('../vendor/pdf-lib.min.js',import.meta.url),'utf8'));
+
+// Tiny JPEG fixture checks embedding only; it is not a clinical Fenton reference.
+const jpeg=Buffer.from('/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAAaABQDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD3+iiigAooooAKKKKACiiigD//2Q==','base64');
+const chart={blob:new Blob([jpeg],{type:'image/jpeg'}),data:{sex:'F',birthGaWeeks:28,birthGaDays:0,measurements:[{weeks:30,days:5,weightGrams:1300}]}};
+const growth=calculateGrowth({sex:'female',birthWeight:1400,initialWeight:1100,finalWeight:1300,gaWeeks:28,gaDays:0,initialDay:17,finalDay:20});
+function nutrition(source='none',phase='growth'){
+ const enteral=calculateEnteral({type:'lhop',rate:165,fm85GramsPer100mL:2});
+ return {enteral,integrated:integrateNutrition({source,enteral,parenteral:{fluid:60,calories:45,protein:2,weight:1.3,formulation:source==='standard'?'2in1':undefined}}),clinical:{phase,birthWeight:1400,gestationalAge:28}};
+}
+for(const source of ['none','individual','standard','hydration'])for(const phase of ['growth','transition','oligoanuria']){
+ test(`two-page report / ${source} / ${phase}: complete content stays inside page`,async()=>{
+  const input={nutrition:nutrition(source,phase),growth,chart},before=JSON.stringify(input.nutrition),texts=[];
+  const original=PDFLib.PDFPage.prototype.drawText;
+  PDFLib.PDFPage.prototype.drawText=function(value,opts){
+   assert.ok(opts.y>=14,value);
+   assert.ok(opts.x>=0&&opts.x+opts.font.widthOfTextAtSize(value,opts.size)<=this.getWidth()-25,value);
+   texts.push({value,page:this});return original.call(this,value,opts);
+  };
+  let bytes;
+  try{bytes=await createFentonNutritionReport(input);}finally{PDFLib.PDFPage.prototype.drawText=original;}
+  const doc=await PDFLib.PDFDocument.load(bytes);
+  assert.equal(doc.getPageCount(),2);assert.equal(doc.getAuthor(),'Jefferson Guilherme');
+  assert.equal(JSON.stringify(input.nutrition),before);
+  assert.ok(texts.some(x=>x.value==='3,17'||x.value==='5,17'));
+  assert.ok(texts.some(x=>x.value.includes('FM85: 0,50')));
+  assert.ok(texts.some(x=>x.value.includes('Ainda não recuperou')));
+  assert.ok(texts.some(x=>x.value.includes('inferior a 5 dias')));
+  if(source==='standard')assert.ok(texts.some(x=>x.value.includes('Lipídios infundidos à parte')));
+ });
+}
+test('requires current nutrition and chart',async()=>{
+ await assert.rejects(createFentonNutritionReport({chart}),/Calcule o aporte/);
+ await assert.rejects(createFentonNutritionReport({nutrition:nutrition()}),/Gere o gráfico/);
+});
+test('rejects mixed growth and chart context',async()=>{
+ await assert.rejects(createFentonNutritionReport({nutrition:nutrition(),growth:{...growth,input:{...growth.input,sex:'male'}},chart}),/sexo e IG/);
+});
+test('optional growth is explicitly absent',async()=>{
+ const bytes=await createFentonNutritionReport({nutrition:nutrition(),chart});
+ assert.equal((await PDFLib.PDFDocument.load(bytes)).getPageCount(),2);
+});

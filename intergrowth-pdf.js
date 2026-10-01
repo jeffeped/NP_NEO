@@ -1,3 +1,4 @@
+import {stampPdfIssueDate} from './pdf-date.js';
 import {VERSION} from './engine.js';
 import {buildIntergrowthChartModel,INTERGROWTH_METRICS} from './intergrowth-charts.js';
 import {INTERGROWTH_MIN_DAYS,INTERGROWTH_MAX_DAYS} from './intergrowth.js';
@@ -102,6 +103,7 @@ export async function exportIntergrowthPdf(result){
    alignRight(page,`${pageNumber}/${totalPages}`,right,20,7,regular,muted);
   }
  }
+ await stampPdfIssueDate(doc);
  return doc.save();
 }
 
@@ -188,5 +190,6 @@ export async function exportIntergrowthSummaryPdf(result){
  if(velocity)text(velocityReference,left,48,8,regular,muted);
  text('Conferir os resultados antes do uso assistencial.',left,velocity?30:42,8,regular,muted);
  rightText('1/1',right,velocity?30:42,8,regular,muted);
+ await stampPdfIssueDate(doc);
  return doc.save();
 }

@@ -1,6 +1,7 @@
 import {nutritionAlerts,compareProducts} from './alerts.js';
 import {fluidGuidance} from './fluid-guidance.js';
-export const VERSION = '0.7.4';
+import {resolveDosingWeight} from './dosing-weight.js';
+export const VERSION = '0.7.5';
 export const CONCENTRATIONS = Object.freeze({aa:0.1,lip:0.2,glucose:0.5,nacl:1.7,acetate:2,kcl:1.34,calcium:0.5,magnesium:0.8,kphosP:1.1,kphosK:2,glyceroP:1,glyceroNa:2,oligoZn:500,zinc:200,selenium:60});
 export const ENERGY = Object.freeze({aa:4,lip:9,glucose:4});
 export const round1 = n => Math.round((n + Number.EPSILON * Math.max(1, Math.abs(n))) * 10) / 10;
@@ -52,6 +53,9 @@ export function calculate(input) {
     catch(error){errors.push({field:n.day<=5?'birthWeight':'fluidPhase',message:error.message});}
   }
   if(errors.length) return {ok:false,errors};
+  const weightContext=resolveDosingWeight({weight:n.weight,birthWeight:n.birthWeight,day:n.day});
+  if(!weightContext.ok)return {ok:false,errors:weightContext.errors};
+  n.currentWeight=n.weight;n.weight=weightContext.calculationWeight;
   const w=n.weight,c=CONCENTRATIONS;
   const blocks=[],notices=[],adjustments=[],rounding=[];
   const volumes={};
@@ -72,7 +76,14 @@ export function calculate(input) {
   const donorK=input.pSalt==='kphos'?pVolume*c.kphosK:0;
   const naRemaining=Math.max(0,n.na*w-donorNa);
   const kRemaining=Math.max(0,n.k*w-donorK);
-  volume('sodium',omit.na?0:naRemaining/(input.naSalt==='nacl'?c.nacl:c.acetate),'Sal de sódio');
+  const sodiumRaw=naRemaining/(input.naSalt==='nacl'?c.nacl:c.acetate);
+  // Only a residual created by rounding phosphate whose unrounded sodium
+  // already covers the target can use the existing total-sodium acceptance.
+  // Genuine small requested supplements retain the minimum-volume block.
+  const sodiumRoundingResidual=!omit.na&&donorNa>0&&input.pSalt==='glycero'
+    &&n.p*c.glyceroNa/c.glyceroP>=n.na-1e-9&&sodiumRaw>0&&round1(sodiumRaw)===0;
+  volume('sodium',omit.na||sodiumRoundingResidual?0:sodiumRaw,'Sal de sódio');
+  if(sodiumRoundingResidual)rounding.push('sodium');
   volume('potassium',omit.k?0:kRemaining/c.kcl,'Cloreto de potássio 10%');
   volume('calcium',n.ca*w/c.calcium,'Gluconato de cálcio 10%');
   volume('magnesium',n.mg*w/c.magnesium,'Sulfato de magnésio 10%');
@@ -104,6 +115,10 @@ export function calculate(input) {
     supplementName:input.naSalt==='nacl'?'cloreto de sódio 10%':'acetato de sódio',
     actual:effective.na
   }:null;
+  if(sodiumRoundingResidual){
+    sodiumBreakdown.omittedSupplementVolume=sodiumRaw;
+    notices.push(`Sódio: após arredondar o glicerofosfato, o complemento de ${sodiumBreakdown.supplementName} seria ${sodiumRaw.toFixed(3).replace('.',',')} mL, abaixo de 0,05 mL, e não foi acrescentado. Sódio total solicitado: ${n.na.toFixed(2).replace('.',',')}; efetivo: ${effective.na.toFixed(2).replace('.',',')} mEq/kg/dia. Confira e aceite a dose efetiva antes de exportar.`);
+  }
   for(const [id,donor,requested,actual,name,unit,source] of [
     ['na',donorNa,n.na,effective.na,'Sódio','mEq/kg/dia','glicerofosfato de sódio'],
     ['k',donorK,n.k,effective.k,'Potássio','mEq/kg/dia','fosfato de potássio'],
@@ -188,6 +203,6 @@ export function calculate(input) {
     ['na','Sódio total',n.na,effective.na,'mEq/kg/dia'],['k','Potássio total',n.k,effective.k,'mEq/kg/dia'],['ca','Cálcio',n.ca,effective.ca,'mEq/kg/dia'],['mg','Magnésio',n.mg,effective.mg,'mEq/kg/dia'],['p','Fósforo',n.p,effective.p,'mmol/kg/dia'],['zn','Zinco total',zincTarget,effective.zn,'mcg/kg/dia'],['se','Selênio',seleniumTarget,effective.se,'mcg/kg/dia']
   ].map(([id,name,requested,actual,unit])=>({id,name,requested,actual,unit}));
   const alerts=nutritionAlerts({...n,access:input.access,pSalt:input.pSalt},{volumes,effective,totalVolume,glucosePercent,osmolarity,calciumConcentration,phosphorusConcentration});
-  return {ok:true,input:{...n,fluidPhase:input.fluidPhase,access:input.access,naSalt:input.naSalt,pSalt:input.pSalt,omit},rows,volumes,grams,effective,offers,rounding,adjustments,sodiumBreakdown,notices,alerts,blocks,fluidReference,requiresCentral,accessBlocked,canExport:blocks.length===0,
+  return {ok:true,weightContext,input:{...n,fluidPhase:input.fluidPhase,access:input.access,naSalt:input.naSalt,pSalt:input.pSalt,omit},rows,volumes,grams,effective,offers,rounding,adjustments,sodiumBreakdown,notices,alerts,blocks,fluidReference,requiresCentral,accessBlocked,canExport:blocks.length===0,
     totals:{totalVolume,requestedVolume:totalCents/100,volumeAdjusted:componentsCents>totalCents,componentsVolume:componentsCents/100,water:volumes.water,infusion:round1(totalVolume/24),infusionExact:totalVolume/24,fluid:totalVolume/w,calories:calories/w,aminoAcidPercent,glucosePercent,lipidRate,calciumConcentration,phosphorusConcentration,osmolarity,nonProtein:nonProtein/w,proteinRatio:grams.aa>0?nonProtein/grams.aa:null},version:VERSION};
 }

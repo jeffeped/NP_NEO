@@ -1,3 +1,5 @@
+import {dosingWeightLabel} from './dosing-weight.js';
+import {stampPdfIssueDate} from './pdf-date.js';
 import {VERSION} from './engine.js';
 import {transitionLines,clinicalReferenceLines} from './enteral.js';
 
@@ -41,7 +43,7 @@ export async function createFentonNutritionReport({nutrition,growth=null,chart})
  };
  const section=title=>{y-=8;line(title,{size:10,font:bold,leading:17});};
  line('Fonte intravenosa: '+integrated.sourceLabel,{font:bold});
- line(Number.isFinite(integrated.weight)?`Peso usado no aporte: ${fmt(integrated.weight*1000,0)} g`:'Aporte somente enteral; valores por kg de peso.');
+ line(integrated.weightContext?dosingWeightLabel(integrated.weightContext):Number.isFinite(integrated.weight)?`Peso usado no aporte: ${fmt(integrated.weight*1000,0)} g`:'Aporte somente enteral; valores por kg de peso.');
  line(`Dieta: ${enteral.composition.label}`);
  line(`Composição final: ${fmt(enteral.composition.energy)} kcal/100 mL · ${fmt(enteral.composition.protein,2)} g proteína/100 mL`);
  if(enteral.composition.fm85GramsPer100mL>0)line(`FM85: ${fmt(enteral.composition.fm85GramsPer100mL/4,2)} g/25 mL (média no volume total).`);
@@ -85,5 +87,6 @@ export async function createFentonNutritionReport({nutrition,growth=null,chart})
  const width=jpg.width*scale,height=jpg.height*scale;
  second.drawImage(jpg,{x:(W-width)/2,y:bottom+(top-bottom-height)/2,width,height});
  text(second,'Gráfico oficial recebido do serviço Fenton 2025 · fentongrowth.ca',L,55,8,regular,muted);
+ await stampPdfIssueDate(doc);
  return doc.save();
 }

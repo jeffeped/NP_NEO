@@ -48,8 +48,8 @@
           <section class="section"><div class="section-inner">
             <h2><span class="number">01</span> Dados para o cálculo</h2>
             <div class="field-grid">
-              <label class="field">Peso atual<div class="input-box"><input id="weight" name="weight" inputmode="decimal" type="text" placeholder="800" required aria-label="Peso atual em gramas"><span class="unit">g</span></div></label>
-              <label class="field">Peso ao nascer<div class="input-box"><input id="birth-weight" name="birthWeight" inputmode="decimal" type="text" placeholder="800" aria-label="Peso ao nascer em gramas"><span class="unit">g</span></div><span class="help">Necessário nos primeiros cinco dias para prematuros.</span></label>
+              <label class="field">Peso atual<div class="input-box"><input id="weight" name="weight" inputmode="decimal" type="text" placeholder="800" required aria-label="Peso atual em gramas"><span class="unit">g</span></div><span id="dosing-weight-status" class="help" aria-live="polite"></span></label>
+              <label class="field">Peso ao nascer<div class="input-box"><input id="birth-weight" name="birthWeight" inputmode="decimal" type="text" placeholder="800" aria-label="Peso ao nascer em gramas"><span class="unit">g</span></div><span class="help">Obrigatório do 1º ao 7º dia: usado como peso de cálculo pelo protocolo institucional.</span></label>
               <label class="field">Dia de vida<div class="input-box"><input id="day" name="day" inputmode="numeric" type="text" placeholder="1" required aria-label="Dia de vida"><span class="unit">dia</span></div></label>
               <div class="field full"><span>Idade gestacional ao nascer</span><div class="input-box"><input id="ga" inputmode="numeric" type="text" placeholder="Semanas" aria-label="Idade gestacional em semanas" required><span class="unit">sem</span><input id="ga-days" inputmode="numeric" type="text" value="0" aria-label="Dias adicionais de gestação"><span class="unit">dias</span></div></div>
               <label id="fluid-phase-field" class="field full" hidden>Fase clínica para a taxa hídrica (D6–D30)<select id="fluid-phase" class="hv-select" aria-label="Fase clínica da nutrição parenteral"><option value="">Selecione a fase</option><option value="intermediate">Intermediária · antes do crescimento estável</option><option value="stable">Crescimento estável</option></select><span class="help">Selecionada pelo médico; o dia de vida isolado não determina a fase.</span></label>
@@ -92,6 +92,8 @@
             <h2><span class="number">01</span> Volume e glicose</h2>
             <div class="field-grid">
               <label class="field">Peso atual<div class="input-box"><input id="hv-weight" inputmode="decimal" type="text" placeholder="800" required aria-label="HV: peso atual em gramas"><span class="unit">g</span></div></label>
+<label class="field">Peso ao nascer<div class="input-box"><input id="hv-birth-weight" inputmode="decimal" type="text" aria-label="Peso ao nascer em gramas"><span class="unit">g</span></div><span class="help">Obrigatório do 1º ao 7º dia. A partir do 8º dia, os cálculos usam o peso atual.</span></label>
+<label class="field">Dia de vida<div class="input-box"><input id="hv-day" inputmode="numeric" type="text" required aria-label="HV: dia de vida"><span class="unit">dia</span></div></label>
               <label class="field">Taxa hídrica<div class="input-box"><input id="hv-fluid" inputmode="decimal" type="text" placeholder="Informe a taxa" required aria-label="HV: taxa hídrica"><span class="unit">mL/kg/dia</span></div></label>
               <label class="field full">VIG desejada<div class="input-box"><input id="hv-vig" inputmode="decimal" type="text" placeholder="Informe a VIG" required aria-label="HV: VIG desejada"><span class="unit">mg/kg/min</span></div></label>
               <fieldset id="hv-access" class="field full access-field"><legend>Acesso venoso</legend><div class="access"><label><input type="radio" name="hv-access" value="central"><span>Central</span></label><label><input type="radio" name="hv-access" value="peripheral"><span>Periférico</span></label></div></fieldset>
@@ -147,6 +149,7 @@
         <form id="std-form" autocomplete="off" novalidate class="section section-inner">
           <div class="field-grid">
             <label class="field">Peso atual<div class="input-box"><input id="std-weight" type="text" inputmode="decimal" placeholder="800" aria-label="NP padrão: peso atual em gramas" required><span class="unit">g</span></div></label>
+<label class="field">Peso ao nascer<div class="input-box"><input id="std-birth-weight" inputmode="decimal" type="text" aria-label="Peso ao nascer em gramas"><span class="unit">g</span></div><span class="help">Obrigatório do 1º ao 7º dia. A partir do 8º dia, os cálculos usam o peso atual.</span></label>
             <label class="field">Dia de vida<div class="input-box"><input id="std-day" type="text" inputmode="numeric" required></div></label>
             <label class="field full">Câmaras ativadas<select id="std-formulation" class="hv-select" required><option value="3in1">3:1 — aminoácidos, glicose e lipídios (300 mL)</option><option value="2in1">2:1 — aminoácidos e glicose, sem lipídios (240 mL)</option></select></label>
             <label class="field full">Calcular a partir de<select id="std-mode" class="hv-select"><option value="fluid">Taxa hídrica (mL/kg/dia)</option><option value="protein">Proteína (g/kg/dia)</option></select></label>
@@ -288,6 +291,7 @@
         </div></section>
         <section class="section"><div class="section-inner">
           <h2>Finalidade e limites</h2>
+          <p><strong>Peso de cálculo - protocolo institucional:</strong> do 1º ao 7º dia de vida (inclusive), NP individualizada, NP padrão e HV usam o peso ao nascer. A partir do 8º dia, usam o peso atual. O peso atual permanece registrado para acompanhar a variação desde o nascimento. As medidas e velocidades de crescimento usam os pesos realmente medidos. Na integração enteral, os aportes por kg seguem o peso de cálculo da fonte IV selecionada.</p>
           <p>O GROW_NEO é um instrumento de apoio ao cálculo e à conferência. Não substitui avaliação clínica, protocolo institucional, validação farmacêutica nem conferência da prescrição.</p>
           <p>O aplicativo não confirma estabilidade físico-química, compatibilidade entre componentes ou ausência de precipitados. As apresentações e concentrações devem ser confrontadas com os rótulos utilizados pelo serviço.</p>
         </div></section>

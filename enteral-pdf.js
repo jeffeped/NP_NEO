@@ -1,3 +1,5 @@
+import {dosingWeightLabel} from './dosing-weight.js';
+import {stampPdfIssueDate} from './pdf-date.js';
 import {VERSION} from './engine.js';
 import {transitionLines,clinicalReferenceLines} from './enteral.js';
 const fmt=(n,digits=1)=>Number.isFinite(n)?n.toFixed(digits).replace('.',','):'—';
@@ -25,7 +27,8 @@ export async function createEnteralReport({enteral,integrated,clinical,growth}){
  for(const line of transitionLines(integrated)){text(line,L,y,9);y-=18;}
  y-=8;text('Metas avaliadas sobre os totais PN + EN, antes do arredondamento.',L,y,8,regular,muted);
  y-=16;text('As metas não determinam redução ou suspensão automática da PN.',L,y,8,regular,muted);
- y-=16;text(integrated.source==='none'?'Totais somente da dieta enteral.':`Fonte calculada nesta sessão: ${integrated.sourceLabel}${Number.isFinite(integrated.weight)?' · peso '+fmtDose(integrated.weight*1000)+' g':''}.`,L,y,8,regular,muted);
+ y-=16;text(integrated.source==='none'?'Totais somente da dieta enteral.':`Fonte calculada nesta sessão: ${integrated.sourceLabel}${!integrated.weightContext&&Number.isFinite(integrated.weight)?' · peso de cálculo '+fmtDose(integrated.weight*1000)+' g':''}.`,L,y,8,regular,muted);
+ if(integrated.weightContext){y-=14;text(dosingWeightLabel(integrated.weightContext),L,y,8,regular,muted);}
  if(growth){
   y-=30;text('Crescimento ponderal',L,y,11,bold);y-=20;
   text(`${growth.input.sex==='female'?'Feminino':'Masculino'} · intervalo ${growth.intervalDays} dias · IPM média ${pma(growth.midpointPmaWeeks)}`,L,y,9);y-=17;
@@ -49,5 +52,6 @@ export async function createEnteralReport({enteral,integrated,clinical,growth}){
   }
   refPage.drawText('Referências bibliográficas completas na aba Notas do aplicativo.',{x:L,y:82,size:8,font:regular,color:muted});
  }
+ await stampPdfIssueDate(doc);
  return doc.save();
 }

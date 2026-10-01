@@ -54,14 +54,15 @@ export function intravenousFromResult(source,result){
     values={fluid:result.input.fluid,calories:result.mixture.glucoseGrams*4/result.input.weight,protein:0,weight:result.input.weight};
   }
   if(['fluid','calories','protein'].some(key=>!Number.isFinite(values[key])||values[key]<0))throw new Error('Aporte intravenoso inválido; recalcule na aba correspondente.');
-  return values;
+    values.weightContext=result.weightContext??result.input?.weightContext??null;
+    return values;
 }
 export function integrateNutrition({parenteral={},enteral,source='individual'}){
   if(!Object.hasOwn(IV_SOURCES,source))throw new Error('Selecione o aporte intravenoso em uso.');
   const p=source==='none'?{fluid:0,calories:0,protein:0}:{fluid:Number(parenteral.fluid)||0,calories:Number(parenteral.calories)||0,protein:source==='hydration'?0:Number(parenteral.protein)||0};
   const e=enteral||{rate:0,calories:0,protein:0};
   const twoChamber=source==='standard'&&parenteral.formulation==='2in1';
-  return {source,sourceLabel:twoChamber?'NP padrão (Numeta 2:1, sem lipídios)':IV_SOURCES[source],weight:source==='none'?null:parenteral.weight,parenteral:p,enteral:{fluid:e.rate||0,calories:e.calories||0,protein:e.protein||0},
+  return {source,sourceLabel:twoChamber?'NP padrão (Numeta 2:1, sem lipídios)':IV_SOURCES[source],weight:source==='none'?null:parenteral.weight,weightContext:source==='none'?null:parenteral.weightContext??null,parenteral:p,enteral:{fluid:e.rate||0,calories:e.calories||0,protein:e.protein||0},
     total:{fluid:p.fluid+(e.rate||0),calories:p.calories+(e.calories||0),protein:p.protein+(e.protein||0)}};
 }
 

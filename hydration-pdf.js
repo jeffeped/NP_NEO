@@ -1,3 +1,5 @@
+import {dosingWeightLabel,measuredWeightLabel} from './dosing-weight.js';
+import {stampPdfIssueDate} from './pdf-date.js';
 import {VERSION} from './engine.js';
 import {formatHydrationNumber as f,formatHydrationVolume as fv} from './hydration.js';
 
@@ -18,7 +20,9 @@ export async function createHydrationReport(result){
   function row(label,value){room(25);text(label,49,y,10);right(value,y);y-=25;}
   function paragraph(s){let line='';for(const word of String(s).split(/\s+/)){const next=line?line+' '+word:word;if(regular.widthOfTextAtSize(next,8)>511&&line){room(12);text(line,42,y,8,regular,muted);y-=12;line=word;}else line=next;}if(line){room(12);text(line,42,y,8,regular,muted);y-=12;}y-=7;}
   newPage();
-  paragraph(`Peso: ${f(result.input.weight*1000)} g | Taxa hídrica: ${f(result.input.fluid)} mL/kg/dia | Acesso: ${result.input.access==='central'?'central':'periférico'} | Sem identificação do paciente`);
+  paragraph(dosingWeightLabel(result.input.weightContext));
+  paragraph(measuredWeightLabel(result.input.weightContext));
+  paragraph(`Dia de vida: ${result.input.day} | Taxa hídrica: ${f(result.input.fluid)} mL/kg/dia | Acesso: ${result.input.access==='central'?'central':'periférico'} | Sem identificação do paciente`);
   paragraph(`Doses informadas em ${result.input.doseUnit==='perKgDay'?'mEq/kg/dia':'mEq totais em 24 horas'}.`);
   page.drawRectangle({x:42,y:y-8,width:511,height:24,color:shade});text('Componente / quantidade',49,y,10,bold);right('Volume (mL)',y);y-=30;
   for(const item of result.rows){room(43);row(item.solution,fv(item.volume));text(`${f(item.amountMeq)} mEq/24 h | ${f(item.perKgDay)} mEq/kg/dia | ${f(item.concentration)} mEq/mL`,49,y+10,8,regular,muted);y-=16;}
@@ -33,5 +37,6 @@ export async function createHydrationReport(result){
   paragraph('Versão de avaliação. Conferir os resultados e as apresentações antes do uso assistencial.');
   room(32);page.drawRectangle({x:42,y:y-9,width:511,height:28,color:shade});row('VT · Vazão em 24 horas',`${fv(result.totals.totalVolume)} mL | ${fv(result.totals.infusion)} mL/h`);
   const pages=doc.getPages();pages.forEach((p,i)=>{page=p;text('GROW_NEO - versão '+VERSION+' | Jefferson P Guilherme',42,34,8);right(`${i+1}/${pages.length}`,34,8,regular);});
-  return doc.save();
+  await stampPdfIssueDate(doc);
+ return doc.save();
 }

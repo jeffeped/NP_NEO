@@ -1,3 +1,5 @@
+import {dosingWeightLabel,measuredWeightLabel} from './dosing-weight.js';
+import {stampPdfIssueDate} from './pdf-date.js';
 import {round1,formatVolume} from './engine.js';
 const fmt=n=>Number.isFinite(n)?round1(n).toFixed(1).replace('.',','):'—';
 const fmt2=n=>Number.isFinite(n)?n.toFixed(2).replace('.',','):'—';
@@ -29,9 +31,10 @@ export async function createReport(result){
   function horizontal(yy){page.drawLine({start:{x:L,y:yy},end:{x:R,y:yy},thickness:.5,color:line});}
   const ctx=result.input,t=result.totals;
   newPage('Cálculo de nutrição parenteral neonatal');
-  text(`Peso atual: ${compact(ctx.weight*1000)} g`,L,y,9,bold);text(`Dia de vida: ${ctx.day}`,225,y,9);text(`IG ao nascer: ${ctx.gaWeeks} sem + ${ctx.gaDays} d`,373,y,9);y-=17;
+  text(`Peso atual: ${compact((ctx.currentWeight??ctx.weight)*1000)} g`,L,y,9,bold);text(`Dia de vida: ${ctx.day}`,225,y,9);text(`IG ao nascer: ${ctx.gaWeeks} sem + ${ctx.gaDays} d`,373,y,9);y-=17;
   text(`Acesso: ${ctx.access==='central'?'central':'periférico'}`,L,y,9);text('Infusão: 24 horas',225,y,9);text('Sem identificação do paciente',373,y,9);y-=24;
   if(ctx.birthWeight){text(`Peso ao nascer: ${compact(ctx.birthWeight*1000)} g`,L,y,9);y-=17;}
+  if(result.weightContext){paragraph(dosingWeightLabel(result.weightContext),9,ink);paragraph(measuredWeightLabel(result.weightContext),8);}
   function compositionHead(){page.drawRectangle({x:L,y:y-9,width:R-L,height:24,color:shade});text('Componente',L+6,y,9,bold);right('Total / dia',354,y,9,bold);right('Dose / taxa efetiva',488,y,9,bold);right('mL',R-6,y,9,bold);y-=27;}
   compositionHead();let group=0;
   for(const row of result.rows){
@@ -57,5 +60,6 @@ export async function createReport(result){
   if(result.alerts?.length){newPage('Orientações e alertas de nutrição parenteral');paragraph('VIG — velocidade de infusão de glicose, em mg/kg/min. Alertas clínicos não bloqueantes: conferir dose solicitada, oferta efetiva, peso e dia de vida.',9,ink);for(const alert of result.alerts)paragraph(alert.message.replaceAll('≥','>='),9,ink);}
   paragraph('Versão de avaliação. Este relatório apresenta cálculos e não substitui a revisão clínica da composição.',8);
   const pages=doc.getPages();for(let i=0;i<pages.length;i++){page=pages[i];center('ESA – Escola Superior de Ciências da Saúde',42,8);center('Av. Carvalho Leal, 1777 - Cachoeirinha, Manaus - AM, 69065-001',30,8);right(`${i+1}/${pages.length}`,R,30,8,regular,muted);}
-  return doc.save();
+  await stampPdfIssueDate(doc);
+ return doc.save();
 }

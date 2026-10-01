@@ -1,6 +1,7 @@
 import {formatHydrationVolume} from './hydration.js';
 import {parseNumber} from './engine.js';
 import {compareProducts} from './alerts.js';
+import {resolveDosingWeight} from './dosing-weight.js';
 // Baxter SmPC, 19 May 2026, sections 2 and 4.2; 2CB and 3CB compositions.
 export const NUMETA_SOURCE='https://www.medicines.org.uk/emc/product/7400/smpc';
 // Use whole-bag values, not rounded per-100 mL concentrations.
@@ -17,10 +18,12 @@ export const STANDARD_FORMULATIONS=Object.freeze({
 });
 export const NUTRIENTS=STANDARD_FORMULATIONS['3in1'].nutrients;
 export function calculateStandard(input){
-  const weight=parseNumber(input.weight),value=parseNumber(input.value),day=parseNumber(input.day);
+  const currentWeight=parseNumber(input.weight),value=parseNumber(input.value),day=parseNumber(input.day);
+  const weightContext=resolveDosingWeight({weight:currentWeight,day,birthWeight:input.birthWeight==null||input.birthWeight===''?null:parseNumber(input.birthWeight)});
+  const weight=weightContext.calculationWeight;
   const formulation=input.formulation??'3in1',bag=STANDARD_FORMULATIONS[formulation];
   const errors=[];
-  if(!Number.isFinite(weight)||weight<0.1||weight>20)errors.push('Informe peso atual entre 100 e 20.000 g.');
+  if(!weightContext.ok)errors.push(...weightContext.errors.map(e=>e.message));
   if(!Number.isFinite(value)||value<=0||value>10000)errors.push('Informe uma taxa ou dose maior que zero e até 10.000.');
   if(!Number.isInteger(day)||day<1||day>365)errors.push('Informe dia de vida inteiro entre 1 e 365.');
   if(!['fluid','protein'].includes(input.mode))errors.push('Selecione taxa hídrica ou proteína.');
@@ -40,7 +43,7 @@ export function calculateStandard(input){
   const lip=fluid*(formulation==='3in1'?7.5:0)/bag.bagVolume;
   if(lip>(day===1?2:3)+1e-9)alerts.push('Lipídios acima da referência do projeto para este dia de vida: '+(day===1?'2,0':'3,0')+' g/kg/dia.');
   if(formulation==='2in1')alerts.push('Bolsa 2:1 sem lipídios. Lipídios infundidos à parte não estão incluídos nas ofertas nem na integração com a enteral.');
-  return {ok:true,weight,day,mode:input.mode,formulation,fluid,volume,rate,protein,vig,rows,blocks,alerts};
+  return {ok:true,weight,currentWeight,weightContext,day,mode:input.mode,formulation,fluid,volume,rate,protein,vig,rows,blocks,alerts};
 }
 
 export const formatStandard=n=>new Intl.NumberFormat('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1}).format(n);
