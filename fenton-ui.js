@@ -1,5 +1,6 @@
 import {parseNumber,parseWeightGrams} from './engine.js';
 import {FENTON_PROXY_URL} from './fenton-config.js';
+import {parseFentonScores} from './fenton-scores.js';
 
 const whole=value=>/^\d+$/.test(value.trim())?Number(value.trim()):NaN;
 const cleanUrl=url=>{
@@ -48,9 +49,9 @@ export function initFenton(doc,{proxyUrl=FENTON_PROXY_URL,fetcher=globalThis.fet
  const figure=doc.getElementById('fenton-figure'),chart=doc.getElementById('fenton-chart');
  const chartLink=doc.getElementById('fenton-chart-download'),csvLink=doc.getElementById('fenton-csv-download'),pdfLink=doc.getElementById('fenton-pdf-download');
  const jobs=[doc.getElementById('fenton-chart-button'),doc.getElementById('fenton-pdf-button'),doc.getElementById('fenton-z-button')];
- let chartUrl=null,csvUrl=null,pdfUrl=null,busy=false,revision=0,chartResult=null;
+ let chartUrl=null,csvUrl=null,pdfUrl=null,busy=false,revision=0,chartResult=null,scoresResult=null;
  const clear=()=>{
-  chartResult=null;
+  chartResult=scoresResult=null;
   if(chartUrl)urls.revokeObjectURL(chartUrl);
   if(csvUrl)urls.revokeObjectURL(csvUrl);
   if(pdfUrl)urls.revokeObjectURL(pdfUrl);
@@ -83,10 +84,25 @@ export function initFenton(doc,{proxyUrl=FENTON_PROXY_URL,fetcher=globalThis.fet
    if(currentRevision!==revision)return;
    if(kind==='chart'){
     if(file.type!=='image/jpeg')throw new Error('Formato de gráfico inesperado.');
+    scoresResult=null;
+    if(csvUrl)urls.revokeObjectURL(csvUrl);
+    csvUrl=null;csvLink.hidden=true;csvLink.removeAttribute('href');
     if(chartUrl)urls.revokeObjectURL(chartUrl);
     chartUrl=urls.createObjectURL(file);chart.src=chartUrl;figure.hidden=false;
     chartResult={blob:file,data};
-    chartLink.href=chartUrl;chartLink.hidden=false;status.textContent='Gráfico Fenton 2025 gerado.';
+    chartLink.href=chartUrl;chartLink.hidden=false;status.textContent='Gráfico Fenton 2025 gerado. Consultando a tabela de escores…';
+    try{
+     const scoresResponse=await fetcher(`${base}/zscores`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data),cache:'no-store'});
+     if(!scoresResponse.ok)throw new Error('Serviço de escores indisponível.');
+     const scoresFile=await scoresResponse.blob();
+     if(!scoresFile.type.startsWith('text/csv'))throw new Error('Formato de escores Z inesperado.');
+     const scores=parseFentonScores(await scoresFile.text(),data);
+     if(currentRevision!==revision)return;
+     scoresResult={data,scores};
+     if(csvUrl)urls.revokeObjectURL(csvUrl);
+     csvUrl=urls.createObjectURL(scoresFile);csvLink.href=csvUrl;csvLink.hidden=false;
+     status.textContent='Gráfico e tabela Fenton 2025 gerados.';
+    }catch(error){if(currentRevision===revision)status.textContent=`Gráfico gerado; tabela indisponível: ${error.message} Tente novamente em Escores Z.`;}
    }else if(kind==='chart-pdf'){
     if(file.type!=='application/pdf')throw new Error('Formato de PDF inesperado.');
     if(pdfUrl)urls.revokeObjectURL(pdfUrl);
@@ -94,6 +110,9 @@ export function initFenton(doc,{proxyUrl=FENTON_PROXY_URL,fetcher=globalThis.fet
     status.textContent='Gráfico Fenton 2025 em PDF pronto para baixar.';
    }else{
     if(!file.type.startsWith('text/csv'))throw new Error('Formato de escores Z inesperado.');
+    const scores=parseFentonScores(await file.text(),data);
+    if(currentRevision!==revision)return;
+    scoresResult={data,scores};
     if(csvUrl)urls.revokeObjectURL(csvUrl);
     csvUrl=urls.createObjectURL(file);csvLink.href=csvUrl;csvLink.hidden=false;
     status.textContent='Tabela de escores Z pronta para baixar.';
@@ -104,5 +123,5 @@ export function initFenton(doc,{proxyUrl=FENTON_PROXY_URL,fetcher=globalThis.fet
  form.addEventListener('submit',event=>{event.preventDefault();request('chart');});
  jobs[1].addEventListener('click',()=>request('chart-pdf'));
  jobs[2].addEventListener('click',()=>request('zscores'));
- return {read:()=>readFentonForm(form),getChart:()=>chartResult,invalidate};
+ return {read:()=>readFentonForm(form),getChart:()=>chartResult,getScores:()=>scoresResult,invalidate};
 }

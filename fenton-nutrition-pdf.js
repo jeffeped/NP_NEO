@@ -7,9 +7,10 @@ const fmt=(n,d=1)=>Number.isFinite(n)?n.toFixed(d).replace('.',','):'—';
 const ipm=(w,d)=>`${w} sem + ${d} d`;
 
 // Uses the existing calculation objects; no nutritional or growth recalculation.
-export async function createFentonNutritionReport({nutrition,growth=null,chart}){
+export async function createFentonNutritionReport({nutrition,growth=null,chart,scores}){
  if(!nutrition?.enteral||!nutrition.integrated)throw new Error('Calcule o aporte total na aba Enteral antes de exportar.');
  if(!chart?.blob||!chart.data)throw new Error('Gere o gráfico Fenton atualizado antes de exportar.');
+ if(!scores?.scores||JSON.stringify(scores.data)!==JSON.stringify(chart.data)||scores.scores.length!==chart.data.measurements.length)throw new Error('Gere a tabela Fenton das mesmas medidas do gráfico antes de exportar.');
  const {enteral,integrated,clinical}=nutrition,data=chart.data;
  if(growth&&(growth.input.sex!==(data.sex==='F'?'female':'male')||growth.input.gaWeeks!==data.birthGaWeeks||growth.input.gaDays!==data.birthGaDays)){
   throw new Error('Confira sexo e IG ao nascer: os dados de velocidade e do gráfico Fenton são diferentes.');
@@ -21,7 +22,7 @@ export async function createFentonNutritionReport({nutrition,growth=null,chart})
  doc.setSubject('Aportes e crescimento calculados na sessão atual');
  const regular=await doc.embedFont(StandardFonts.Helvetica),bold=await doc.embedFont(StandardFonts.HelveticaBold);
  const W=595.28,H=841.89,L=38,R=W-38,ink=rgb(.1,.22,.16),muted=rgb(.32,.39,.35),shade=rgb(.91,.95,.92);
- const first=doc.addPage([W,H]);
+ const first=doc.addPage([W,H]),dense=scores.scores.length>12;
  const text=(page,s,x,y,size=8.5,font=regular,color=ink)=>page.drawText(String(s),{x,y,size,font,color});
  const right=(s,x,y,size=9,font=regular)=>text(first,s,x-font.widthOfTextAtSize(s,size),y,size,font);
  const header=(page,title,number)=>{
@@ -33,7 +34,7 @@ export async function createFentonNutritionReport({nutrition,growth=null,chart})
  };
  header(first,'Aporte nutricional total e crescimento',1);
  let y=H-102;
- const line=(value,{size=8.5,font=regular,color=ink,leading=12}={})=>{
+ const line=(value,{size=8.5,font=regular,color=ink,leading=dense?10.5:12}={})=>{
   let row='';
   for(const word of String(value).split(/\s+/)){
    const next=row?row+' '+word:word;
@@ -41,9 +42,17 @@ export async function createFentonNutritionReport({nutrition,growth=null,chart})
   }
   text(first,row,L,y,size,font,color);y-=leading;
  };
- const section=title=>{y-=8;line(title,{size:10,font:bold,leading:17});};
+ const section=title=>{y-=dense?5:8;line(title,{size:10,font:bold,leading:dense?14:17});};
  line('Fonte intravenosa: '+integrated.sourceLabel,{font:bold});
  line(integrated.weightContext?dosingWeightLabel(integrated.weightContext):Number.isFinite(integrated.weight)?`Peso usado no aporte: ${fmt(integrated.weight*1000,0)} g`:'Aporte somente enteral; valores por kg de peso.');
+ const ivContext=integrated.weightContext;
+ const weightPair=ivContext?.currentWeight!=null&&ivContext?.birthWeight!=null
+  ?{measured:ivContext.currentWeight*1000,birth:ivContext.birthWeight*1000,label:'atual'}
+  :growth?.input?{measured:growth.input.finalWeight,birth:growth.input.birthWeight,label:'final informado em Crescimento'}:null;
+ const measured=weightPair?.measured,birth=weightPair?.birth;
+ if(Number.isFinite(measured)&&Number.isFinite(birth)&&birth>0&&measured<birth){
+  line(`Peso ${weightPair.label}: ${fmt(measured,0)} g · nascimento: ${fmt(birth,0)} g · perda ponderal: ${fmt(100*(birth-measured)/birth)}%`,{font:bold});
+ }
  line(`Dieta: ${enteral.composition.label}`);
  line(`Composição final: ${fmt(enteral.composition.energy)} kcal/100 mL · ${fmt(enteral.composition.protein,2)} g proteína/100 mL`);
  if(enteral.composition.fm85GramsPer100mL>0)line(`FM85: ${fmt(enteral.composition.fm85GramsPer100mL/4,2)} g/25 mL (média no volume total).`);
@@ -80,7 +89,19 @@ export async function createFentonNutritionReport({nutrition,growth=null,chart})
   section('Referências por fase clínica');
   for(const item of clinicalReferenceLines(integrated,clinical))line(item,{size:8,leading:11});
  }
- if(y<60)throw new Error('O conteúdo excede uma página. Revise os dados antes de exportar.');
+ section('Medidas Fenton 2025 · valor / escore Z / percentil');
+ const positions=[L+3,L+69,L+121,L+148,L+177,L+225,L+252,L+281,L+329,L+356];
+ const headings=['IPM','Peso g','Z','Pctl','PC cm','Z','Pctl','Comp cm','Z','Pctl'];
+ headings.forEach((label,i)=>text(first,label,positions[i],y,7,bold));y-=10;
+ for(const [index,row] of scores.scores.entries()){
+  const age=data.measurements[index],cells=[ipm(age.weeks,age.days)];
+  for(const name of ['weightGrams','headCm','lengthCm']){
+   const score=row[name];cells.push(score?fmt(score.value,name==='weightGrams'?0:2):'—',score?fmt(score.z,3):'—',score?fmt(score.percentile,0):'—');
+  }
+  cells.forEach((value,i)=>text(first,value,positions[i],y,7));y-=8.25;
+ }
+ line('Escores e percentis fornecidos pelo serviço Fenton; “—” indica medida não informada.',{size:7,leading:10,color:muted});
+ if(y<60)throw new Error(`O conteúdo excede uma página (${Math.round(y)} pt restantes). Revise os dados antes de exportar.`);
  const second=doc.addPage([W,H]);header(second,'Fenton 2025 - trajetória antropométrica',2);
  const measurements=data.measurements;
  text(second,`${measurements.length} medida(s) · IPM ${ipm(measurements[0].weeks,measurements[0].days)} a ${ipm(measurements.at(-1).weeks,measurements.at(-1).days)}`,L,H-98,8);
