@@ -12,7 +12,7 @@ on:
       - 'scripts/verify-fenton-pdf.cjs'
       - '.github/workflows/fenton-pdf-verification.yml'
 permissions:
-  contents: write
+  contents: read
 jobs:
   verify-pdf:
     runs-on: ubuntu-latest
@@ -26,10 +26,9 @@ jobs:
       - run: npm ci
       - name: Install pinned verification tools
         run: npm install --prefix "$RUNNER_TEMP/grow-pdf-qa" --no-audit --no-fund playwright@1.58.2 pdfjs-dist@5.6.205
-      - name: Prepare self-hosted PDF reader
+      - name: Verify self-hosted PDF reader
         env:
           GROW_QA_MODULES: ${{ runner.temp }}/grow-pdf-qa/node_modules
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node scripts/ci-pdf-vendor.mjs
       - name: Install Chromium
         run: node "$RUNNER_TEMP/grow-pdf-qa/node_modules/playwright/cli.js" install --with-deps chromium

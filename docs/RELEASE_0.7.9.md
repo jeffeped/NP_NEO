@@ -6,4 +6,6 @@ O parser confere sexo, IG ao nascer, idades e valores de todas as medidas. A col
 
 O formato foi conferido em um PDF oficial fornecido pelo usuário (API_build 2.1.3.0). O arquivo e suas medidas não integram o repositório. O teste de navegador usa dados, escores e gráfico fictícios, com o mesmo formato de tabela, e simula falha 502 no CSV. Verifica duas páginas, valores, exportação offline, invalidação e larguras de tela. Resultados completos ficam nos artefatos do GitHub Actions. Esses testes não equivalem à validação clínica ou à confirmação de acesso real ao serviço Fenton.
 
-Verificação final e revisão visual: pendentes até a conclusão do workflow Integrated PDF verification.
+Verificação em 02/10/2026: 682 testes aprovados, zero falhas. Navegador Chromium: recuperação da tabela após CSV 502, valores Z/percentis e idade fracionária, perda ponderal de 7,9% no exemplo fictício, PDF de exatamente duas páginas, exportação offline, invalidação após edição, larguras 320/390/768, cache do leitor e ausência de persistência de casos. As duas páginas foram renderizadas e inspecionadas, sem cortes nem sobreposições.
+
+Evidência inicial: https://github.com/jeffeped/NP_NEO/actions/runs/37035002445. A conferência do commit final deve constar dos checks da PR. O fluxo de verificação compara o leitor empacotado com a distribuição npm fixada e usa apenas permissão de leitura do repositório.
