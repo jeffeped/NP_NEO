@@ -1,6 +1,7 @@
 import {parseNumber,parseWeightGrams} from './engine.js';
 import {FENTON_PROXY_URL} from './fenton-config.js';
 import {parseFentonScores} from './fenton-scores.js';
+import {extractFentonPdfScores} from './fenton-pdf-scores.js';
 
 const whole=value=>/^\d+$/.test(value.trim())?Number(value.trim()):NaN;
 const cleanUrl=url=>{
@@ -39,7 +40,7 @@ export function readFentonForm(form){
  return {sex,birthGaWeeks,birthGaDays,measurements};
 }
 
-export function initFenton(doc,{proxyUrl=FENTON_PROXY_URL,fetcher=globalThis.fetch,urls=globalThis.URL}={}){
+export function initFenton(doc,{proxyUrl=FENTON_PROXY_URL,fetcher=globalThis.fetch,urls=globalThis.URL,extractPdfScores=extractFentonPdfScores}={}){
  const section=doc.getElementById('fenton-integration');
  const base=cleanUrl(proxyUrl);
  if(!base)return;
@@ -71,6 +72,28 @@ export function initFenton(doc,{proxyUrl=FENTON_PROXY_URL,fetcher=globalThis.fet
  const invalidate=()=>{revision++;clear();status.textContent='Medidas alteradas; gere novamente os resultados.';};
  form.addEventListener('input',invalidate);
  form.addEventListener('change',invalidate);
+ const fetchFile=async(kind,data)=>{
+  const response=await fetcher(`${base}/${kind}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data),cache:'no-store'});
+  if(!response.ok)throw Object.assign(new Error(response.status===429?'Muitas consultas em sequência. Aguarde e tente novamente.':'Não foi possível consultar a Fenton. Confira a conexão e tente novamente.'),{status:response.status});
+  return response.blob();
+ };
+ const loadScores=async(data,version)=>{
+  try{
+   const file=await fetchFile('zscores',data);
+   if(!file.type.startsWith('text/csv'))throw new Error('Formato de tabela Fenton inesperado.');
+   return {scores:parseFentonScores(await file.text(),data),csvFile:file,source:'csv'};
+  }catch(error){
+   if(version!==revision||error.status===429)throw error;
+   status.textContent='Obtendo a tabela no PDF oficial Fenton…';
+   const pdfFile=await fetchFile('chart-pdf',data);
+   return {scores:await extractPdfScores(pdfFile,data),pdfFile,source:'pdf'};
+  }
+ };
+ const showScores=(result,data)=>{
+  if(chartResult&&JSON.stringify(chartResult.data)===JSON.stringify(data))chartResult={...chartResult,scores:result.scores,scoresSource:result.source};
+  if(result.csvFile){if(csvUrl)urls.revokeObjectURL(csvUrl);csvUrl=urls.createObjectURL(result.csvFile);csvLink.href=csvUrl;csvLink.hidden=false;}
+  if(result.pdfFile){if(pdfUrl)urls.revokeObjectURL(pdfUrl);pdfUrl=urls.createObjectURL(result.pdfFile);pdfLink.href=pdfUrl;pdfLink.hidden=false;}
+ };
  async function request(kind){
   if(busy)return;
   let data;
@@ -78,9 +101,7 @@ export function initFenton(doc,{proxyUrl=FENTON_PROXY_URL,fetcher=globalThis.fet
   const currentRevision=revision;
   busy=true;jobs.forEach(button=>button.disabled=true);status.textContent='Consultando o serviço Fenton 2025…';
   try{
-   const response=await fetcher(`${base}/${kind}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data),cache:'no-store'});
-   if(!response.ok)throw new Error(response.status===429?'Muitas consultas em sequência. Aguarde e tente novamente.':'Não foi possível consultar a Fenton. Confira a conexão e tente novamente.');
-   const file=await response.blob();
+   const file=kind==='zscores'?null:await fetchFile(kind,data);
    if(currentRevision!==revision)return;
    if(kind==='chart'){
     if(file.type!=='image/jpeg')throw new Error('Formato de gráfico inesperado.');
@@ -90,16 +111,10 @@ export function initFenton(doc,{proxyUrl=FENTON_PROXY_URL,fetcher=globalThis.fet
     chartLink.href=chartUrl;chartLink.hidden=false;status.textContent='Gráfico Fenton 2025 gerado.';
     // Preserve a working chart when the separate score request fails.
     try{
-     const response=await fetcher(`${base}/zscores`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data),cache:'no-store'});
-     if(!response.ok)throw new Error('Serviço Fenton indisponível para escores.');
-     const tableFile=await response.blob();
-     if(!tableFile.type.startsWith('text/csv'))throw new Error('Formato de tabela Fenton inesperado.');
-     const scores=parseFentonScores(await tableFile.text(),data);
+     const result=await loadScores(data,currentRevision);
      if(currentRevision!==revision)return;
-     chartResult={blob:file,data,scores};
-     if(csvUrl)urls.revokeObjectURL(csvUrl);
-     csvUrl=urls.createObjectURL(tableFile);csvLink.href=csvUrl;csvLink.hidden=false;
-     status.textContent='Gráfico e tabela de escores Fenton 2025 gerados.';
+     showScores(result,data);
+     status.textContent=result.source==='pdf'?'Gráfico gerado; tabela de escores extraída do PDF oficial Fenton 2025.':'Gráfico e tabela de escores Fenton 2025 gerados.';
     }catch(error){
      if(currentRevision===revision)status.textContent=`Gráfico gerado. Tabela de escores indisponível: ${error.message} Gere novamente antes do PDF integrado.`;
     }
@@ -108,14 +123,19 @@ export function initFenton(doc,{proxyUrl=FENTON_PROXY_URL,fetcher=globalThis.fet
     if(pdfUrl)urls.revokeObjectURL(pdfUrl);
     pdfUrl=urls.createObjectURL(file);pdfLink.href=pdfUrl;pdfLink.hidden=false;
     status.textContent='Gráfico Fenton 2025 em PDF pronto para baixar.';
+    if(chartResult&&JSON.stringify(chartResult.data)===JSON.stringify(data)){
+     try{
+      const scores=await extractPdfScores(file,data);
+      if(currentRevision!==revision)return;
+      chartResult={...chartResult,scores,scoresSource:'pdf'};
+      status.textContent='PDF Fenton pronto; tabela de escores disponível para o relatório integrado.';
+     }catch(error){if(currentRevision===revision)status.textContent='PDF Fenton pronto. Tabela de escores indisponível: '+error.message;}
+    }
    }else{
-    if(!file.type.startsWith('text/csv'))throw new Error('Formato de escores Z inesperado.');
-    const scores=parseFentonScores(await file.text(),data);
+    const result=await loadScores(data,currentRevision);
     if(currentRevision!==revision)return;
-    if(csvUrl)urls.revokeObjectURL(csvUrl);
-    csvUrl=urls.createObjectURL(file);csvLink.href=csvUrl;csvLink.hidden=false;
-    if(chartResult&&JSON.stringify(chartResult.data)===JSON.stringify(data))chartResult={...chartResult,scores};
-    status.textContent='Tabela de escores Z pronta para baixar.';
+    showScores(result,data);
+    status.textContent=result.source==='pdf'?'Tabela de escores extraída do PDF oficial Fenton 2025.':'Tabela de escores Z pronta para baixar.';
    }
   }catch(err){if(currentRevision===revision)status.textContent=err.message;}
   finally{busy=false;jobs.forEach(button=>button.disabled=false);}

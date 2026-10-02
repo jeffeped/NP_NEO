@@ -1,5 +1,11 @@
 # Histórico de versões
 
+## 0.7.9 — 02/10/2026
+
+- Recupera a tabela de escores Z e percentis pelo PDF oficial Fenton quando o CSV falha.
+- Confere sexo, IG ao nascer e antropometria antes de incluir a tabela no relatório de duas páginas.
+- Inclui o leitor local de PDF no cache offline e testes do fluxo de recuperação.
+
 ## 0.7.8 - 02/10/2026; candidata, publicação pendente
 
 - Relatório integrado: percentual abaixo do peso ao nascer, calculado com o peso medido; mantém a regra institucional de peso de cálculo nos aportes.

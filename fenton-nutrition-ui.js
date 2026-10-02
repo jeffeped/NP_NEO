@@ -14,7 +14,7 @@ export function initFentonNutritionReport(doc,{getNutrition,getGrowth,getChart,v
   const form=doc.getElementById(id);
   for(const event of ['input','change','submit'])form.addEventListener(event,invalidate);
  }
- for(const id of ['fenton-add','fenton-chart-button','fenton-z-button'])doc.getElementById(id).addEventListener('click',invalidate);
+ for(const id of ['fenton-add','fenton-chart-button','fenton-z-button','fenton-pdf-button'])doc.getElementById(id).addEventListener('click',invalidate);
  doc.getElementById('fenton-measures').addEventListener('click',event=>{if(event.target.closest('button'))invalidate();});
  doc.getElementById('acknowledgements').addEventListener('change',invalidate);
  const current=s=>s&&s.nutrition===getNutrition()&&s.growth===getGrowth()&&s.chart===getChart();

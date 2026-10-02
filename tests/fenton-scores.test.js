@@ -28,3 +28,7 @@ test('CSV com BOM, decimais entre aspas e percentil limitado mantém os valores 
  assert.throws(()=>parseFentonScores(quoted.replace('<0,1','<101'),request),/fora da faixa/);
  assert.throws(()=>parseFentonScores(csv.replace('613,-1.12,13.1','613,-1.12,101'),request),/divergente/);
 });
+
+test('GAge header from the official table is accepted in CSV',()=>{
+ assert.deepEqual(parseFentonScores(csv.replace('GA (weeks)','GAge (weeks)'),request),parseFentonScores(csv,request));
+});
