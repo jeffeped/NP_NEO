@@ -1,9 +1,53 @@
-# GROW_NEO 0.7.8 — relatório integrado com antropometria Fenton
+# GROW_NEO 0.7.8 - relatório integrado
 
-- O PDF combinado mantém duas páginas: avaliação nutricional e tabela antropométrica na primeira; gráfico recebido da Fenton na segunda.
-- A primeira página mostra a perda ponderal percentual quando o peso medido é inferior ao nascimento. Quando há NP/HV, usa o peso atual medido e o peso de nascimento do cálculo intravenoso, mesmo entre D1 e D7; quando há apenas resultado de crescimento, identifica o peso final informado nessa aba. Não usa o peso institucional de cálculo como se fosse o peso medido.
-- Ao gerar o gráfico, o app solicita também o CSV de escores à integração Fenton. A tabela apresenta peso, perímetro cefálico e comprimento com os escores Z e percentis recebidos, sem estimá-los localmente. Os dados do CSV são confrontados com sexo, IG e medidas enviados ao gráfico.
-- Se o CSV falhar ou não conferir, o gráfico permanece disponível. O PDF combinado solicita uma tabela válida para evitar emitir valores ausentes ou trocados; o botão separado de escores permite tentar novamente.
-- O cache offline inclui o leitor do CSV. Consultas novas ao serviço Fenton continuam a exigir conexão.
+Responsável clínico: Jefferson Guilherme. Preparada em 02/10/2026 (Manaus).
+Base publicada: 0.7.7, commit b8489222a5674b51d119ac04eb1adb2a0499b7de.
+Estado: candidata; envio e publicação pendentes.
 
-Verificações locais: parser com CSV fictício da integração, testes do PDF com até 20 medidas, perda ponderal em D7, falha da tabela preservando o gráfico e suíte automatizada. A imagem mínima usada nos testes de PDF valida incorporação e layout, não constitui referência clínica para o gráfico. Os testes intermitentes da integração externa serão investigados separadamente.
+## Comportamento
+
+O PDF de aporte total + Fenton contém exatamente duas páginas. A primeira reúne
+aportes, metas, velocidade de crescimento, perda ponderal quando o peso atual
+está abaixo do peso ao nascer e a tabela de antropometria com Z e percentil.
+A segunda preserva o gráfico oficial inteiro, inclusive créditos.
+
+A perda percentual é (peso ao nascer - peso medido) / peso ao nascer × 100.
+Usa os pesos e dia do resultado nutricional quando disponíveis; usa a avaliação
+de crescimento quando não há esse contexto. Não usa o peso de cálculo da NP
+como substituto do peso medido. Pesos inválidos ou já acima do PN não geram perda.
+Não permite inferir uma recuperação anterior seguida de nova perda a partir de
+somente dois pesos; por isso a frase é «abaixo do peso ao nascer».
+
+O gráfico e o CSV são requisitados para as mesmas medidas. O app lê os valores
+recebidos, confere IPM, antropometria e número de linhas, exclui mudanças de Z
+como substitutas do Z absoluto e não estima percentis. A tabela pode conter
+até 20 avaliações; campos antropométricos não informados aparecem como «-».
+Inconsistências impedem combinar a tabela com o gráfico. Edições revogam os
+resultados derivados; a falha no CSV mantém o gráfico disponível e explicita
+que a tabela precisa ser gerada antes do PDF integrado.
+
+O relatório de aporte total da aba Enteral também mostra a perda ponderal.
+Não foram alteradas doses, composições, fatores energéticos, trava de acesso,
+aceites, regra D7/D8, segredo da API ou código do proxy.
+
+## Verificações e limites
+
+Suíte automática local: 672 testes aprovados, zero falhas, zero exclusões.
+Navegador: exportação, invalidação por edição, uso offline com gráfico e tabela
+em memória, recarga offline sem dados do paciente e larguras 320/390/768.
+Conferência visual das duas páginas, inclusive 20 medidas na primeira, com
+escores fictícios: tabela, perda percentual, imagem inteira e rodapés sem cortes.
+O esquema com colunas de medida, Z, percentil e mudança de Z foi conferido no
+manual oficial: https://fentongrowth.ca/docs/Fenton2025PlotterUsersManual.pdf,
+páginas 8-9, consultado em 02/10/2026.
+
+As chamadas reais ao serviço não puderam ser executadas neste ambiente:
+rede local recusada com EACCES/ERR_NETWORK_ACCESS_DENIED. O gráfico de teste e
+os escores usados nos ensaios locais são simulados e identificados como fictícios.
+Não equivalem a validação clínica ou teste real da disponibilidade da API.
+Após o envio, verificar no app publicado um caso fictício com peso, comprimento
+e PC, a tabela recebida e o PDF integrado. A chave privada não deve ser enviada.
+
+Tentativa de create_tree pelo conector GitHub recusada:
+«MCP tool call requires approval, but approval policy is never».
+Nenhum arquivo, commit ou PR remoto foi criado por esta sessão.

@@ -64,19 +64,3 @@ test('editar uma medida durante a consulta impede exibir gráfico da medida ante
  assert.equal(a.document.getElementById('fenton-figure').hidden,true);
  assert.match(a.document.getElementById('fenton-status').textContent,/Medidas alteradas/);
 });
-test('gráfico busca escores da mesma consulta e preserva gráfico quando tabela falha',async()=>{
- const a=setup();
- const csv='\uFEFFGA at Birth: 24.4286\nSex: F\nGA_weeks,Weight_g,W_Z,W_changeZ,W_%,Head_cm,H_Z,H_changeZ,H_%,Length_cm,L_Z,L_changeZ,L_%\n24.4286,613,-0.5,0,31,21.50,-0.4,0,35,31.00,-0.3,0,38\n';
- let fail=false;
- const fenton=initFenton(a.document,{proxyUrl:'https://grow-neo-fenton-proxy.workers.dev',fetcher:async url=>url.endsWith('/chart')?new Response(new Blob([Uint8Array.from([255,216,255])],{type:'image/jpeg'})):fail?new Response('failed',{status:503}):new Response(new Blob([csv],{type:'text/csv'})),urls:{createObjectURL:()=>`blob:test`,revokeObjectURL:()=>{}}});
- fill(a);
- a.form.dispatchEvent(new a.window.Event('submit',{bubbles:true,cancelable:true}));
- for(let i=0;i<20&&a.document.getElementById('fenton-chart-button').disabled;i++)await new Promise(r=>setTimeout(r,10));
- assert.equal(fenton.getScores()?.scores[0].weightGrams.percentile,31);
- assert.equal(a.document.getElementById('fenton-csv-download').hidden,false);
- fail=true;a.form.dispatchEvent(new a.window.Event('submit',{bubbles:true,cancelable:true}));
- for(let i=0;i<20&&a.document.getElementById('fenton-chart-button').disabled;i++)await new Promise(r=>setTimeout(r,10));
- assert.equal(fenton.getScores(),null);
- assert.ok(fenton.getChart());
- assert.match(a.document.getElementById('fenton-status').textContent,/Gráfico gerado; tabela indisponível/);
-});

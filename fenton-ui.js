@@ -49,9 +49,9 @@ export function initFenton(doc,{proxyUrl=FENTON_PROXY_URL,fetcher=globalThis.fet
  const figure=doc.getElementById('fenton-figure'),chart=doc.getElementById('fenton-chart');
  const chartLink=doc.getElementById('fenton-chart-download'),csvLink=doc.getElementById('fenton-csv-download'),pdfLink=doc.getElementById('fenton-pdf-download');
  const jobs=[doc.getElementById('fenton-chart-button'),doc.getElementById('fenton-pdf-button'),doc.getElementById('fenton-z-button')];
- let chartUrl=null,csvUrl=null,pdfUrl=null,busy=false,revision=0,chartResult=null,scoresResult=null;
+ let chartUrl=null,csvUrl=null,pdfUrl=null,busy=false,revision=0,chartResult=null;
  const clear=()=>{
-  chartResult=scoresResult=null;
+  chartResult=null;
   if(chartUrl)urls.revokeObjectURL(chartUrl);
   if(csvUrl)urls.revokeObjectURL(csvUrl);
   if(pdfUrl)urls.revokeObjectURL(pdfUrl);
@@ -84,25 +84,25 @@ export function initFenton(doc,{proxyUrl=FENTON_PROXY_URL,fetcher=globalThis.fet
    if(currentRevision!==revision)return;
    if(kind==='chart'){
     if(file.type!=='image/jpeg')throw new Error('Formato de gráfico inesperado.');
-    scoresResult=null;
-    if(csvUrl)urls.revokeObjectURL(csvUrl);
-    csvUrl=null;csvLink.hidden=true;csvLink.removeAttribute('href');
     if(chartUrl)urls.revokeObjectURL(chartUrl);
     chartUrl=urls.createObjectURL(file);chart.src=chartUrl;figure.hidden=false;
-    chartResult={blob:file,data};
-    chartLink.href=chartUrl;chartLink.hidden=false;status.textContent='Gráfico Fenton 2025 gerado. Consultando a tabela de escores…';
+    chartResult={blob:file,data,scores:null};
+    chartLink.href=chartUrl;chartLink.hidden=false;status.textContent='Gráfico Fenton 2025 gerado.';
+    // Preserve a working chart when the separate score request fails.
     try{
-     const scoresResponse=await fetcher(`${base}/zscores`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data),cache:'no-store'});
-     if(!scoresResponse.ok)throw new Error('Serviço de escores indisponível.');
-     const scoresFile=await scoresResponse.blob();
-     if(!scoresFile.type.startsWith('text/csv'))throw new Error('Formato de escores Z inesperado.');
-     const scores=parseFentonScores(await scoresFile.text(),data);
+     const response=await fetcher(`${base}/zscores`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data),cache:'no-store'});
+     if(!response.ok)throw new Error('Serviço Fenton indisponível para escores.');
+     const tableFile=await response.blob();
+     if(!tableFile.type.startsWith('text/csv'))throw new Error('Formato de tabela Fenton inesperado.');
+     const scores=parseFentonScores(await tableFile.text(),data);
      if(currentRevision!==revision)return;
-     scoresResult={data,scores};
+     chartResult={blob:file,data,scores};
      if(csvUrl)urls.revokeObjectURL(csvUrl);
-     csvUrl=urls.createObjectURL(scoresFile);csvLink.href=csvUrl;csvLink.hidden=false;
-     status.textContent='Gráfico e tabela Fenton 2025 gerados.';
-    }catch(error){if(currentRevision===revision)status.textContent=`Gráfico gerado; tabela indisponível: ${error.message} Tente novamente em Escores Z.`;}
+     csvUrl=urls.createObjectURL(tableFile);csvLink.href=csvUrl;csvLink.hidden=false;
+     status.textContent='Gráfico e tabela de escores Fenton 2025 gerados.';
+    }catch(error){
+     if(currentRevision===revision)status.textContent=`Gráfico gerado. Tabela de escores indisponível: ${error.message} Gere novamente antes do PDF integrado.`;
+    }
    }else if(kind==='chart-pdf'){
     if(file.type!=='application/pdf')throw new Error('Formato de PDF inesperado.');
     if(pdfUrl)urls.revokeObjectURL(pdfUrl);
@@ -112,9 +112,9 @@ export function initFenton(doc,{proxyUrl=FENTON_PROXY_URL,fetcher=globalThis.fet
     if(!file.type.startsWith('text/csv'))throw new Error('Formato de escores Z inesperado.');
     const scores=parseFentonScores(await file.text(),data);
     if(currentRevision!==revision)return;
-    scoresResult={data,scores};
     if(csvUrl)urls.revokeObjectURL(csvUrl);
     csvUrl=urls.createObjectURL(file);csvLink.href=csvUrl;csvLink.hidden=false;
+    if(chartResult&&JSON.stringify(chartResult.data)===JSON.stringify(data))chartResult={...chartResult,scores};
     status.textContent='Tabela de escores Z pronta para baixar.';
    }
   }catch(err){if(currentRevision===revision)status.textContent=err.message;}
@@ -123,5 +123,5 @@ export function initFenton(doc,{proxyUrl=FENTON_PROXY_URL,fetcher=globalThis.fet
  form.addEventListener('submit',event=>{event.preventDefault();request('chart');});
  jobs[1].addEventListener('click',()=>request('chart-pdf'));
  jobs[2].addEventListener('click',()=>request('zscores'));
- return {read:()=>readFentonForm(form),getChart:()=>chartResult,getScores:()=>scoresResult,invalidate};
+ return {read:()=>readFentonForm(form),getChart:()=>chartResult,invalidate};
 }

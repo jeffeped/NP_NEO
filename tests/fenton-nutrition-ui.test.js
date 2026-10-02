@@ -5,11 +5,11 @@ import {parseHTML} from 'linkedom';
 import {initFentonNutritionReport} from '../fenton-nutrition-ui.js';
 const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
 function setup(options={}){
- const {document,window}=parseHTML(html),state={nutrition:{integrated:{source:'none'}},growth:null,chart:{blob:{},data:{}},scores:{data:{},scores:[]}},revoked=[];
+ const {document,window}=parseHTML(html),state={nutrition:{integrated:{source:'none'}},growth:null,chart:{blob:{},data:{measurements:[{}]},scores:[{}]}},revoked=[];
  let made=0,clicked=0;
  const $=id=>document.getElementById(id);
  const link=$('fenton-total-download');link.click=()=>{clicked++;};
- const ui=initFentonNutritionReport(document,{getNutrition:()=>state.nutrition,getGrowth:()=>state.growth,getChart:()=>state.chart,getScores:()=>state.scores,createReport:async()=>new Uint8Array([1,2,3]),urls:{createObjectURL:()=>{made++;return 'blob:test';},revokeObjectURL:u=>revoked.push(u)},...options});
+ const ui=initFentonNutritionReport(document,{getNutrition:()=>state.nutrition,getGrowth:()=>state.growth,getChart:()=>state.chart,createReport:async()=>new Uint8Array([1,2,3]),urls:{createObjectURL:()=>{made++;return 'blob:test';},revokeObjectURL:u=>revoked.push(u)},...options});
  return {state,$,window,ui,revoked,get made(){return made},get clicked(){return clicked},click:()=>$('fenton-total-export').dispatchEvent(new window.Event('click'))};
 }
 const settle=()=>new Promise(r=>setImmediate(r));

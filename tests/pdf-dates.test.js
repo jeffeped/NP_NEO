@@ -23,14 +23,14 @@ const enteral=calculateEnteral({type:'lhop',rate:60}),integrated=integrateNutrit
 const intergrowth=calculateIntergrowth({sex:'female',measurements:[{weeks:40,days:0,weight:3000,length:47.3,head:33.7},{weeks:44,days:0,weight:4000,length:51,head:35}]});
 const fixture=readFileSync(new URL('fenton-nutrition-pdf.test.js',import.meta.url),'utf8').match(/Buffer.from\('([^']+)'/)[1];
 const chart={blob:new Blob([Buffer.from(fixture,'base64')],{type:'image/jpeg'}),data:{sex:'F',birthGaWeeks:30,birthGaDays:0,measurements:[{weeks:31,days:0,weightGrams:920}]}};
-const scores={data:chart.data,scores:[{ageWeeks:31,weightGrams:{value:920,z:-1,percentile:16},headCm:null,lengthCm:null}]};
+chart.scores=[{weeks:31,days:0,weight:{value:920,z:-1.2,percentile:11.5}}];
 test('issuance date uses Manaus across UTC midnight',()=>{
  assert.equal(formatIssueDate(new Date('2026-10-02T01:05:00Z')),'Emissão: 01/10/2026 21:05 (Manaus)');
 });
 for(const [name,create,input,expectedWeight] of [
  ['np',createReport,np,true],['hv',createHydrationReport,hv,true],['standard',createStandardReport,standard,true],
  ['enteral',createEnteralReport,{enteral,integrated},true],
- ['fenton-combined',createFentonNutritionReport,{nutrition:{enteral,integrated},chart,scores},true],
+ ['fenton-combined',createFentonNutritionReport,{nutrition:{enteral,integrated},chart},true],
  ['intergrowth',exportIntergrowthPdf,intergrowth,false],['intergrowth-summary',exportIntergrowthSummaryPdf,intergrowth,false]
 ])test(`PDF ${name}: each page has visible issuance date matching metadata and dosing context`,async()=>{
  const original=PDFLib.PDFPage.prototype.drawText,lines=[];
