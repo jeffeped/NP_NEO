@@ -9,13 +9,13 @@ import {initHydration} from './hydration-ui.js';
 import {initEnteral} from './enteral-ui.js';
 import {initGrowth} from './growth-ui.js';
 import {initIntergrowth} from './intergrowth-ui.js';
-import {intravenousFromResult} from './enteral.js';
+import {intravenousFromResult,IV_MEMBERS} from './enteral.js';
 const $=id=>document.getElementById(id);
 const f=n=>Number.isFinite(n)?round1(n).toFixed(1).replace('.',','):'—';
 const f2=n=>Number.isFinite(n)?n.toFixed(2).replace('.',','):'—';
 const osm=n=>Number.isFinite(n)?String(Math.round(n)):'—';
 const weightFormat=n=>new Intl.NumberFormat('pt-BR',{maximumFractionDigits:3}).format(n*1000);
-let result=null,pdfUrl=null,downloadResult=null,installPrompt=null,serviceRegistration=null;
+let result=null,pdfUrl=null,downloadResult=null,pdfRevision=0,installPrompt=null,serviceRegistration=null;
 const macros=[{id:'aa',name:'Aminoped 10%',unit:'g/kg/dia'},{id:'lip',name:'Lipídeos 20%',unit:'g/kg/dia'},{id:'vig',name:'Glicose 50% · VIG',unit:'mg/kg/min'}];
 const salts=[{id:'na',name:'Sódio',unit:'mEq/kg/dia',options:[['nacl','Cloreto de sódio 10%'],['acetate','Acetato de sódio']]},{id:'k',name:'Potássio',unit:'mEq/kg/dia',salt:'Cloreto de potássio 10%'},{id:'ca',name:'Cálcio',unit:'mEq/kg/dia',salt:'Gluconato de cálcio 10%'},{id:'mg',name:'Magnésio',unit:'mEq/kg/dia',salt:'Sulfato de magnésio 10%'},{id:'p',name:'Fósforo',unit:'mmol/kg/dia',options:[['kphos','Fosfato de potássio'],['glycero','Glicerofosfato de sódio']]}];
 const omitHTML=(id,name)=>`<label class="omit"><input id="omit-${id}" type="checkbox" data-omit="${id}" aria-label="Não ofertar ${name}">Não ofertar</label>`;
@@ -48,7 +48,7 @@ function updateRules(){
   for(const id of ['va','vb'])$('timing-'+id).textContent=Number.isFinite(day)&&day<3?'Não será incluído antes do 3º dia de vida.':'A partir do 3º dia de vida';
   $('timing-oligo').textContent=Number.isFinite(day)&&day<8?'Não será incluído antes do 8º dia de vida.':'A partir do 8º dia de vida';
 }
-function invalidate(){result=null;downloadResult=null;$('export-pdf').disabled=true;$('calculated-result').hidden=true;$('empty-result').hidden=false;$('empty-result').textContent='Calcule novamente para conferir os parâmetros atuais.';$('pdf-download').hidden=true;$('pdf-status').textContent='';if(pdfUrl){URL.revokeObjectURL(pdfUrl);pdfUrl=null;}}
+function invalidate(){pdfRevision++;result=null;downloadResult=null;$('export-pdf').disabled=true;$('calculated-result').hidden=true;$('empty-result').hidden=false;$('empty-result').textContent='Calcule novamente para conferir os parâmetros atuais.';$('pdf-download').hidden=true;$('pdf-download').removeAttribute('href');$('pdf-status').textContent='';if(pdfUrl){URL.revokeObjectURL(pdfUrl);pdfUrl=null;}}
 const tabNames=Array.from(document.querySelectorAll('.tabs [role="tab"]'),tab=>tab.getAttribute('aria-controls'));
 function view(name){for(const tab of tabNames){$(tab).hidden=name!==tab;$('tab-'+tab).setAttribute('aria-selected',String(name===tab));$('tab-'+tab).tabIndex=name===tab?0:-1;}window.scrollTo({top:0,behavior:'instant'});}
 for(const name of tabNames)$('tab-'+name).addEventListener('click',()=>view(name));
@@ -86,20 +86,22 @@ function render(r){
   if(r.sodiumBreakdown){
     const s=r.sodiumBreakdown,note=document.createElement('div');note.className='notice';
     note.append(textElement('p',`Sódio total: solicitado ${f2(s.requested)} mEq/kg/dia; efetivo ${f2(s.actual)} mEq/kg/dia. Glicerofosfato de sódio: ${f2(s.phosphate)} mEq/kg/dia; ${s.supplementName}: ${f2(s.supplement)} mEq/kg/dia. Valores efetivos após arredondar os volumes de preparo.`));
-    const label=document.createElement('label'),check=document.createElement('input');check.type='checkbox';check.dataset.ack='na';check.addEventListener('change',updateExport);
+    const label=document.createElement('label'),check=document.createElement('input');check.type='checkbox';check.dataset.ack='na';check.addEventListener('change',reviewChanged);
     label.append(check,textElement('span',`Conferi e aceito a dose total de sódio de ${f2(s.actual)} mEq/kg/dia.`));note.append(label);$('acknowledgements').append(note);
   }
-  for(const a of r.adjustments.filter(a=>a.id!=='na'||!r.sodiumBreakdown)){const note=document.createElement('div');note.className='notice';note.append(textElement('p',`${a.name}: dose solicitada ${f(a.requested)} ${a.unit}; dose resultante ${f(a.actual)} ${a.unit}, já fornecida por ${a.source}. O sal complementar não foi acrescentado.`));const label=document.createElement('label'),check=document.createElement('input');check.type='checkbox';check.dataset.ack=a.id;check.addEventListener('change',updateExport);label.append(check,textElement('span',`Conferi e aceito a dose resultante de ${a.name.toLowerCase()}.`));note.append(label);$('acknowledgements').append(note);}
+  for(const a of r.adjustments.filter(a=>a.id!=='na'||!r.sodiumBreakdown)){const note=document.createElement('div');note.className='notice';note.append(textElement('p',`${a.name}: dose solicitada ${f(a.requested)} ${a.unit}; dose resultante ${f(a.actual)} ${a.unit}, já fornecida por ${a.source}. O sal complementar não foi acrescentado.`));const label=document.createElement('label'),check=document.createElement('input');check.type='checkbox';check.dataset.ack=a.id;check.addEventListener('change',reviewChanged);label.append(check,textElement('span',`Conferi e aceito a dose resultante de ${a.name.toLowerCase()}.`));note.append(label);$('acknowledgements').append(note);}
   updateExport();
 }
+function dosesAccepted(){return [...document.querySelectorAll('[data-ack]')].every(x=>x.checked);}
+function reviewChanged(){pdfRevision++;downloadResult=null;$('pdf-download').hidden=true;$('pdf-download').removeAttribute('href');$('pdf-status').textContent='';if(pdfUrl){URL.revokeObjectURL(pdfUrl);pdfUrl=null;}updateExport();}
 function updateExport(){const accepted=[...document.querySelectorAll('[data-ack]')].every(x=>x.checked);$('export-pdf').disabled=!result?.canExport||!accepted;}
-$('npp-form').addEventListener('submit',e=>{e.preventDefault();$('form-errors').hidden=true;document.querySelectorAll('.invalid').forEach(x=>x.classList.remove('invalid'));const r=calculate(collect());if(!r.ok){invalidate();const list=document.createElement('ul');for(const err of r.errors){list.append(textElement('li',err.message));const id={gaWeeks:'ga',gaDays:'ga-days',birthWeight:'birth-weight',fluidPhase:'fluid-phase',naSalt:'salt-na',pSalt:'salt-p'}[err.field]||err.field;const el=$(id);if(el){el.closest('.field,.dose')?.classList.add('invalid');const details=el.closest('details');if(details)details.open=true;}}$('form-errors').replaceChildren(list);$('form-errors').hidden=false;$('form-errors').scrollIntoView({block:'center'});return;}result=r;render(r);view('results');});
+$('npp-form').addEventListener('submit',e=>{e.preventDefault();invalidate();$('form-errors').hidden=true;document.querySelectorAll('.invalid').forEach(x=>x.classList.remove('invalid'));const r=calculate(collect());if(!r.ok){invalidate();const list=document.createElement('ul');for(const err of r.errors){list.append(textElement('li',err.message));const id={gaWeeks:'ga',gaDays:'ga-days',birthWeight:'birth-weight',fluidPhase:'fluid-phase',naSalt:'salt-na',pSalt:'salt-p'}[err.field]||err.field;const el=$(id);if(el){el.closest('.field,.dose')?.classList.add('invalid');const details=el.closest('details');if(details)details.open=true;}}$('form-errors').replaceChildren(list);$('form-errors').hidden=false;$('form-errors').scrollIntoView({block:'center'});return;}result=r;render(r);view('results');});
 $('export-pdf').addEventListener('click',async()=>{
   if(!result?.canExport||[...document.querySelectorAll('[data-ack]')].some(x=>!x.checked))return;
-  const snapshot=result;$('export-pdf').disabled=true;$('pdf-status').textContent='Preparando PDF no aparelho…';
-  try{const bytes=await createReport(snapshot);if(result!==snapshot)return;const blob=new Blob([bytes],{type:'application/pdf'});if(pdfUrl)URL.revokeObjectURL(pdfUrl);pdfUrl=URL.createObjectURL(blob);downloadResult=snapshot;const link=$('pdf-download');link.href=pdfUrl;link.download='GROW_NEO-calculo.pdf';link.hidden=false;link.click();$('pdf-status').textContent='PDF gerado. Se o download não iniciar, use o link abaixo.';}catch(error){console.error('PDF generation failed');$('pdf-status').textContent='Não foi possível gerar o PDF. Aguarde o carregamento completo do app e tente novamente.';}finally{updateExport();}
+  const snapshot=result,revision=pdfRevision;$('export-pdf').disabled=true;$('pdf-status').textContent='Preparando PDF no aparelho…';
+  try{const bytes=await createReport(snapshot);if(result!==snapshot||revision!==pdfRevision||!dosesAccepted())return;const blob=new Blob([bytes],{type:'application/pdf'});if(pdfUrl)URL.revokeObjectURL(pdfUrl);pdfUrl=URL.createObjectURL(blob);downloadResult=snapshot;const link=$('pdf-download');link.href=pdfUrl;link.download='GROW_NEO-calculo.pdf';link.hidden=false;link.click();$('pdf-status').textContent='PDF gerado. Se o download não iniciar, use o link abaixo.';}catch(error){console.error('PDF generation failed');$('pdf-status').textContent='Não foi possível gerar o PDF. Aguarde o carregamento completo do app e tente novamente.';}finally{updateExport();}
 });
-$('pdf-download').addEventListener('click',e=>{if(!result||result!==downloadResult)e.preventDefault();});
+$('pdf-download').addEventListener('click',e=>{if(!result||result!==downloadResult||!dosesAccepted())e.preventDefault();});
 $('install-help-button').addEventListener('click',()=>{$('install-help').hidden=!$('install-help').hidden;});
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;$('install-app').hidden=false;});
 $('install-app').addEventListener('click',async()=>{if(installPrompt){await installPrompt.prompt();installPrompt=null;$('install-app').hidden=true;}});
@@ -112,13 +114,18 @@ const hydrationUI=initHydration(document);
 const standardUI=initStandard(document);
 const growthUI=initGrowth(document);
 const intergrowthUI=initIntergrowth(document);
-const enteralUI=initEnteral(document,source=>intravenousFromResult(source,source==='individual'?result:source==='standard'?standardUI.getResult():source==='hydration'?hydrationUI.getResult():null),()=>growthUI.getResult());
+function currentIntravenous(source){
+  const combined=IV_MEMBERS[source]?.length===2;
+  const iv=intravenousFromResult(source,combined?{np:source==='individual_hydration'?result:standardUI.getResult(),hv:hydrationUI.getResult()}:source==='individual'?result:source==='standard'?standardUI.getResult():source==='hydration'?hydrationUI.getResult():null);
+  if(IV_MEMBERS[source]?.includes('individual')&&!dosesAccepted())throw new Error('Confira e aceite as doses na aba Resultados antes de integrar ou exportar.');
+  return iv;
+}
+const enteralUI=initEnteral(document,currentIntravenous,()=>growthUI.getResult());
 const fentonReportUI=initFentonNutritionReport(document,{
  getNutrition:()=>enteralUI.getResult(),getGrowth:()=>growthUI.getResult(),getChart:()=>growthUI.fenton?.getChart(),
  validateNutrition:nutrition=>{
   const source=nutrition.integrated.source;
-  intravenousFromResult(source,source==='individual'?result:source==='standard'?standardUI.getResult():source==='hydration'?hydrationUI.getResult():null);
-  if(source==='individual'&&[...document.querySelectorAll('[data-ack]')].some(x=>!x.checked))throw new Error('Confira e aceite as doses na aba Resultados antes de exportar.');
+  currentIntravenous(source);
  }
 });
 window.addEventListener('pageshow',e=>{if(e.persisted){$('npp-form').reset();invalidate();updateRules();hydrationUI.reset();standardUI.reset();enteralUI.invalidate();growthUI.invalidate();growthUI.fenton?.invalidate();fentonReportUI.invalidate();intergrowthUI.reset();}});

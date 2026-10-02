@@ -1,8 +1,11 @@
+import {calculate} from '../engine.js';
+import {calculateStandard} from '../standard.js';
+import {calculateHydration} from '../hydration.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
-import {calculateEnteral,integrateNutrition} from '../enteral.js';
+import {calculateEnteral,integrateNutrition,intravenousFromResult} from '../enteral.js';
 import {calculateGrowth} from '../growth.js';
 import {createFentonNutritionReport} from '../fenton-nutrition-pdf.js';
 vm.runInThisContext(readFileSync(new URL('../vendor/pdf-lib.min.js',import.meta.url),'utf8'));
@@ -74,4 +77,15 @@ for(const source of ['none','individual','standard','hydration'])for(const phase
  assert.ok(lines.some(s=>s.startsWith('Energia analisada inválida')));assert.ok(lines.some(s=>s.startsWith('Proteína analisada inválida')));
  assert.ok(lines.includes('Zero no cálculo não é valor medido. Revise os valores e recalcule.'));
  assert.ok(lines.includes('FM85: energia e proteína acrescentadas separadamente.'));
+});
+
+for(const source of ['individual_hydration','standard_hydration'])test(`audit: Fenton report separates ${source} and enteral (fixture chart only)`,async()=>{
+ const base={day:8,weight:1,birthWeight:1,access:'central'};
+ const np=source==='standard_hydration'?calculateStandard({...base,mode:'fluid',value:60,formulation:'2in1'}):calculate({...base,gaWeeks:28,gaDays:0,fluidPhase:'stable',fluid:60,aa:2,lip:1,vig:3,na:0,k:0,ca:0,mg:0,p:0,naSalt:'nacl',pSalt:'glycero',znDose:400,seDose:7,omit:{va:true,vb:true,oligo:true,zn:true,se:true}});
+ const hv=calculateHydration({...base,fluid:40,vig:2,na:0,k:0,ca:0,mg:0,doseUnit:'perKgDay',concentrations:{na:1.7,k:1.34,ca:.5,mg:.8}});
+ const enteral=calculateEnteral({type:'lhop',rate:50}),integrated=integrateNutrition({source,enteral,parenteral:intravenousFromResult(source,{np,hv})});
+ const lines=[],original=PDFLib.PDFPage.prototype.drawText;
+ PDFLib.PDFPage.prototype.drawText=function(t,o){assert.ok(o.y>=14);assert.ok(o.x>=0&&o.x+o.font.widthOfTextAtSize(t,o.size)<=this.getWidth()-25,t);lines.push(t);return original.call(this,t,o);};
+ try{const bytes=await createFentonNutritionReport({nutrition:{enteral,integrated},chart});assert.equal((await PDFLib.PDFDocument.load(bytes)).getPageCount(),2);}finally{PDFLib.PDFPage.prototype.drawText=original;}
+ for(const v of ['NP','HV','Enteral','Total','60,0','40,0','50,0','150,0'])assert.ok(lines.includes(v),v);
 });

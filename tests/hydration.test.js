@@ -110,12 +110,12 @@ test('HV: capacidade numérica impede volumes irrepresentáveis',()=>{
 test('HV: exibição nunca converte um volume pequeno positivo em zero',()=>{
   assert.notEqual(formatHydrationNumber(0.000001),'0');assert.equal(formatHydrationNumber(14.4),'14,4');
 });
-test('HV: volumes usam uma casa decimal com teto sem elevar décimos exatos',()=>{
+test('HV: volumes mantêm precisão sem teto para 0,1 mL',()=>{
   assert.equal(formatHydrationVolume(1.20),'1,2');
-  assert.equal(formatHydrationVolume(1.21),'1,3');
+  assert.equal(formatHydrationVolume(1.21),'1,21');
   assert.equal(formatHydrationVolume(0.1+0.2),'0,3');
   assert.equal(formatHydrationVolume(200),'200,0');
-  assert.equal(formatHydrationVolume(0.000001),'0,1');
+  assert.equal(formatHydrationVolume(0.000001),'0,000001');
 });
 test('HV: dois novos módulos integram o cache offline',()=>{
   const sw=readFileSync(new URL('../sw.js',import.meta.url),'utf8');assert.match(sw,/\.\/hydration\.js/);assert.match(sw,/\.\/hydration-ui\.js/);

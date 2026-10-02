@@ -1,4 +1,4 @@
-const CACHE='npp-neo-static-0.7.6';
+const CACHE='npp-neo-static-0.7.7';
 const FILES=['./','./index.html','./styles.css','./app.js','./app-update.js','./assets/grow-neo-logo.png','./engine.js','./alerts.js','./fluid-guidance.js','./standard.js','./standard-ui.js','./standard-pdf.js','./hydration.js','./hydration-ui.js','./hydration-pdf.js','./pdf.js','./enteral.js','./enteral-ui.js','./enteral-pdf.js','./growth.js','./growth-ui.js','./fenton-ui.js','./fenton-config.js','./manifest.webmanifest','./vendor/pdf-lib.min.js','./assets/uea-logo.png','./assets/grow-neo-icon-192.png','./assets/grow-neo-icon-512.png','./assets/grow-neo-maskable-512.png','./assets/grow-neo-apple-touch-icon.png'];
 FILES.push('./fenton-nutrition-pdf.js','./fenton-nutrition-ui.js','./intergrowth.js','./intergrowth-velocity.js','./intergrowth-ui.js','./intergrowth-charts.js','./intergrowth-pdf.js');
 FILES.push('./dosing-weight.js','./pdf-date.js');

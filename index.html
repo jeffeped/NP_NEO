@@ -138,7 +138,7 @@
           <div id="hv-warnings" role="status"></div>
           <div id="hv-composition">
             <div class="table-wrap"><table aria-label="Composição calculada da hidratação venosa"><thead><tr><th>Componente / quantidade</th><th>Volume (mL)</th></tr></thead><tbody id="hv-rows"></tbody></table></div>
-            <p id="hv-volume-note" class="help">O volume dos eletrólitos está incluído no VT. A glicose calculada inclui SG 5% e SG 50%. VT, vazão e volumes são exibidos com uma casa decimal, arredondados para cima apenas na apresentação; os cálculos internos preservam a precisão completa. Confira a oferta após o arredondamento de preparo.</p>
+            <p id="hv-volume-note" class="help">O volume dos eletrólitos está incluído no VT. A glicose calculada inclui SG 5% e SG 50%. Volumes calculados sem arredondamento para cima. Confira a oferta efetiva e o volume final após definir a precisão e as diluições de preparo.</p>
             <div id="hv-final-summary" class="summary"></div>
           </div>
           <button id="hv-export" class="primary" type="button" disabled>Exportar PDF</button>
@@ -191,9 +191,9 @@
         <form id="enteral-form" class="section section-inner" autocomplete="off" novalidate>
           <div class="field-grid">
             <label class="field full">Aporte intravenoso em uso<select id="en-source" class="hv-select" required>
-              <option value="">Selecione a fonte</option><option value="none">Sem aporte intravenoso</option><option value="individual">NP individualizada</option><option value="standard">NP padrão (Numeta)</option><option value="hydration">HV</option>
+              <option value="">Selecione a fonte</option><option value="none">Sem aporte intravenoso</option><option value="individual">NP individualizada</option><option value="standard">NP padrão (Numeta)</option><option value="hydration">HV</option><option value="individual_hydration">NP individualizada + HV</option><option value="standard_hydration">NP padrão (Numeta) + HV</option>
             </select></label>
-            <p class="help full">Escolha uma única fonte. Calcule-a na aba correspondente antes de integrar; após editar os parâmetros, recalcule.</p>
+            <p class="help full">Selecione as fontes em uso e calcule cada aba antes de integrar. Para NP + HV, informe somente o volume próprio de cada solução, sem duplicar líquidos. As duas abas devem ter o mesmo dia de vida e peso de cálculo. Após editar ou alterar os aceites, recalcule o total.</p>
             <label class="field full">Fase clínica<select id="en-phase" class="hv-select"><option value="">Selecione a fase</option><option value="oligoanuria">Fase de oligoanúria</option><option value="transition">Fase de transição</option><option value="growth">Fase de crescimento</option></select></label>
             <p class="help full">Seleção clínica manual. Crescimento: bebê clinicamente estável em crescimento. A fase de transição clínica é distinta das metas nutricionais PN / EN.</p>
             <label class="field">Peso ao nascer<div class="input-box"><input id="en-birth-weight" inputmode="decimal" type="text"><span class="unit">g</span></div></label>
@@ -221,7 +221,7 @@
           <p id="en-estimated-note" class="help" hidden>Composição estimada — não corresponde à análise individual do leite.</p>
           <div id="en-nutrient-result-warning" class="notice" role="status" hidden></div>
           <h2 class="page-title enteral-total-title">Oferta nutricional total</h2>
-          <div class="table-wrap"><table class="enteral-total-table" aria-label="Oferta nutricional total"><thead><tr><th>Indicador</th><th id="en-iv-heading">IV</th><th>Enteral</th><th>Total</th></tr></thead><tbody id="en-total-rows"></tbody></table></div>
+          <div class="table-wrap"><table class="enteral-total-table" aria-label="Oferta nutricional total"><thead><tr><th>Indicador</th><th id="en-iv-heading">IV</th><th id="en-hv-heading" hidden>HV</th><th>Enteral</th><th>Total</th></tr></thead><tbody id="en-total-rows"></tbody></table></div>
           <h2 class="page-title">Metas de transição PN → EN</h2>
           <h3>Referências por fase clínica</h3><div id="en-clinical-reference" class="notice" role="status"></div>
           <div id="en-transition" class="notice" role="status"></div>

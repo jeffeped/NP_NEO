@@ -23,12 +23,15 @@ export async function createEnteralReport({enteral,integrated,clinical,growth}){
  text('Fonte: '+integrated.sourceLabel,L,602-warningOffset,9,bold);
  if(integrated.sourceLabel.includes('2:1'))text('Lipídios infundidos à parte não integram estes totais.',L,585-warningOffset,8,regular,muted);
  let y=(integrated.sourceLabel.includes('2:1')?550:570)-warningOffset;page.drawRectangle({x:L,y:y-8,width:R-L,height:25,color:shade});
- text('Indicador',L+6,y,9,bold);right(integrated.source==='hydration'?'HV':integrated.source==='none'?'IV (zero)':'PN',300,y,9,bold);right('Enteral',430,y,9,bold);right('Total',R-6,y,9,bold);y-=30;
+ const columns=integrated.intravenousComponents
+   ?[['NP',integrated.intravenousComponents.np,260],['HV',integrated.intravenousComponents.hv,350],['Enteral',integrated.enteral,440],['Total',integrated.total,R-6]]
+   :[[integrated.source==='hydration'?'HV':integrated.source==='none'?'IV (zero)':'PN',integrated.parenteral,300],['Enteral',integrated.enteral,430],['Total',integrated.total,R-6]];
+ text('Indicador',L+6,y,9,bold);for(const [label,,x] of columns)right(label,x,y,9,bold);y-=30;
  const rows=[['Taxa hídrica','mL/kg/dia','fluid'],['Energia','kcal/kg/dia','calories'],['Proteína','g/kg/dia','protein']];
- for(const [name,unit,key] of rows){text(name,L+6,y,9,bold);text(unit,L+6,y-12,7.5,regular,muted);right(fmt(integrated.parenteral[key],key==='protein'?2:1),300,y,9);right(fmt(integrated.enteral[key],key==='protein'?2:1),430,y,9);right(fmt(integrated.total[key],key==='protein'?2:1),R-6,y,9,bold);y-=34;}
+ for(const [name,unit,key] of rows){text(name,L+6,y,9,bold);text(unit,L+6,y-12,7.5,regular,muted);for(const [label,values,x] of columns)right(fmt(values[key],key==='protein'?2:1),x,y,9,label==='Total'?bold:regular);y-=34;}
  y-=14;text('Metas de transição PN / EN',L,y,11,bold);y-=22;
  for(const line of transitionLines(integrated)){text(line,L,y,9);y-=18;}
- y-=8;text('Metas avaliadas sobre os totais PN + EN, antes do arredondamento.',L,y,8,regular,muted);
+ y-=8;text(integrated.intravenousComponents?'Metas avaliadas sobre NP + HV + enteral, antes do arredondamento.':'Metas avaliadas sobre os totais PN + EN, antes do arredondamento.',L,y,8,regular,muted);
  y-=16;text('As metas não determinam redução ou suspensão automática da PN.',L,y,8,regular,muted);
  y-=16;text(integrated.source==='none'?'Totais somente da dieta enteral.':`Fonte calculada nesta sessão: ${integrated.sourceLabel}${!integrated.weightContext&&Number.isFinite(integrated.weight)?' · peso de cálculo '+fmtDose(integrated.weight*1000)+' g':''}.`,L,y,8,regular,muted);
  if(integrated.weightContext){y-=14;text(dosingWeightLabel(integrated.weightContext),L,y,8,regular,muted);}

@@ -1,5 +1,5 @@
 import {initFentonNutritionReport} from '../fenton-nutrition-ui.js';
-import {intravenousFromResult} from '../enteral.js';
+import {intravenousFromResult,IV_MEMBERS} from '../enteral.js';
 import {initAppUpdate} from '../app-update.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -17,7 +17,7 @@ import {initIntergrowth} from '../intergrowth-ui.js';
 
 // Executa o app real em um DOM simulado; não substitui a revisão visual em navegador.
 const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
-const source=readFileSync(new URL('../app.js',import.meta.url),'utf8').replace(/^import .*;\n/gm,'');
+const source=readFileSync(new URL('../app.js',import.meta.url),'utf8').replace(/^import .*;\r?\n/gm,'');
 test('ícone instalado usa logo GROW_NEO em todos os tamanhos e no iPhone',()=>{
   const manifest=JSON.parse(readFileSync(new URL('../manifest.webmanifest',import.meta.url),'utf8'));
   for(const icon of manifest.icons){
@@ -38,12 +38,12 @@ test('GROW_Fenton oferece relatório combinado e remove o plotador externo',()=>
  assert.ok(document.getElementById('fenton-total-export'));
  assert.match(document.getElementById('fenton-total-export').textContent,/aporte total.*Fenton/);
 });
-function openApp() {
+function openApp(createReport=async()=>new Uint8Array()) {
   const {document,window}=parseHTML(html);
   window.HTMLElement.prototype.scrollIntoView=function(){};
   const context={document,window:{addEventListener(){},scrollTo(){}},navigator:{},
-    console,URL,Blob,MessageChannel,resolveDosingWeight,dosingWeightLabel,measuredWeightLabel,initFentonNutritionReport,initAppUpdate,intravenousFromResult,...engine,macroReference,formatAlertNumber,initHydration,initStandard,initEnteral,initGrowth,initIntergrowth,
-    createReport:async()=>new Uint8Array()};
+    console,URL,Blob,MessageChannel,resolveDosingWeight,dosingWeightLabel,measuredWeightLabel,initFentonNutritionReport,initAppUpdate,intravenousFromResult,IV_MEMBERS,...engine,macroReference,formatAlertNumber,initHydration,initStandard,initEnteral,initGrowth,initIntergrowth,
+    createReport};
   vm.runInNewContext(source,context);
   // O DOM simulado não seleciona implicitamente a primeira opção como o navegador.
   for(const select of document.querySelectorAll('select'))select.firstElementChild.selected=true;
@@ -55,6 +55,28 @@ function openApp() {
   const calculate=()=>{document.getElementById('npp-form').dispatchEvent(new window.Event('submit',{bubbles:true,cancelable:true}));assert.equal(document.getElementById('form-errors').hidden,true,document.getElementById('form-errors').textContent);};
   return {document,window,set,access,calculate,dispatch:(id,type)=>document.getElementById(id).dispatchEvent(new window.Event(type,{bubbles:true,cancelable:true})),el:id=>document.getElementById(id),alerts:()=>Array.from(document.querySelectorAll('.clinical-alert')).map(e=>({id:e.dataset.alertId,level:e.dataset.level,text:e.textContent}))};
 }
+
+test('audit: pending NP dose acceptance blocks integration and withdrawing it clears totals',()=>{
+ const app=openApp();app.set('na',2);app.set('p',1);app.set('salt-p','glycero');app.calculate();
+ app.set('en-source','individual');app.set('en-type','lhop');app.set('en-rate',20);
+ app.dispatch('enteral-form','submit');assert.equal(app.el('en-result').hidden,true);assert.match(app.el('en-errors').textContent,/aceite as doses/);
+ const ack=app.document.querySelector('[data-ack="na"]');assert.ok(ack);ack.checked=true;ack.dispatchEvent(new app.window.Event('change',{bubbles:true}));
+ app.dispatch('enteral-form','submit');assert.equal(app.el('en-result').hidden,false);
+ ack.checked=false;ack.dispatchEvent(new app.window.Event('change',{bubbles:true}));assert.equal(app.el('en-result').hidden,true);assert.equal(app.el('en-pdf-download').hasAttribute('href'),false);
+ app.dispatch('enteral-form','submit');assert.match(app.el('en-errors').textContent,/aceite as doses/);
+});
+
+test('audit: combined UI shows NP, HV and enteral and invalidates after editing either IV source',()=>{
+ const app=openApp();app.set('day',8);app.calculate();
+ for(const [id,value]of Object.entries({'hv-weight':800,'hv-birth-weight':800,'hv-day':8,'hv-fluid':40,'hv-vig':2,'hv-doseUnit':'perKgDay','hv-na':0,'hv-k':0,'hv-ca':0,'hv-mg':0}))app.set(id,value);
+ const access=app.document.querySelector('[name="hv-access"][value="central"]');access.checked=true;access.setAttribute('checked','');
+ app.dispatch('hv-form','submit');assert.equal(app.el('hv-errors').hidden,true,app.el('hv-errors').textContent);
+ app.set('en-source','individual_hydration');app.set('en-type','lhop');app.set('en-rate',50);app.dispatch('enteral-form','submit');
+ assert.equal(app.el('en-errors').hidden,true,app.el('en-errors').textContent);assert.equal(app.el('en-hv-heading').hidden,false);
+ assert.deepEqual([...app.el('en-total-rows').firstElementChild.children].slice(1).map(e=>e.textContent),['100,0','40,0','50,0','190,0']);
+ app.set('hv-fluid',41);assert.equal(app.el('en-result').hidden,true);app.dispatch('hv-form','submit');app.dispatch('enteral-form','submit');assert.equal(app.el('en-result').hidden,false);
+ app.set('fluid',99);assert.equal(app.el('en-result').hidden,true);app.dispatch('enteral-form','submit');assert.equal(app.el('en-result').hidden,true);
+});
 test('interface: dia 1 na referência, orientação e exportação disponível',()=>{
   const app=openApp();app.calculate();
   assert.equal(app.el('calculated-result').hidden,false);assert.equal(app.el('export-pdf').disabled,false);
@@ -287,8 +309,8 @@ test('interface HV: calcula com as fórmulas confirmadas e mostra seis component
   assert.equal(app.el('hv-rows').children.length,6);
   const summary=app.el('hv-summary').textContent;
   assert.match(summary,/200,0 mL\/24 h/);assert.match(summary,/14,4 g\/24 h/);assert.match(summary,/192,0 mL/);
-  assert.match(summary,/10,7 mL/);assert.match(summary,/181,4 mL/);assert.match(summary,/8,4 mL\/h/);assert.match(summary,/5 \/ 5 mg\/kg\/min/);
-  assert.deepEqual([...app.el('hv-rows').children].map(row=>row.children[1].textContent),['2,0','2,0','2,0','2,0','181,4','10,7']);
+  assert.match(summary,/10,6666666667 mL/);assert.match(summary,/181,333333333 mL/);assert.match(summary,/8,33333333333 mL\/h/);assert.match(summary,/5 \/ 5 mg\/kg\/min/);
+  assert.deepEqual([...app.el('hv-rows').children].map(row=>row.children[1].textContent),['2,0','2,0','2,0','2,0','181,333333333','10,6666666667']);
 });
 
 test('interface HV: campos de dose, VIG e peso começam sem sugestão',()=>{
@@ -321,7 +343,7 @@ test('interface HV: mudar equivalência do rótulo exige recálculo',()=>{
   const app=openHydration();app.calculateHydration();app.set('hv-concentration-ca','0,465');
   assert.equal(app.el('hv-result').hidden,true);app.calculateHydration();
   const ca=app.document.querySelector('[data-hv-component="ca"]');
-  assert.match(ca.textContent,/0,465 mEq\/mL/);assert.match(ca.textContent,/2,2/);
+  assert.match(ca.textContent,/0,465 mEq\/mL/);assert.match(ca.textContent,/2,15053763441/);
 });
 
 test('interface HV: formulário independente preserva resultado e exportação da NP',()=>{
@@ -504,4 +526,19 @@ test('interface 0.7.4: osmolaridade >900 em acesso periférico bloqueia PDF; ace
   app.access('central');app.calculate();
   assert.equal(app.el('export-pdf').disabled,false);
   assert.doesNotMatch(app.el('result-alerts').textContent,/em acesso periférico\. É obrigatório/);
+});
+
+test('audit: changing NP acceptance during asynchronous PDF generation rejects the stale download',async()=>{
+ let finish;const app=openApp(()=>new Promise(resolve=>{finish=resolve}));app.set('na',2);app.set('p',1);app.set('salt-p','glycero');app.calculate();
+ const ack=app.document.querySelector('[data-ack="na"]');const toggle=value=>{ack.checked=value;ack.dispatchEvent(new app.window.Event('change',{bubbles:true}));};
+ toggle(true);app.dispatch('export-pdf','click');assert.equal(app.el('export-pdf').disabled,true);
+ toggle(false);toggle(true);finish(new Uint8Array());await new Promise(setImmediate);
+ assert.equal(app.el('pdf-download').hidden,true);assert.equal(app.el('pdf-download').hasAttribute('href'),false);
+ app.dispatch('export-pdf','click');finish(new Uint8Array());await new Promise(setImmediate);assert.equal(app.el('pdf-download').hidden,false);
+ toggle(false);assert.equal(app.el('pdf-download').hidden,true);assert.equal(app.el('pdf-download').hasAttribute('href'),false);
+});
+
+test('audit: NP recalculation clears the previously generated PDF even without edits',async()=>{
+ const app=openApp();app.calculate();app.dispatch('export-pdf','click');await new Promise(setImmediate);assert.equal(app.el('pdf-download').hidden,false);
+ app.calculate();assert.equal(app.el('pdf-download').hidden,true);assert.equal(app.el('pdf-download').hasAttribute('href'),false);
 });

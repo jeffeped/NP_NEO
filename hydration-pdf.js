@@ -1,7 +1,7 @@
 import {dosingWeightLabel,measuredWeightLabel} from './dosing-weight.js';
 import {stampPdfIssueDate} from './pdf-date.js';
 import {VERSION} from './engine.js';
-import {calculateHydration,HYDRATION_WFI_REVIEW_WARNING,formatHydrationNumber as f,formatHydrationVolume as fv} from './hydration.js';
+import {calculateHydration,HYDRATION_WFI_REVIEW_WARNING,HYDRATION_VOLUME_NOTE,formatHydrationNumber as f,formatHydrationVolume as fv} from './hydration.js';
 
 export async function createHydrationReport(result){
   if(!result?.ok||!result.canPrepare||!result.mixture||!Number.isFinite(result.mixture.osmolarity))throw new Error('HV is not exportable');
@@ -19,7 +19,7 @@ export async function createHydrationReviewReport(result,{acknowledged=false}={}
 
 async function renderHydrationReport(result,review){
   const hasWfi=result.reviewRequired;
-  const volume=hasWfi?f:fv;
+  const volume=fv;
   const {PDFDocument,StandardFonts,rgb}=globalThis.PDFLib;
   const doc=await PDFDocument.create();
   doc.setTitle(review?'HV - REVISÃO - NÃO ADMINISTRAR':'Hidratação venosa neonatal');doc.setAuthor('Jefferson P Guilherme');doc.setCreator('GROW_NEO by Prof. Jefferson');doc.setSubject(review?'Cálculo de revisão com água para injetáveis, não administrar':hasWfi?'HV com água para injetáveis e confirmação de revisão pelo prescritor':'Relatório de cálculo de HV em 24 horas');
@@ -53,7 +53,7 @@ async function renderHydrationReport(result,review){
   y-=5;
   paragraph(`Osmolaridade estimada por soma das contribuições, com dissociação ideal dos sais. SG 5%: ${f(result.input.glucoseOsmolarity.sg5)} mOsm/L; SG 50%: ${f(result.input.glucoseOsmolarity.sg50)} mOsm/L. Não é medição laboratorial nem confirmação de tonicidade, compatibilidade ou adequação do acesso. Fórmula e referências na aba Notas.`);
   if(hasWfi)paragraph('A glicose é metabolizada: uma osmolaridade próxima à plasmática não estabelece tonicidade segura. Na e K finais são informativos. Não é usado limite osmolar inferior numérico como autorização. Conferir apresentações, preparo e compatibilidade conforme o protocolo do serviço.');
-  paragraph(hasWfi?'Volumes calculados com até quatro casas decimais na apresentação; cálculo interno com precisão completa. Conferir volumes, oferta efetiva e volume final após o arredondamento de preparo.':'VT, vazão e volumes com uma casa decimal, arredondados para cima apenas na apresentação. O cálculo e a osmolaridade usam precisão completa; confira a oferta após o arredondamento do preparo. A vazão exibida x 24 pode diferir do VT.');
+  paragraph(HYDRATION_VOLUME_NOTE);
   paragraph(review?'Protótipo de avaliação exclusivamente matemática. Este documento não autoriza uso assistencial.':'Versão de avaliação. Conferir os resultados e as apresentações antes do uso assistencial.');
   room(32);page.drawRectangle({x:42,y:y-9,width:511,height:28,color:shade});row('VT · Vazão em 24 horas',`${volume(result.totals.totalVolume)} mL | ${volume(result.totals.infusion)} mL/h`);
   const pages=doc.getPages();pages.forEach((p,i)=>{page=p;text('GROW_NEO - versão '+VERSION+' | Jefferson P Guilherme'+(review?' | REVISÃO - NÃO ADMINISTRAR':hasWfi?' | Água para injetáveis':''),42,34,8);right(`${i+1}/${pages.length}`,34,8,regular);});

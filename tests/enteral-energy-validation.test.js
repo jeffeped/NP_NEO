@@ -26,12 +26,12 @@ for(const value of [0,-0,0.001,70,81,'70.25'])test(`valid analyzed energy ${valu
  close(en.composition.energy,Number(value));close(en.calories,1.5*Number(value));
  assert.equal(en.composition.energyValidation,undefined);assert.deepEqual(enteralEnergyWarnings(en),[]);
 });
-test('existing API missing, empty, and partial composition behavior is preserved',()=>{
- for(const input of [{},{analyzedEnergy:undefined,analyzedProtein:1.2},{analyzedEnergy:'unknown',analyzedProtein:1.2},{analyzedEnergy:0,analyzedProtein:undefined},{analyzedEnergy:-1,analyzedProtein:undefined}]){
+test('API estimates only an absent pair and rejects incomplete or invalid composition',()=>{
+ for(const input of [{},{analyzedEnergy:'',analyzedProtein:''},{analyzedEnergy:null,analyzedProtein:null}]){
   assert.equal(compositionFor({type:'lhop',...input}).energy,65);
  }
- for(const input of [{analyzedEnergy:'',analyzedProtein:''},{analyzedEnergy:null,analyzedProtein:null}]){
-  assert.equal(compositionFor({type:'lhop',...input}).energy,0);
+ for(const input of [{analyzedEnergy:undefined,analyzedProtein:1.2},{analyzedEnergy:'unknown',analyzedProtein:1.2},{analyzedEnergy:0,analyzedProtein:undefined},{analyzedEnergy:-1,analyzedProtein:undefined}]){
+  assert.throws(()=>compositionFor({type:'lhop',...input}));
  }
 });
 test('negative protein now follows the explicitly approved zero fallback',()=>{

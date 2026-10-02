@@ -1,4 +1,3 @@
-import {formatHydrationVolume} from './hydration.js';
 import {parseNumber} from './engine.js';
 import {compareProducts} from './alerts.js';
 import {resolveDosingWeight} from './dosing-weight.js';
@@ -48,7 +47,11 @@ export function calculateStandard(input){
 
 export const formatStandard=n=>new Intl.NumberFormat('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1}).format(n);
 export const formatStandardPer100=n=>new Intl.NumberFormat('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:2}).format(n);
-export const formatStandardVolume=formatHydrationVolume;
+export function formatStandardVolume(value){
+  if(!Number.isFinite(value))return '-';
+  const scaled=value*10,tolerance=Number.EPSILON*Math.max(1,Math.abs(scaled))*4;
+  return (Math.ceil(scaled-tolerance)/10).toFixed(1).replace('.',',');
+}
 export function standardSummary(r){
   const f=formatStandard,bag=STANDARD_FORMULATIONS[r.formulation??'3in1'];
   return [['Volume total',formatStandardVolume(r.volume)+' mL'],['Vazão média em 24 horas',formatStandardVolume(r.rate)+' mL/h'],['Taxa hídrica',f(r.fluid)+' mL/kg/dia'],['Taxa calórica',f(r.rows.find(x=>x.label==='Energia total').perKg)+' kcal/kg/dia'],['Proteína (aminoácidos)',f(r.protein)+' g/kg/dia'],['VIG',f(r.vig)+' mg/kg/min'],['Concentração de glicose',f(40/bag.bagVolume*100)+'%'],['Osmolaridade da bolsa (aproximada)',f(bag.osmolarity)+' mOsm/L'],['Proteína / calorias não proteicas','1 : '+f((r.rows.find(x=>x.label==='Energia não proteica').perKg)/r.protein)],['Relação Ca/P (mmol/mmol)',f((r.rows.find(x=>x.label==='Cálcio').total/2)/r.rows.find(x=>x.label==='Fósforo').total)+' : 1']];

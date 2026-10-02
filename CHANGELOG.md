@@ -1,5 +1,13 @@
 # Histórico de versões
 
+## 0.7.7 - 02/10/2026; candidata, publicação pendente
+
+- Corrige a aceitação silenciosa de composição enteral não numérica ou não finita. Estimativa somente quando ambos os campos estão vazios; negativos continuam sinalizados e substituídos por zero na contribuição.
+- HV: volumes calculados com 12 algarismos significativos na tela e no PDF, sem elevar volumes pequenos a 0,1 mL. A precisão de preparo e eventuais diluições requerem conferência do prescritor.
+- Acrescenta NP individualizada + HV + enteral e NP padrão + HV + enteral, com parcelas separadas e total. Exige fontes válidas, mesmo dia/peso de cálculo e aceites concluídos.
+- Integração e PDFs respeitam os aceites de doses da NP; alteração ou retirada de aceite invalida resultados derivados e downloads.
+- Mantém fatores energéticos, composição dos produtos, regra D7/D8 e bloqueios clínicos existentes. Limitações da auditoria permanecem explicitadas em docs/RELEASE_0.7.7.md.
+
 ## 0.7.6 - 01/10/2026
 
 - HV: opção de água para injetáveis para atingir VIG abaixo do patamar matemático de SG 5%, mantendo SG 5%/SG 50% nas demais faixas.

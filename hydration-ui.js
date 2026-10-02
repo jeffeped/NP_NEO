@@ -1,5 +1,5 @@
 import {dosingWeightLabel,measuredWeightLabel} from './dosing-weight.js';
-import {calculateHydration,HYDRATION_COMPONENTS,HYDRATION_GLUCOSE_OSMOLARITY,formatHydrationNumber as f,formatHydrationVolume as fv} from './hydration.js';
+import {calculateHydration,HYDRATION_COMPONENTS,HYDRATION_GLUCOSE_OSMOLARITY,HYDRATION_VOLUME_NOTE,formatHydrationNumber as f,formatHydrationVolume as fv} from './hydration.js';
 import {createHydrationReport} from './hydration-pdf.js';
 import {parseWeightGrams} from './engine.js';
 
@@ -39,7 +39,7 @@ export function initHydration(document){
       for(const error of result.errors){list.append(text('li',error.message));const el=$(error.field==='birthWeight'?'birth-weight':error.field);el?.closest('.field')?.classList.add('invalid');const details=el?.closest('details');if(details)details.open=true;}
       $('errors').replaceChildren(list);$('errors').hidden=false;$('errors').scrollIntoView({block:'center'});return;
     }
-    const resultVolume=result.reviewRequired?f:fv;
+    const resultVolume=fv;
     resultSnapshot=result;$('empty').hidden=true;$('result').hidden=false;
     $('summary').replaceChildren(text('p',measuredWeightLabel(result.input.weightContext),'help'),text('p',dosingWeightLabel(result.input.weightContext),'notice'),summary('VT = taxa hídrica × (peso em g ÷ 1000)',`${f(result.input.fluid)} × (${f(result.input.weight*1000)} g ÷ 1000) = ${resultVolume(result.totals.totalVolume)} mL/24 h`),summary('Glicose necessária = VIG × (peso em g ÷ 1000) × 60 × 24 ÷ 1000',`${f(result.input.vig)} × (${f(result.input.weight*1000)} g ÷ 1000) × 60 × 24 ÷ 1000 = ${f(result.totals.glucoseGrams)} g/24 h`),summary('Volume dos eletrólitos',`${resultVolume(result.totals.electrolytesVolume)} mL`),summary('VR = VT − volume dos eletrólitos',`${resultVolume(result.totals.totalVolume)} − ${resultVolume(result.totals.electrolytesVolume)} = ${resultVolume(result.totals.glucoseSolutionsVolume)} mL`),summary('Vazão em 24 horas',`${resultVolume(result.totals.infusion)} mL/h`));
     $('blocks').replaceChildren(...result.blocks.map(message=>text('div',message,'notice danger')));
@@ -49,15 +49,15 @@ export function initHydration(document){
     $('composition').hidden=!(result.canPrepare||result.canReview);$('review').hidden=!result.reviewRequired;
     $('rows').replaceChildren();
     if(result.canPrepare||result.canReview){
-      const volume=result.reviewRequired?f:fv;
-      $('volume-note').textContent=result.reviewRequired?'Volumes calculados exibidos com até quatro casas decimais. O cálculo interno conserva VT e glicose sem arredondamento intermediário. Conferir volumes, oferta efetiva e volume final após o arredondamento de preparo.':'O volume dos eletrólitos está incluído no VT. VT, vazão e volumes com uma casa decimal, arredondados para cima apenas na apresentação; confira a oferta e o volume final após o arredondamento de preparo.';
+      const volume=fv;
+      $('volume-note').textContent=HYDRATION_VOLUME_NOTE;
       for(const row of result.rows){
         const tr=document.createElement('tr');tr.dataset.hvComponent=row.id;
         const label=text('td',row.solution);label.append(text('span',`${f(row.amountMeq)} mEq/24 h · ${f(row.perKgDay)} mEq/kg/dia`),text('span',`Equivalência: ${f(row.concentration)} mEq/mL`));
         tr.append(label,text('td',volume(row.volume)));$('rows').append(tr);
       }
-      for(const [id,name,volume] of [['sg5',result.reviewRequired?'SG 5%':'SG 5% · completar até o VT',result.mixture.sg5],['sg50','SG 50%',result.mixture.sg50],...(result.reviewRequired?[['water','Água para injetáveis · diluente da mistura',result.mixture.water]]:[])]){const tr=document.createElement('tr');tr.dataset.hvComponent=id;tr.append(text('td',name),text('td',(result.reviewRequired?f:fv)(volume)));$('rows').append(tr);}
-      if(result.reviewRequired)$('summary').append(summary('SG 5% = gG ÷ 0,05',`${f(result.mixture.sg5)} mL`),summary('Água para injetáveis = VR − SG 5%',`${f(result.mixture.water)} mL`));
+      for(const [id,name,volume] of [['sg5',result.reviewRequired?'SG 5%':'SG 5% · completar até o VT',result.mixture.sg5],['sg50','SG 50%',result.mixture.sg50],...(result.reviewRequired?[['water','Água para injetáveis · diluente da mistura',result.mixture.water]]:[])]){const tr=document.createElement('tr');tr.dataset.hvComponent=id;tr.append(text('td',name),text('td',(fv)(volume)));$('rows').append(tr);}
+      if(result.reviewRequired)$('summary').append(summary('SG 5% = gG ÷ 0,05',`${fv(result.mixture.sg5)} mL`),summary('Água para injetáveis = VR − SG 5%',`${fv(result.mixture.water)} mL`));
       else $('summary').append(summary('SG 50% = [gG − (VR × 0,05)] ÷ 0,45',`${fv(result.mixture.sg50)} mL`),summary('SG 5% = VR − SG 50%',`${fv(result.mixture.sg5)} mL`));
       $('summary').append(summary('VIG informada / calculada',`${f(result.input.vig)} / ${f(result.mixture.vig)} mg/kg/min`),summary('Concentração final de glicose',`${f(result.mixture.glucosePercent)}%`),summary('Osmolaridade estimada',`${Math.round(result.mixture.osmolarity)} mOsm/L`),summary('Na final',`${f(result.mixture.sodiumMmolL)} mmol/L`),summary('K final',`${f(result.mixture.potassiumMmolL)} mmol/L`));
       $('final-summary').replaceChildren(summary('VT · Vazão em 24 horas',`${resultVolume(result.totals.totalVolume)} mL | ${resultVolume(result.totals.infusion)} mL/h`));

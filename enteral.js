@@ -20,7 +20,11 @@ export function compositionFor({type, lactationDays, analyzedEnergy, analyzedPro
   else if(type==='lhop') base=ENTERAL_COMPOSITION.lhop;
   else base=ENTERAL_COMPOSITION[type];
   if(!base) throw new Error('Dieta enteral não reconhecida.');
-  const hasAnalyzed=Number.isFinite(Number(analyzedEnergy))&&Number.isFinite(Number(analyzedProtein));
+  const missing=value=>value==null||(typeof value==='string'&&value.trim()==='');
+  const hasEnergy=!missing(analyzedEnergy),hasProtein=!missing(analyzedProtein);
+  if(hasEnergy!==hasProtein)throw new Error('Para composição analisada, informe energia e proteína.');
+  const hasAnalyzed=hasEnergy&&hasProtein;
+  if(hasAnalyzed&&(!Number.isFinite(Number(analyzedEnergy))||!Number.isFinite(Number(analyzedProtein))))throw new Error('Composição analisada inválida: informe energia e proteína numéricas e finitas.');
   let energy=hasAnalyzed?Number(analyzedEnergy):base.energy;
   // Preserve invalid input separately: zero is a calculation fallback, not a measurement.
   const energyValidation=hasAnalyzed&&energy<0?{status:'invalid-negative',enteredValue:energy,calculationValue:0}:null;
@@ -28,8 +32,8 @@ export function compositionFor({type, lactationDays, analyzedEnergy, analyzedPro
   let protein=hasAnalyzed?Number(analyzedProtein):base.protein;
   const proteinValidation=hasAnalyzed&&protein<0?{status:'invalid-negative',enteredValue:protein,calculationValue:0}:null;
   if(proteinValidation)protein=proteinValidation.calculationValue;
-  const fortifier=Number(fm85GramsPer100mL)||0;
-  if(fortifier<0) throw new Error('Concentração de FM85 inválida.');
+  const fortifier=Number(fm85GramsPer100mL);
+  if(!Number.isFinite(fortifier)||fortifier<0) throw new Error('Concentração de FM85 inválida.');
   if(fortifier>0&&!['lmo','lhop'].includes(type)) throw new Error('FM85: selecione LMO ou LHOP; não acrescente o fortificante à fórmula.');
   energy+=fortifier*FM85.energyPerGram;
   protein+=fortifier*FM85.proteinPerGram;
@@ -41,9 +45,11 @@ export function calculateEnteral({rate,...options}){
   const composition=compositionFor(options);
   return {rate:r,composition,calories:r*composition.energy/100,protein:r*composition.protein/100};
 }
-export const IV_SOURCES=Object.freeze({none:'Sem aporte intravenoso',individual:'NP individualizada',standard:'NP padrão (Numeta)',hydration:'HV'});
+export const IV_SOURCES=Object.freeze({none:'Sem aporte intravenoso',individual:'NP individualizada',standard:'NP padrão (Numeta)',hydration:'HV',individual_hydration:'NP individualizada + HV',standard_hydration:'NP padrão (Numeta) + HV'});
+export const IV_MEMBERS=Object.freeze({none:[],individual:['individual'],standard:['standard'],hydration:['hydration'],individual_hydration:['individual','hydration'],standard_hydration:['standard','hydration']});
 export function intravenousFromResult(source,result){
   if(!Object.hasOwn(IV_SOURCES,source))throw new Error('Selecione o aporte intravenoso em uso.');
+  if(IV_MEMBERS[source].length===2)return combineIntravenousResults(IV_MEMBERS[source][0],result?.np,result?.hv);
   if(source==='none')return {fluid:0,calories:0,protein:0};
   if(!result?.ok)throw new Error(`Calcule novamente ${IV_SOURCES[source]} na aba correspondente.`);
   let values;
@@ -62,9 +68,23 @@ export function intravenousFromResult(source,result){
     values.weightContext=result.weightContext??result.input?.weightContext??null;
     return values;
 }
+export function combineIntravenousResults(npSource,npResult,hvResult){
+  if(!['individual','standard'].includes(npSource))throw new Error('Selecione uma modalidade de NP para somar à HV.');
+  const np=intravenousFromResult(npSource,npResult),hv=intravenousFromResult('hydration',hvResult);
+  const a=np.weightContext,b=hv.weightContext;
+  if(!a||!b||['day','basis','calculationWeight'].some(key=>a[key]!==b[key]))throw new Error('NP e HV devem usar o mesmo dia de vida e peso de cálculo. Confira os dados e recalcule as duas abas.');
+  return {fluid:np.fluid+hv.fluid,calories:np.calories+hv.calories,protein:np.protein+hv.protein,weight:np.weight,weightContext:a,formulation:np.formulation,components:{np,hv}};
+}
 export function integrateNutrition({parenteral={},enteral,source='individual'}){
   if(!Object.hasOwn(IV_SOURCES,source))throw new Error('Selecione o aporte intravenoso em uso.');
+  const combined=IV_MEMBERS[source].length===2;
+  if(combined&&(!parenteral.components?.np||!parenteral.components?.hv))throw new Error('Calcule NP e HV antes de integrar as duas fontes.');
   const p=source==='none'?{fluid:0,calories:0,protein:0}:{fluid:Number(parenteral.fluid)||0,calories:Number(parenteral.calories)||0,protein:source==='hydration'?0:Number(parenteral.protein)||0};
+  if(combined)for(const key of ['fluid','calories','protein']){
+    const a=parenteral.components.np[key],b=parenteral.components.hv[key];
+    if(!Number.isFinite(a)||!Number.isFinite(b)||a<0||b<0)throw new Error('Aporte intravenoso inválido; recalcule NP e HV.');
+    p[key]=a+b;
+  }
   const e=enteral||{rate:0,calories:0,protein:0};
   // Also protect integration of a legacy/direct result that bypassed calculateEnteral.
   const invalidCalories=Number(e.calories)<0;
@@ -73,8 +93,8 @@ export function integrateNutrition({parenteral={},enteral,source='individual'}){
   const invalidProtein=Number(e.protein)<0;
   const protein=invalidProtein?0:e.protein||0;
   const proteinValidation=e.composition?.proteinValidation??(invalidProtein?{status:'invalid-negative-total',enteredValue:Number(e.protein),calculationValue:0}:null);
-  const twoChamber=source==='standard'&&parenteral.formulation==='2in1';
-  return {source,sourceLabel:twoChamber?'NP padrão (Numeta 2:1, sem lipídios)':IV_SOURCES[source],weight:source==='none'?null:parenteral.weight,weightContext:source==='none'?null:parenteral.weightContext??null,parenteral:p,enteral:{fluid:e.rate||0,calories,protein,...(energyValidation?{energyValidation}:{}),...(proteinValidation?{proteinValidation}:{})},
+  const twoChamber=IV_MEMBERS[source].includes('standard')&&parenteral.formulation==='2in1';
+  return {source,sourceLabel:twoChamber?'NP padrão (Numeta 2:1, sem lipídios)'+(combined?' + HV':''):IV_SOURCES[source],weight:source==='none'?null:parenteral.weight,weightContext:source==='none'?null:parenteral.weightContext??null,parenteral:p,...(combined?{intravenousComponents:parenteral.components}:{}),enteral:{fluid:e.rate||0,calories,protein,...(energyValidation?{energyValidation}:{}),...(proteinValidation?{proteinValidation}:{})},
     total:{fluid:p.fluid+(e.rate||0),calories:p.calories+calories,protein:p.protein+protein}};
 }
 
@@ -113,7 +133,7 @@ export function enteralNutrientWarnings(enteral,integrated){
 // Metas aprovadas em 19/09/2026. Comparar valores internos, sem arredondar.
 export function assessTransition(integrated){
   const {parenteral,enteral,total}=integrated;
-  const hasPN=['individual','standard'].includes(integrated.source)&&parenteral.fluid>0;
+  const hasPN=['individual','standard','individual_hydration','standard_hydration'].includes(integrated.source)&&(integrated.intravenousComponents?.np??parenteral).fluid>0;
   const active=hasPN&&enteral.fluid>50;
   return {active,reason:!hasPN?'no-pn':enteral.fluid<=50?'enteral-threshold':null,
     energyMet:active?total.calories>=110:null,

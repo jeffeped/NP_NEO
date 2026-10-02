@@ -53,13 +53,14 @@ export async function createFentonNutritionReport({nutrition,growth=null,chart})
  if(integrated.sourceLabel.includes('2:1'))line('Lipídios infundidos à parte não integram estes totais.',{font:bold});
  y-=10;first.drawRectangle({x:L,y:y-7,width:R-L,height:22,color:shade});
  text(first,'Indicador / unidade',L+6,y,9,bold);
- right(integrated.source==='hydration'?'HV':integrated.source==='none'?'IV (zero)':'NP',323,y,9,bold);
- right('Enteral',438,y,9,bold);right('Total',R-6,y,9,bold);y-=29;
+ const columns=integrated.intravenousComponents
+   ?[['NP',integrated.intravenousComponents.np,275],['HV',integrated.intravenousComponents.hv,360],['Enteral',integrated.enteral,445],['Total',integrated.total,R-6]]
+   :[[integrated.source==='hydration'?'HV':integrated.source==='none'?'IV (zero)':'NP',integrated.parenteral,323],['Enteral',integrated.enteral,438],['Total',integrated.total,R-6]];
+ for(const [label,,x] of columns)right(label,x,y,9,bold);y-=29;
  for(const [name,unit,key,d] of [['Taxa hídrica','mL/kg/dia','fluid',1],['Energia','kcal/kg/dia','calories',1],['Proteína','g/kg/dia','protein',2]]){
   text(first,`${name} (${unit})`,L+6,y,9);
-  right(fmt(integrated.parenteral[key],d),323,y);
-  right(fmt(integrated.enteral[key],d),438,y);
-  right(fmt(integrated.total[key],d),R-6,y,9,bold);y-=23;
+  for(const [label,values,x] of columns)right(fmt(values[key],d),x,y,9,label==='Total'?bold:regular);
+  y-=23;
  }
  section('Metas de transição NP / enteral');
  for(const item of transitionLines(integrated))line(item);
