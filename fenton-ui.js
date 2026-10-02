@@ -1,5 +1,6 @@
 import {parseNumber,parseWeightGrams} from './engine.js';
 import {FENTON_PROXY_URL} from './fenton-config.js';
+import {parseFentonScores} from './fenton-scores.js';
 
 const whole=value=>/^\d+$/.test(value.trim())?Number(value.trim()):NaN;
 const cleanUrl=url=>{
@@ -85,8 +86,23 @@ export function initFenton(doc,{proxyUrl=FENTON_PROXY_URL,fetcher=globalThis.fet
     if(file.type!=='image/jpeg')throw new Error('Formato de gráfico inesperado.');
     if(chartUrl)urls.revokeObjectURL(chartUrl);
     chartUrl=urls.createObjectURL(file);chart.src=chartUrl;figure.hidden=false;
-    chartResult={blob:file,data};
+    chartResult={blob:file,data,scores:null};
     chartLink.href=chartUrl;chartLink.hidden=false;status.textContent='Gráfico Fenton 2025 gerado.';
+    // Preserve a working chart when the separate score request fails.
+    try{
+     const response=await fetcher(`${base}/zscores`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data),cache:'no-store'});
+     if(!response.ok)throw new Error('Serviço Fenton indisponível para escores.');
+     const tableFile=await response.blob();
+     if(!tableFile.type.startsWith('text/csv'))throw new Error('Formato de tabela Fenton inesperado.');
+     const scores=parseFentonScores(await tableFile.text(),data);
+     if(currentRevision!==revision)return;
+     chartResult={blob:file,data,scores};
+     if(csvUrl)urls.revokeObjectURL(csvUrl);
+     csvUrl=urls.createObjectURL(tableFile);csvLink.href=csvUrl;csvLink.hidden=false;
+     status.textContent='Gráfico e tabela de escores Fenton 2025 gerados.';
+    }catch(error){
+     if(currentRevision===revision)status.textContent=`Gráfico gerado. Tabela de escores indisponível: ${error.message} Gere novamente antes do PDF integrado.`;
+    }
    }else if(kind==='chart-pdf'){
     if(file.type!=='application/pdf')throw new Error('Formato de PDF inesperado.');
     if(pdfUrl)urls.revokeObjectURL(pdfUrl);
@@ -94,8 +110,11 @@ export function initFenton(doc,{proxyUrl=FENTON_PROXY_URL,fetcher=globalThis.fet
     status.textContent='Gráfico Fenton 2025 em PDF pronto para baixar.';
    }else{
     if(!file.type.startsWith('text/csv'))throw new Error('Formato de escores Z inesperado.');
+    const scores=parseFentonScores(await file.text(),data);
+    if(currentRevision!==revision)return;
     if(csvUrl)urls.revokeObjectURL(csvUrl);
     csvUrl=urls.createObjectURL(file);csvLink.href=csvUrl;csvLink.hidden=false;
+    if(chartResult&&JSON.stringify(chartResult.data)===JSON.stringify(data))chartResult={...chartResult,scores};
     status.textContent='Tabela de escores Z pronta para baixar.';
    }
   }catch(err){if(currentRevision===revision)status.textContent=err.message;}

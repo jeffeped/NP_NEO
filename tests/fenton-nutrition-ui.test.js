@@ -5,7 +5,7 @@ import {parseHTML} from 'linkedom';
 import {initFentonNutritionReport} from '../fenton-nutrition-ui.js';
 const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
 function setup(options={}){
- const {document,window}=parseHTML(html),state={nutrition:{integrated:{source:'none'}},growth:null,chart:{blob:{},data:{}}},revoked=[];
+ const {document,window}=parseHTML(html),state={nutrition:{integrated:{source:'none'}},growth:null,chart:{blob:{},data:{measurements:[{}]},scores:[{}]}},revoked=[];
  let made=0,clicked=0;
  const $=id=>document.getElementById(id);
  const link=$('fenton-total-download');link.click=()=>{clicked++;};

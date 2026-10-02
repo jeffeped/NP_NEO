@@ -1,6 +1,7 @@
 import {dosingWeightLabel} from './dosing-weight.js';
 import {stampPdfIssueDate} from './pdf-date.js';
 import {VERSION} from './engine.js';
+import {weightLossLine} from './weight-loss.js';
 import {transitionLines,clinicalReferenceLines,enteralNutrientWarnings} from './enteral.js';
 const fmt=(n,digits=1)=>Number.isFinite(n)?n.toFixed(digits).replace('.',','):'—';
 const fmtDose=n=>Number.isFinite(n)?new Intl.NumberFormat('pt-BR',{maximumFractionDigits:3}).format(n):'—';
@@ -35,6 +36,8 @@ export async function createEnteralReport({enteral,integrated,clinical,growth}){
  y-=16;text('As metas não determinam redução ou suspensão automática da PN.',L,y,8,regular,muted);
  y-=16;text(integrated.source==='none'?'Totais somente da dieta enteral.':`Fonte calculada nesta sessão: ${integrated.sourceLabel}${!integrated.weightContext&&Number.isFinite(integrated.weight)?' · peso de cálculo '+fmtDose(integrated.weight*1000)+' g':''}.`,L,y,8,regular,muted);
  if(integrated.weightContext){y-=14;text(dosingWeightLabel(integrated.weightContext),L,y,8,regular,muted);}
+ const lossLine=weightLossLine({growth,weightContext:integrated.weightContext});
+ if(lossLine){y-=15;text(lossLine,L,y,8,bold);}
  if(growth){
   y-=30;text('Crescimento ponderal',L,y,11,bold);y-=20;
   text(`${growth.input.sex==='female'?'Feminino':'Masculino'} · intervalo ${growth.intervalDays} dias · IPM média ${pma(growth.midpointPmaWeeks)}`,L,y,9);y-=17;

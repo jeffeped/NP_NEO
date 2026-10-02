@@ -23,6 +23,7 @@ const enteral=calculateEnteral({type:'lhop',rate:60}),integrated=integrateNutrit
 const intergrowth=calculateIntergrowth({sex:'female',measurements:[{weeks:40,days:0,weight:3000,length:47.3,head:33.7},{weeks:44,days:0,weight:4000,length:51,head:35}]});
 const fixture=readFileSync(new URL('fenton-nutrition-pdf.test.js',import.meta.url),'utf8').match(/Buffer.from\('([^']+)'/)[1];
 const chart={blob:new Blob([Buffer.from(fixture,'base64')],{type:'image/jpeg'}),data:{sex:'F',birthGaWeeks:30,birthGaDays:0,measurements:[{weeks:31,days:0,weightGrams:920}]}};
+chart.scores=[{weeks:31,days:0,weight:{value:920,z:-1.2,percentile:11.5}}];
 test('issuance date uses Manaus across UTC midnight',()=>{
  assert.equal(formatIssueDate(new Date('2026-10-02T01:05:00Z')),'Emissão: 01/10/2026 21:05 (Manaus)');
 });

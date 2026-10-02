@@ -42,8 +42,9 @@ test('gráfico gerado é exibido no app e requisição carrega apenas as medidas
  });fill(a);
  a.form.dispatchEvent(new a.window.Event('submit',{bubbles:true,cancelable:true}));
  for(let attempt=0;attempt<20&&a.document.getElementById('fenton-status').textContent.includes('Consultando');attempt++)await new Promise(resolve=>setTimeout(resolve,10));
- assert.equal(sent.length,1);
+ assert.equal(sent.length,2);
  assert.match(sent[0].url,/\/chart$/);
+ assert.match(sent[1].url,/\/zscores$/);
  assert.deepEqual(Object.keys(JSON.parse(sent[0].request.body)).sort(),['birthGaDays','birthGaWeeks','measurements','sex']);
  assert.equal(a.document.getElementById('fenton-figure').hidden,false,a.document.getElementById('fenton-status').textContent);
  assert.equal(a.document.getElementById('fenton-chart').getAttribute('src'),'blob:chart-1');

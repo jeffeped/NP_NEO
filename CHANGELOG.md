@@ -1,5 +1,13 @@
 # Histórico de versões
 
+## 0.7.8 - 02/10/2026; candidata, publicação pendente
+
+- Relatório integrado: percentual abaixo do peso ao nascer, calculado com o peso medido; mantém a regra institucional de peso de cálculo nos aportes.
+- PDF de aporte total + Fenton: primeira página com avaliação nutricional, crescimento e tabela de peso, comprimento e PC com Z e percentil; segunda página com o gráfico oficial completo.
+- Obtém os escores pelo CSV Fenton para as mesmas medidas do gráfico; verifica idades, valores, ausência de dados e invalidação por edição. Não calcula escores pela imagem nem substitui a resposta do serviço por valores estimados.
+- Preserva o gráfico quando a consulta separada de escores falha e informa a indisponibilidade; o PDF integrado exige a tabela atualizada. Limita o documento a duas páginas e recusa conteúdo que não caiba.
+- Cache e versão atualizados. Verificações e limitações registradas em docs/RELEASE_0.7.8.md. Publicação automática bloqueada pela política de aprovação desta sessão; pacote para envio manual.
+
 ## 0.7.7 - 02/10/2026; candidata, publicação pendente
 
 - Corrige a aceitação silenciosa de composição enteral não numérica ou não finita. Estimativa somente quando ambos os campos estão vazios; negativos continuam sinalizados e substituídos por zero na contribuição.
