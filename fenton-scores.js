@@ -35,7 +35,7 @@ function columns(row){
  const found={age:-1,weight:{},length:{},head:{}};let current=null;
  for(const [index,cell]of row.entries()){
   const label=clean(cell),key=metric(label);
-  if(/^(?:ga|ipm|pma)(?:\b|\s*\()|gestational\s*age|postmenstrual\s*age/.test(label)&&!/birth|nascimento/.test(label)){found.age=index;continue;}
+  if(/^(?:gage|ga|ipm|pma)(?:\b|\s*\()|gestational\s*age|postmenstrual\s*age/.test(label)&&!/birth|nascimento/.test(label)){found.age=index;continue;}
   if(key)current=key;
   const type=key||current;
   if(!type)continue;

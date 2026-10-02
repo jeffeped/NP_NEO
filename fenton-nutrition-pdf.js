@@ -112,7 +112,7 @@ export async function createFentonNutritionReport({nutrition,growth=null,chart})
   }
   y-=9;
  }
- line('P = percentil; escores recebidos do serviço Fenton junto ao gráfico.',{size:7.2,leading:9,color:muted});
+ line(chart.scoresSource==='pdf'?'P = percentil; tabela extraída do PDF oficial Fenton 2025.':'P = percentil; escores recebidos do serviço Fenton junto ao gráfico.',{size:7.2,leading:9,color:muted});
  if(y<56)throw new Error('O conteúdo excede uma página. Revise os dados antes de exportar.');
  const second=doc.addPage([W,H]);header(second,'Fenton 2025 - trajetória antropométrica',2);
  const measurements=data.measurements;

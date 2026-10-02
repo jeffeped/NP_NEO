@@ -37,11 +37,11 @@ test('entradas inválidas interrompem antes do envio ao serviço externo',()=>{
 test('gráfico gerado é exibido no app e requisição carrega apenas as medidas',async()=>{
  const a=setup(),sent=[];let counter=0;
  initFenton(a.document,{proxyUrl:'https://grow-neo-fenton-proxy.workers.dev',
-  fetcher:async(url,request)=>{sent.push({url,request});return new Response(new Blob([Uint8Array.from([255,216,255])],{type:'image/jpeg'}));},
+  fetcher:async(url,request)=>{sent.push({url,request});return url.endsWith('/chart')?new Response(new Blob([Uint8Array.from([255,216,255])],{type:'image/jpeg'})):new Response('GA (weeks),Weight (g),Weight Z,Weight Percentile,Head (cm),Head Z,Head Percentile,Length (cm),Length Z,Length Percentile\n24+3,613,-1.12,13.1,21.5,-0.4,34.5,31,0.25,59.9\n',{headers:{'content-type':'text/csv'}});},
   urls:{createObjectURL:()=>`blob:chart-${++counter}`,revokeObjectURL:()=>{}}
  });fill(a);
  a.form.dispatchEvent(new a.window.Event('submit',{bubbles:true,cancelable:true}));
- for(let attempt=0;attempt<20&&a.document.getElementById('fenton-status').textContent.includes('Consultando');attempt++)await new Promise(resolve=>setTimeout(resolve,10));
+ for(let attempt=0;attempt<20&&a.document.getElementById('fenton-chart-button').disabled;attempt++)await new Promise(resolve=>setTimeout(resolve,10));
  assert.equal(sent.length,2);
  assert.match(sent[0].url,/\/chart$/);
  assert.match(sent[1].url,/\/zscores$/);
