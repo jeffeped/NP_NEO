@@ -36,7 +36,7 @@ test('GROW_Fenton oferece relatório combinado e remove o plotador externo',()=>
  assert.equal(document.querySelector('#growth a.growth-plotter'),null);
  assert.equal(document.querySelector('.growth-plotter-instruction'),null);
  assert.ok(document.getElementById('fenton-total-export'));
- assert.match(document.getElementById('fenton-total-export').textContent,/aporte total.*Fenton/);
+ assert.match(document.getElementById('fenton-total-export').textContent,/Gerar relatório integrado.*2 páginas/);
 });
 function openApp(createReport=async()=>new Uint8Array()) {
   const {document,window}=parseHTML(html);

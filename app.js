@@ -122,7 +122,9 @@ function currentIntravenous(source){
 }
 const enteralUI=initEnteral(document,currentIntravenous,()=>growthUI.getResult());
 const fentonReportUI=initFentonNutritionReport(document,{
- getNutrition:()=>enteralUI.getResult(),getGrowth:()=>growthUI.getResult(),getChart:()=>growthUI.fenton?.getChart(),getScores:()=>growthUI.fenton?.getScores(),
+ getNutrition:()=>enteralUI.getResult(),getGrowth:()=>growthUI.getResult(),getChart:()=>growthUI.fenton?.getChart(),
+ prepareNutrition:()=>enteralUI.prepareReport(),prepareGrowth:()=>growthUI.prepareReport(),
+ ensureChart:()=>growthUI.fenton.ensureChart(),
  validateNutrition:nutrition=>{
   const source=nutrition.integrated.source;
   currentIntravenous(source);

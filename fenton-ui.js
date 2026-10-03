@@ -50,7 +50,7 @@ export function initFenton(doc,{proxyUrl=FENTON_PROXY_URL,fetcher=globalThis.fet
  const figure=doc.getElementById('fenton-figure'),chart=doc.getElementById('fenton-chart');
  const chartLink=doc.getElementById('fenton-chart-download'),csvLink=doc.getElementById('fenton-csv-download'),pdfLink=doc.getElementById('fenton-pdf-download');
  const jobs=[doc.getElementById('fenton-chart-button'),doc.getElementById('fenton-pdf-button'),doc.getElementById('fenton-z-button')];
- let chartUrl=null,csvUrl=null,pdfUrl=null,busy=false,revision=0,chartResult=null;
+ let chartUrl=null,csvUrl=null,pdfUrl=null,busy=false,revision=0,chartResult=null,pending=null;
  const clear=()=>{
   chartResult=null;
   if(chartUrl)urls.revokeObjectURL(chartUrl);
@@ -94,8 +94,7 @@ export function initFenton(doc,{proxyUrl=FENTON_PROXY_URL,fetcher=globalThis.fet
   if(result.csvFile){if(csvUrl)urls.revokeObjectURL(csvUrl);csvUrl=urls.createObjectURL(result.csvFile);csvLink.href=csvUrl;csvLink.hidden=false;}
   if(result.pdfFile){if(pdfUrl)urls.revokeObjectURL(pdfUrl);pdfUrl=urls.createObjectURL(result.pdfFile);pdfLink.href=pdfUrl;pdfLink.hidden=false;}
  };
- async function request(kind){
-  if(busy)return;
+ async function runRequest(kind){
   let data;
   try{data=readFentonForm(form);}catch(err){status.textContent=err.message;return;}
   const currentRevision=revision;
@@ -140,8 +139,22 @@ export function initFenton(doc,{proxyUrl=FENTON_PROXY_URL,fetcher=globalThis.fet
   }catch(err){if(currentRevision===revision)status.textContent=err.message;}
   finally{busy=false;jobs.forEach(button=>button.disabled=false);}
  }
+ function request(kind){
+  if(busy)return pending;
+  pending=runRequest(kind);
+  return pending;
+ }
+ const ensureChart=async()=>{
+  const data=readFentonForm(form),version=revision;
+  const ready=()=>chartResult&&JSON.stringify(chartResult.data)===JSON.stringify(data)&&chartResult.scores?.length===data.measurements.length;
+  if(!busy&&ready())return chartResult;
+  await (busy?pending:request('chart'));
+  if(version!==revision)throw new Error('Medidas alteradas. Gere novamente o relatório.');
+  if(!ready())throw new Error(status.textContent||'Não foi possível obter o gráfico e a tabela Fenton. Tente novamente.');
+  return chartResult;
+ };
  form.addEventListener('submit',event=>{event.preventDefault();request('chart');});
  jobs[1].addEventListener('click',()=>request('chart-pdf'));
  jobs[2].addEventListener('click',()=>request('zscores'));
- return {read:()=>readFentonForm(form),getChart:()=>chartResult,invalidate};
+ return {read:()=>readFentonForm(form),getChart:()=>chartResult,invalidate,ensureChart};
 }
