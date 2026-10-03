@@ -16,6 +16,13 @@ on:
       - 'styles.css'
       - 'scripts/ci-pdf-vendor.mjs'
       - 'scripts/verify-fenton-pdf.cjs'
+      - 'scripts/verify-clinical-safety.cjs'
+      - 'alerts.js'
+      - 'engine.js'
+      - 'pdf.js'
+      - 'standard*.js'
+      - 'enteral.js'
+      - 'tests/clinical-safety.test.js'
       - '.github/workflows/fenton-pdf-verification.yml'
 permissions:
   contents: read
@@ -46,8 +53,12 @@ jobs:
         env:
           GROW_QA_MODULES: ${{ runner.temp }}/grow-pdf-qa/node_modules
         run: node scripts/verify-fenton-pdf.cjs
+      - name: Clinical safety browser and offline PDF verification
+        env:
+          GROW_QA_MODULES: ${{ runner.temp }}/grow-pdf-qa/node_modules
+        run: node scripts/verify-clinical-safety.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: GROW_NEO_0.7.10_Verificacoes
+          name: GROW_NEO_0.7.11_Verificacoes
           path: qa-output/

@@ -1,5 +1,5 @@
 import {parseNumber} from './engine.js';
-import {compareProducts} from './alerts.js';
+import {compareProducts,PN_SAFETY_NOTES} from './alerts.js';
 import {resolveDosingWeight} from './dosing-weight.js';
 // Baxter SmPC, 19 May 2026, sections 2 and 4.2; 2CB and 3CB compositions.
 export const NUMETA_SOURCE='https://www.medicines.org.uk/emc/product/7400/smpc';
@@ -33,7 +33,7 @@ export function calculateStandard(input){
   const volume=fluid*weight,rate=volume/24,protein=fluid*9.4/bag.bagVolume;
   const vig=fluid*40/bag.bagVolume*1000/1440;
   const rows=bag.nutrients.map(([label,amount,unit])=>({label,unit,per100:amount*100/bag.bagVolume,perKg:amount*fluid/bag.bagVolume,total:amount*volume/bag.bagVolume}));
-  const blocks=[],alerts=[];
+  const blocks=[],alerts=[...PN_SAFETY_NOTES];
   if(input.access==='peripheral')blocks.push('Numeta sem diluição exige acesso venoso central. Diluição não está contemplada neste cálculo.');
   if(fluid>bag.maxDaily+1e-9)blocks.push(`Volume acima do máximo de bula para ${bag.label}: ${formatStandard(bag.maxDaily)} mL/kg/dia. Revise a taxa ou a proteína.`);
   if(fluid/24>bag.maxHourly+1e-9)blocks.push(`Vazão acima do máximo de bula para ${bag.label}: ${formatStandard(bag.maxHourly)} mL/kg/h.`);

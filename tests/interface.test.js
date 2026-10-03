@@ -56,6 +56,22 @@ function openApp(createReport=async()=>new Uint8Array()) {
   return {document,window,set,access,calculate,dispatch:(id,type)=>document.getElementById(id).dispatchEvent(new window.Event(type,{bubbles:true,cancelable:true})),el:id=>document.getElementById(id),alerts:()=>Array.from(document.querySelectorAll('.clinical-alert')).map(e=>({id:e.dataset.alertId,level:e.dataset.level,text:e.textContent}))};
 }
 
+test('segurança clínica: campos opcionais, alertas contextuais e edição invalidam PDF e integração',async()=>{
+ const snapshots=[],app=openApp(async r=>{snapshots.push(r);return new Uint8Array();});
+ for(const id of ['urea','triglycerides']){assert.equal(app.el(id).value,'');assert.equal(app.el(id).hasAttribute('required'),false);}
+ app.set('urea','34,1');app.set('triglycerides','265,1');app.set('aa',3);app.set('p',0);app.set('ca',2);
+ app.el('ceftriaxone').checked=true;app.dispatch('ceftriaxone','change');app.calculate();
+ for(const id of ['UREA_HIGH','TRIGLYCERIDES_HIGH','ANABOLIC_HYPOPHOSPHATEMIA','CEFTRIAXONE_CALCIUM'])assert.ok(app.alerts().some(a=>a.id===id),id);
+ assert.equal(app.el('export-pdf').disabled,false);assert.match(app.el('result-alerts').textContent,/sistema de administração da luz durante toda a infusão/);
+ assert.ok(app.document.querySelector('[data-alert-id="CEFTRIAXONE_CALCIUM"]').classList.contains('danger'));
+ app.dispatch('export-pdf','click');await new Promise(setImmediate);assert.equal(app.el('pdf-download').hidden,false);
+ assert.equal(snapshots[0].input.urea,34.1);assert.equal(snapshots[0].input.triglycerides,265.1);assert.equal(snapshots[0].input.ceftriaxone,true);
+ app.set('en-source','individual');app.set('en-type','lhop');app.set('en-rate',80);app.dispatch('enteral-form','submit');assert.equal(app.el('en-result').hidden,false);
+ app.set('urea','34');assert.equal(app.el('pdf-download').hidden,true);assert.equal(app.el('en-result').hidden,true);assert.equal(app.el('export-pdf').disabled,true);
+ app.set('triglycerides','249,9');app.el('ceftriaxone').checked=false;app.dispatch('ceftriaxone','change');app.calculate();
+ for(const id of ['UREA_HIGH','TRIGLYCERIDES_HIGH','TRIGLYCERIDES_BORDERLINE','CEFTRIAXONE_CALCIUM'])assert.equal(app.alerts().some(a=>a.id===id),false);
+});
+
 test('audit: pending NP dose acceptance blocks integration and withdrawing it clears totals',()=>{
  const app=openApp();app.set('na',2);app.set('p',1);app.set('salt-p','glycero');app.calculate();
  app.set('en-source','individual');app.set('en-type','lhop');app.set('en-rate',20);
@@ -187,18 +203,18 @@ test('interface: zinco e selênio seguem prematuridade, não peso de 1.500 g',()
 });
 test('interface: acima da referência inicial gera cautela sem bloquear',()=>{
   const app=openApp();app.set('aa',3);app.set('lip',3);app.calculate();
-  assert.deepEqual(app.alerts().map(a=>a.level),['caution','caution']);
+  assert.deepEqual(app.alerts().map(a=>a.level),['caution','caution','caution']);
   assert.equal(app.el('export-pdf').disabled,false);
 });
 test('interface: alertas clínicos coexistem com bloqueios para AA e lipídios',()=>{
   const app=openApp();for(const [id,value] of Object.entries({day:2,fluid:140,aa:3.6,lip:4.1,vig:20}))app.set(id,value);
   app.calculate();
-  assert.deepEqual(app.alerts().map(a=>[a.id,a.level]),[['glucose-concentration-high','caution'],['osmolarity-high','caution'],['aa-ceiling','high'],['lip-ceiling','high']]);
-  assert.match(app.alerts()[1].text,/Mantenha o acesso venoso central selecionado/);
+  assert.deepEqual(app.alerts().map(a=>[a.id,a.level]),[['ANABOLIC_HYPOPHOSPHATEMIA','caution'],['glucose-concentration-high','caution'],['osmolarity-high','caution'],['aa-ceiling','high'],['lip-ceiling','high']]);
+  assert.match(app.alerts().find(a=>a.id==='osmolarity-high').text,/Mantenha o acesso venoso central selecionado/);
   assert.equal(app.el('export-pdf').disabled,true);
   assert.match(app.el('prescription-status').textContent,/Prescrição e PDF bloqueados/);
   assert.match(app.el('result-alerts').textContent,/Aminoácidos acima de 3,5.*Taxa de infusão de lipídios/);
-  assert.match(app.alerts()[0].text,/mesmo em acesso venoso central/);
+  assert.match(app.alerts().find(a=>a.id==='glucose-concentration-high').text,/mesmo em acesso venoso central/);
 });
 test('interface: peso ≥1000 g também apresenta teto 3,5 de aminoácidos',()=>{
   const app=openApp();app.set('weight',1000);app.set('day',2);app.set('aa',3.5);app.set('lip',3);app.calculate();

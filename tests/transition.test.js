@@ -21,6 +21,12 @@ test('comparação não arredonda valores próximos às metas',()=>{
  const result=integrateNutrition({parenteral:{fluid:60,calories:109.9999,protein:2.49999},enteral:{rate:50.0001,calories:0,protein:0}});
  assert.deepEqual(assessTransition(result),{active:true,reason:null,energyMet:false,proteinMet:false});
 });
+test('volume enteral alto não oculta déficit de proteína ou energia totais',()=>{
+ for(const [calories,protein,deficit] of [[109.9,3,true],[120,2.49,true],[110,2.5,false]]){
+  const integrated=integrateNutrition({source:'individual',parenteral:{fluid:20,calories:20,protein:1},enteral:{rate:150,calories:calories-20,protein:protein-1}});
+  assert.equal(transitionLines(integrated).some(line=>line.includes('Risco de déficit nutricional')),deficit);
+ }
+});
 
 function openEnteral(pn){
  const {document,window}=parseHTML(readFileSync(new URL('../index.html',import.meta.url),'utf8'));

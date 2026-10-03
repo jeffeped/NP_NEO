@@ -57,7 +57,7 @@ document.querySelectorAll('.tabs button').forEach((button,index)=>button.addEven
 for(const name of tabNames.slice(1))$('tab-'+name).tabIndex=-1;
 document.querySelectorAll('[data-omit]').forEach(c=>c.addEventListener('change',()=>{const row=c.closest('[data-dose]');row.classList.toggle('disabled',c.checked);row.querySelectorAll('.dose-controls input,.dose-controls select').forEach(x=>x.disabled=c.checked);updateRules();}));
 $('npp-form').addEventListener('input',()=>{invalidate();updateRules();});$('npp-form').addEventListener('change',()=>{invalidate();updateRules();});
-function collect(){const input={};for(const id of ['day','fluid','aa','lip','vig','na','k','ca','mg','p','znDose','seDose'])input[id]=$(id).value;input.weight=parseWeightGrams($('weight').value)/1000;input.birthWeight=$('birth-weight').value.trim()===''?'':parseWeightGrams($('birth-weight').value)/1000;input.fluidPhase=$('fluid-phase').value;input.gaWeeks=$('ga').value;input.gaDays=$('ga-days').value;input.access=document.querySelector('[name="access"]:checked')?.value;input.naSalt=$('salt-na').value;input.pSalt=$('salt-p').value;input.omit={};document.querySelectorAll('[data-omit]').forEach(c=>input.omit[c.dataset.omit]=c.checked);return input;}
+function collect(){const input={};for(const id of ['day','fluid','aa','lip','vig','na','k','ca','mg','p','znDose','seDose','urea','triglycerides'])input[id]=$(id).value;input.ceftriaxone=$('ceftriaxone').checked;input.weight=parseWeightGrams($('weight').value)/1000;input.birthWeight=$('birth-weight').value.trim()===''?'':parseWeightGrams($('birth-weight').value)/1000;input.fluidPhase=$('fluid-phase').value;input.gaWeeks=$('ga').value;input.gaDays=$('ga-days').value;input.access=document.querySelector('[name="access"]:checked')?.value;input.naSalt=$('salt-na').value;input.pSalt=$('salt-p').value;input.omit={};document.querySelectorAll('[data-omit]').forEach(c=>input.omit[c.dataset.omit]=c.checked);return input;}
 function textElement(tag,text,cls){const e=document.createElement(tag);e.textContent=text;if(cls)e.className=cls;return e;}
 function summaryRow(label,value,highlight=false){const row=document.createElement('div');row.className='summary-row'+(highlight?' highlight':'');row.append(textElement('span',label),textElement('strong',value));return row;}
 function render(r){
@@ -71,9 +71,11 @@ function render(r){
   $('prescription-status').hidden=r.canExport;
   $('prescription-status').textContent=r.canExport?'':'Prescrição e PDF bloqueados. Revise os parâmetros indicados e calcule novamente.';
   $('result-alerts').replaceChildren();
+  if(r.clinicalContext.length)$('result-alerts').append(textElement('div',r.clinicalContext.join(' · '),'notice info'));
   if(r.notices.length){const note=textElement('div',r.notices.join(' '),'notice');$('result-alerts').append(note);}
   if(r.fluidReference.max!==null)$('result-alerts').append(textElement('div',`Referência hídrica: ${r.fluidReference.reference}; máximo ${r.fluidReference.max} mL/kg/dia para a NPP.`, 'notice info'));
-  for(const alert of r.alerts){const note=textElement('div',alert.message,'notice clinical-alert '+(alert.level==='info'?'info':'caution'));note.dataset.alertId=alert.id;note.dataset.level=alert.level;$('result-alerts').append(note);}
+  for(const alert of r.alerts){const note=textElement('div',alert.message,'notice clinical-alert '+(alert.level==='critical'?'danger':alert.level==='info'?'info':'caution'));note.dataset.alertId=alert.id;note.dataset.level=alert.level;$('result-alerts').append(note);}
+  for(const note of r.safetyNotes)$('result-alerts').append(textElement('div',note,'notice info'));
   for(const block of r.blocks.filter(b=>!b.startsWith('Concentração de glicose acima de 12,5%')))$('result-alerts').append(textElement('div',block,'notice danger'));
   $('access-alert').hidden=!r.requiresCentral;
   if(r.requiresCentral)$('access-alert').textContent=r.accessBlocked?'Concentração de glicose acima de 12,5%. É obrigatório acesso central. Revise o acesso ou os parâmetros.':'Concentração de glicose acima de 12,5%: acesso central obrigatório. Acesso central selecionado.';

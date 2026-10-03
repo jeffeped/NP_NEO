@@ -1,6 +1,14 @@
 // Regras confirmadas pelo responsável do projeto em 16/09/2026.
 // Alertas clínicos orientam a revisão; não acrescentam bloqueios de exportação.
-export const ALERT_LABELS = Object.freeze({info:'ORIENTAÇÃO',caution:'ATENÇÃO',high:'ACIMA DO TETO'});
+export const ALERT_LABELS = Object.freeze({info:'ORIENTAÇÃO',caution:'ATENÇÃO',high:'ACIMA DO TETO',critical:'ALERTA CRÍTICO'});
+export const CEFTRIAXONE_CALCIUM_NOTE='Em recém-nascidos, soluções IV contendo cálcio não devem ser administradas concomitantemente com ceftriaxona devido ao risco de precipitação cálcio-ceftriaxona. A restrição se aplica mesmo com linhas de infusão separadas.';
+export const PN_SAFETY_NOTES=Object.freeze([
+  'Em neonatos, proteger a solução de nutrição parenteral e o sistema de administração da luz durante toda a infusão.',
+  'Monitorização metabólica: glicemia; Na, K, Ca, P e Mg; função renal (ureia e creatinina); triglicerídeos; equilíbrio ácido-base; função hepática, especialmente em NP prolongada.',
+  'NP padronizada é adequada para a maioria dos recém-nascidos, porém individualização pode ser necessária em oligúria/anúria, insuficiência renal, distúrbios hidroeletrolíticos importantes, perdas anormais, instabilidade metabólica, colestase/hepatopatia e NP prolongada ou condições especiais.',
+  'Na transição NP para NE, conferir os aportes TOTAIS de proteína e energia (NP + enteral e demais fontes em uso) antes de reduzir a NP, para evitar déficit nutricional. O volume enteral isolado não garante adequação.',
+  CEFTRIAXONE_CALCIUM_NOTE
+]);
 export const formatAlertNumber = value => Number.isInteger(value) ? `${value},0` : String(value).replace('.',',');
 function formatCalculated(value,reference,above) {
   const display=Number(value.toFixed(6));
@@ -36,12 +44,39 @@ export function compareProducts(left,right) {
   return delta>0n?1:delta<0n?-1:0;
 }
 
-export function nutritionAlerts(input,{volumes,effective,totalVolume,glucosePercent,osmolarity,calciumConcentration,phosphorusConcentration}) {
+export function nutritionAlerts(input,{volumes,effective,totalVolume,glucosePercent,osmolarity,calciumConcentration,phosphorusConcentration,nonProtein=0}) {
   const alerts=[];
   const context='';
   function add(id,nutrient,level,kind,value,reference,message) {
     alerts.push({id,nutrient,level,kind,value,reference,blocking:false,
       weightKg:input.weight,day:input.day,message:`${ALERT_LABELS[level]}: ${message}`});
+  }
+  // Exames opcionais: apoio clínico, sem ajuste automático de doses ou bloqueio.
+  // Ureia: recomendação ENTERAL condicional, Embleton et al., JPGN 2023.
+  if(Number.isFinite(input.urea)&&input.urea>34) {
+    add('UREA_HIGH','urea','caution','laboratory',input.urea,34,
+      'Ureia >34 mg/dL. Na ausência de desidratação ou disfunção renal e com aporte energético adequado, considerar se a oferta proteica está excedendo a capacidade de utilização. Avaliar contexto clínico antes de reduzir aminoácidos. Referência derivada de recomendação enteral, com evidência limitada para o ponto de corte; não determina redução automática de aminoácidos da NP.');
+  }
+  // Faixas operacionais aprovadas; Alur e Ramarao (2025) descrevem progressão <265.
+  if(Number.isFinite(input.triglycerides)&&input.triglycerides>=250) {
+    const high=input.triglycerides>265;
+    add(high?'TRIGLYCERIDES_HIGH':'TRIGLYCERIDES_BORDERLINE','triglycerides','caution','laboratory',input.triglycerides,high?265:250,
+      (high?'Triglicerídeos elevados; evitar progressão e considerar redução da oferta lipídica conforme contexto clínico e protocolo institucional.':'Triglicerídeos limítrofes; reavaliar progressão da emulsão lipídica.')+
+      ' Não há consenso universal sobre um único ponto de corte.');
+  }
+  if(input.ceftriaxone===true&&effective.ca>0) {
+    add('CEFTRIAXONE_CALCIUM','ceftriaxone-calcium','critical','interaction',effective.ca,null,CEFTRIAXONE_CALCIUM_NOTE);
+  }
+  // Critério operacional aprovado em 02/10/2026; triagem, não diagnóstico.
+  // Ofertas efetivas, energia não proteica presente e faixa Ca:P já adotada.
+  const highAminoAcids=compareProducts([volumes.aa,0.1],[input.weight,3])>=0;
+  const highCaP=effective.p>0&&(effective.ca/2)/effective.p>(input.day===1?1:1.3);
+  if(highAminoAcids&&nonProtein>0&&
+    (compareProducts([volumes.phosphate,input.pSalt==='kphos'?1.1:1],[input.weight,1])<0||highCaP)) {
+    add('ANABOLIC_HYPOPHOSPHATEMIA','refeeding','caution','screening',effective.p,1,
+      'Risco de hipofosfatemia anabólica: aporte elevado de aminoácidos/energia requer oferta adequada de fósforo. Confira fósforo, potássio e magnésio séricos. '+
+      `AA efetivos: ${formatCalculated(effective.aa,3,false)} g/kg/dia; P efetivo: ${formatCalculated(effective.p,1,false)} mmol/kg/dia. `+
+      'Reavalie também a relação molar Ca:P. Triagem operacional, sem diagnóstico automático de síndrome de realimentação.');
   }
   // A concentração final usa os volumes de preparo, antes do arredondamento
   // visual do percentual. Preserva o arredondamento de preparo já existente.
@@ -54,7 +89,7 @@ export function nutritionAlerts(input,{volumes,effective,totalVolume,glucosePerc
       ?'Mantenha o acesso venoso central selecionado e confira o protocolo institucional.'
       :'Acesso periférico selecionado: prescrição e PDF bloqueados. Selecione acesso venoso central ou revise os parâmetros.';
     add('osmolarity-high','osmolarity','caution','concentration',osmolarity,900,
-      `osmolaridade estimada: ${Math.round(osmolarity)} mOsm/L (>900 mOsm/L). ${accessGuidance}`);
+      `osmolaridade estimada: ${formatCalculated(osmolarity,900,true)} mOsm/L (>900 mOsm/L). Esta osmolaridade exige acesso venoso central. ${accessGuidance}`);
   }
   // Wang et al. (Pediatr Neonatol. 2020;61:331-337; PMID 32199865)
   // avaliaram gluconato de cálcio 50 mEq/L + glicerofosfato de sódio

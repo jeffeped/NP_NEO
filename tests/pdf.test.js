@@ -39,7 +39,7 @@ test('PDF Numeta inclui ofertas e mantém autoria; bloqueios não exportam',asyn
  const {createStandardReport}=await import('../standard-pdf.js');
  const r=calculateStandard({birthWeight:.8,weight:.8,day:1,mode:'protein',value:3.5,access:'central'});
  const bytes=await createStandardReport(r);const doc=await PDFLib.PDFDocument.load(bytes);
- assert.equal(doc.getPageCount(),2);assert.equal(doc.getAuthor(),'Jefferson Guilherme');
+ assert.equal(doc.getPageCount(),3);assert.equal(doc.getAuthor(),'Jefferson Guilherme');
  await assert.rejects(()=>createStandardReport({...r,blocks:['Acesso periférico']}),/not exportable/);
  await assert.rejects(()=>createStandardReport({ok:false}),/not exportable/);
 });
@@ -52,4 +52,31 @@ test('PDF Numeta 2:1 é exportável, identifica versão e recusa bloqueio clíni
  const blocked=calculateStandard({birthWeight:.8,weight:.8,day:2,formulation:'2in1',mode:'fluid',value:100,access:'central'});
  assert.ok(blocked.blocks.some(x=>x.includes('Aminoácidos acima de 3,5')));
  await assert.rejects(()=>createStandardReport(blocked),/not exportable/);
+});
+
+test('PDF NP: todos os avisos e exames permanecem visíveis, com autoria preservada',async()=>{
+ const result=calculate({...base,day:8,fluidPhase:'stable',aa:3,lip:2,vig:5,ca:2,p:.5,urea:34.1,triglycerides:265.1,ceftriaxone:true});
+ assert.equal(result.canExport,true);
+ const lines=[],original=PDFLib.PDFPage.prototype.drawText;
+ PDFLib.PDFPage.prototype.drawText=function(value,opts){
+  assert.ok(opts.y>=14&&opts.y<this.getHeight(),value);
+  assert.ok(opts.x>=0&&opts.x+opts.font.widthOfTextAtSize(value,opts.size)<=this.getWidth()-25,value);
+  lines.push(value);return original.call(this,value,opts);
+ };
+ let bytes;try{bytes=await createReport(result);}finally{PDFLib.PDFPage.prototype.drawText=original;}
+ const text=lines.join(' ').replace(/\s+/g,' ');
+ for(const note of result.safetyNotes)assert.ok(text.includes(note),note);
+ for(const alert of result.alerts)assert.ok(text.includes(alert.message.replaceAll('≥','>=').trim()),alert.id);
+ assert.match(text,/Ureia plasmática: 34,1 mg\/dL/);assert.match(text,/Triglicerídeos: 265,1 mg\/dL/);
+ const saved=await PDFLib.PDFDocument.load(bytes);assert.equal(saved.getAuthor(),'Jefferson Guilherme');assert.equal(saved.getCreator(),'Jefferson Guilherme');
+});
+
+test('PDF Numeta: fotoproteção, monitorização e individualização cabem nas páginas',async()=>{
+ const {calculateStandard}=await import('../standard.js'),{createStandardReport}=await import('../standard-pdf.js');
+ const {PN_SAFETY_NOTES}=await import('../alerts.js');
+ const lines=[],original=PDFLib.PDFPage.prototype.drawText;
+ PDFLib.PDFPage.prototype.drawText=function(value,opts){assert.ok(opts.y>=14&&opts.x+opts.font.widthOfTextAtSize(value,opts.size)<=this.getWidth()-25,value);lines.push(value);return original.call(this,value,opts);};
+ let bytes;try{bytes=await createStandardReport(calculateStandard({weight:1,birthWeight:1,day:8,mode:'protein',value:3,access:'central'}));}finally{PDFLib.PDFPage.prototype.drawText=original;}
+ for(const note of PN_SAFETY_NOTES)assert.ok(lines.join(' ').includes(note),note);
+ assert.equal((await PDFLib.PDFDocument.load(bytes)).getAuthor(),'Jefferson Guilherme');
 });

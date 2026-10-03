@@ -1,7 +1,7 @@
-import {nutritionAlerts,compareProducts} from './alerts.js';
+import {nutritionAlerts,compareProducts,PN_SAFETY_NOTES} from './alerts.js';
 import {fluidGuidance} from './fluid-guidance.js';
 import {resolveDosingWeight} from './dosing-weight.js';
-export const VERSION = '0.7.10';
+export const VERSION = '0.7.11';
 export const CONCENTRATIONS = Object.freeze({aa:0.1,lip:0.2,glucose:0.5,nacl:1.7,acetate:2,kcl:1.34,calcium:0.5,magnesium:0.8,kphosP:1.1,kphosK:2,glyceroP:1,glyceroNa:2,oligoZn:500,zinc:200,selenium:60});
 export const ENERGY = Object.freeze({aa:4,lip:9,glucose:4});
 export const round1 = n => Math.round((n + Number.EPSILON * Math.max(1, Math.abs(n))) * 10) / 10;
@@ -58,6 +58,17 @@ export function calculate(input) {
   n.currentWeight=n.weight;n.weight=weightContext.calculationWeight;
   const w=n.weight,c=CONCENTRATIONS;
   const blocks=[],notices=[],adjustments=[],rounding=[];
+  const clinicalContext=[];
+  for(const [field,label] of [['urea','Ureia plasmática'],['triglycerides','Triglicerídeos']]) {
+    const raw=input[field];
+    n[field]=raw==null||String(raw).trim()===''?null:parseNumber(raw);
+    if(n[field]!==null&&(!Number.isFinite(n[field])||n[field]<0)) {
+      n[field]=null;
+      notices.push(`ATENÇÃO - ${label}: valor inválido, não interpretado. Informe um número maior ou igual a zero em mg/dL ou deixe o campo vazio.`);
+    } else if(n[field]!==null)clinicalContext.push(`${label}: ${String(n[field]).replace('.',',')} mg/dL`);
+  }
+  n.ceftriaxone=input.ceftriaxone===true;
+  if(n.ceftriaxone)clinicalContext.push('Em uso de ceftriaxona: sim (informado).');
   const volumes={};
   function volume(id,raw,label) {
     if(!Number.isFinite(raw)||raw<0) {blocks.push(`Não foi possível calcular ${label}. Revise os parâmetros.`);volumes[id]=0;return 0;}
@@ -183,7 +194,7 @@ export function calculate(input) {
   // Decisão do protocolo (01/10/2026): em acesso periférico, osmolaridade estimada
   // acima de 900 mOsm/L bloqueia prescrição e PDF, como a glicose >12,5%.
   const osmolarityBlocked=input.access==='peripheral'&&Number.isFinite(osmolarity)&&osmolarity>900;
-  if(osmolarityBlocked) blocks.push(`Osmolaridade estimada de ${Math.ceil(osmolarity)} mOsm/L, acima de 900 mOsm/L, em acesso periférico. É obrigatório acesso central. Revise o acesso ou os parâmetros.`);
+  if(osmolarityBlocked) blocks.push(`Osmolaridade estimada de ${Math.ceil(osmolarity)} mOsm/L, acima de 900 mOsm/L, em acesso periférico. Esta osmolaridade exige acesso venoso central. Revise o acesso ou os parâmetros.`);
   const rows=[];
   function row(id,name,v,quantity,unit,perKg,perUnit,group,status='') {rows.push({id,name,volume:v,quantity,unit,perKg,perUnit,group,status});}
   row('aa','Aminoped 10%',volumes.aa,grams.aa,'g',effective.aa,'g/kg/dia',0,omit.aa?'Não ofertado':'');
@@ -202,7 +213,7 @@ export function calculate(input) {
     ['aa','Aminoácidos',n.aa,effective.aa,'g/kg/dia'],['lip','Lipídeos',n.lip,effective.lip,'g/kg/dia'],['vig','VIG',n.vig,effective.vig,'mg/kg/min'],
     ['na','Sódio total',n.na,effective.na,'mEq/kg/dia'],['k','Potássio total',n.k,effective.k,'mEq/kg/dia'],['ca','Cálcio',n.ca,effective.ca,'mEq/kg/dia'],['mg','Magnésio',n.mg,effective.mg,'mEq/kg/dia'],['p','Fósforo',n.p,effective.p,'mmol/kg/dia'],['zn','Zinco total',zincTarget,effective.zn,'mcg/kg/dia'],['se','Selênio',seleniumTarget,effective.se,'mcg/kg/dia']
   ].map(([id,name,requested,actual,unit])=>({id,name,requested,actual,unit}));
-  const alerts=nutritionAlerts({...n,access:input.access,pSalt:input.pSalt},{volumes,effective,totalVolume,glucosePercent,osmolarity,calciumConcentration,phosphorusConcentration});
-  return {ok:true,weightContext,input:{...n,fluidPhase:input.fluidPhase,access:input.access,naSalt:input.naSalt,pSalt:input.pSalt,omit},rows,volumes,grams,effective,offers,rounding,adjustments,sodiumBreakdown,notices,alerts,blocks,fluidReference,requiresCentral,accessBlocked,canExport:blocks.length===0,
+  const alerts=nutritionAlerts({...n,access:input.access,pSalt:input.pSalt},{volumes,effective,totalVolume,glucosePercent,osmolarity,calciumConcentration,phosphorusConcentration,nonProtein:nonProtein/w});
+  return {ok:true,weightContext,input:{...n,fluidPhase:input.fluidPhase,access:input.access,naSalt:input.naSalt,pSalt:input.pSalt,omit},clinicalContext,safetyNotes:PN_SAFETY_NOTES,rows,volumes,grams,effective,offers,rounding,adjustments,sodiumBreakdown,notices,alerts,blocks,fluidReference,requiresCentral,accessBlocked,canExport:blocks.length===0,
     totals:{totalVolume,requestedVolume:totalCents/100,volumeAdjusted:componentsCents>totalCents,componentsVolume:componentsCents/100,water:volumes.water,infusion:round1(totalVolume/24),infusionExact:totalVolume/24,fluid:totalVolume/w,calories:calories/w,aminoAcidPercent,glucosePercent,lipidRate,calciumConcentration,phosphorusConcentration,osmolarity,nonProtein:nonProtein/w,proteinRatio:grams.aa>0?nonProtein/grams.aa:null},version:VERSION};
 }
