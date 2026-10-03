@@ -33,7 +33,7 @@ export function initEnteral(doc,getParenteral,getGrowth=()=>null){
  const type=$('en-type'),lact=$('en-lactation-field'),fmField=$('en-fm85-field'),fm=$('en-fm85'),fmCustom=$('en-fm85-custom-field');
  const sync=()=>{const milk=type.value==='lmo'||type.value==='lhop';lact.hidden=type.value!=='lmo';fmField.hidden=!milk;if(!milk){for(const option of fm.options)option.removeAttribute('selected');fm.options[0].selected=true;fmCustom.hidden=true;$('en-fm85-custom').value=''}};
  type.addEventListener('change',sync);fm.addEventListener('change',()=>fmCustom.hidden=fm.value!=='custom');sync();
- $('enteral-form').addEventListener('submit',e=>{e.preventDefault();syncEnergyWarning();syncProteinWarning();const errors=[];
+ const calculate=()=>{syncEnergyWarning();syncProteinWarning();const errors=[];
    const source=$('en-source').value;if(!Object.hasOwn(IV_SOURCES,source))errors.push('Selecione o aporte intravenoso em uso.');
    if(!type.value)errors.push('Selecione o tipo de dieta.');
    const rate=num($('en-rate').value);if(rate===null||rate<0)errors.push('Informe uma taxa enteral válida.');
@@ -67,7 +67,14 @@ export function initEnteral(doc,getParenteral,getGrowth=()=>null){
      $('en-clinical-reference').replaceChildren(...clinicalReferenceLines(all,clinical).map(line=>{const p=doc.createElement('p');p.textContent=line;return p;}));
      $('en-result').hidden=false;
    }catch(err){$('en-errors').hidden=false;$('en-errors').textContent=err.message}
- });
+   return last;
+ };
+ $('enteral-form').addEventListener('submit',e=>{e.preventDefault();calculate();});
+ const prepareReport=()=>{
+   const result=calculate();
+   if(!result)throw new Error('Na aba Enteral: '+$('en-errors').textContent);
+   return result;
+ };
  const validateSource=snapshot=>{if(snapshot.integrated.source!=='none')getParenteral(snapshot.integrated.source);};
  $('en-pdf-download').addEventListener('click',event=>{try{if(!last||downloadSnapshot!==last)throw new Error('Recalcule o aporte total.');validateSource(last);}catch(error){event.preventDefault();invalidate();$('en-pdf-status').textContent=error.message;}});
  $('en-export').addEventListener('click',async()=>{
@@ -77,5 +84,5 @@ export function initEnteral(doc,getParenteral,getGrowth=()=>null){
      const link=$('en-pdf-download');link.href=pdfUrl;link.download='GROW_NEO-aporte-nutricional-total.pdf';link.hidden=false;link.click();$('en-pdf-status').textContent=growth?'PDF gerado com os dados de crescimento.':'PDF gerado. Calcule a aba GROW_Fenton para incluí-la no relatório.';
    }catch(error){if(last===snapshot){invalidate();$('en-pdf-status').textContent=error.message||'Não foi possível gerar o PDF.';}}finally{$('en-export').disabled=false;}
  });
- return {invalidate,getResult:()=>last};
+ return {invalidate,getResult:()=>last,prepareReport};
 }

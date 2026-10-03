@@ -12,10 +12,13 @@ Solicitação de Jefferson Guilherme em 30/09/2026. Alteração de apresentaçã
 
 ## Uso e conteúdo
 
-1. Calcular a fonte IV em uso e o aporte total na aba Enteral (inclui opção sem IV).
-2. Opcionalmente calcular a velocidade ponderal na GROW_Fenton.
-3. Informar medidas seriadas e clicar em **Ver gráfico Fenton**.
-4. Clicar em **Exportar aporte total + Fenton em PDF**.
+Fluxo atualizado na versão 0.7.10, a pedido de Jefferson Guilherme em 02/10/2026:
+
+1. Calcular e conferir a fonte IV, se utilizada, e preencher a aba Enteral (inclui opção sem IV). Não é necessário calcular ou exportar a Enteral separadamente.
+2. Opcionalmente preencher todos os campos de velocidade ponderal na GROW_Fenton. Se todos estiverem vazios, essa seção é omitida do cálculo; preenchimento parcial é sinalizado antes de consultar Fenton.
+3. Informar medidas seriadas e clicar em **Gerar relatório integrado — 2 páginas**, antes do gráfico.
+
+O comando prepara os cálculos usando as rotinas existentes e obtém o gráfico e a tabela de escores. O gerador do PDF continua recebendo resultados validados, sem fórmulas novas. Gráfico/escores atuais são reutilizados. **Ver gráfico Fenton** permanece opcional; arquivos avulsos e o link para baixar novamente ficam em **Outras opções de exportação**. A fonte IV mantém a exigência de cálculo válido e confirmações do prescritor.
 
 A primeira página inclui fonte IV, peso utilizado quando disponível, dieta e composição, FM85, tabela de taxa hídrica/energia/proteína por via e total, metas de transição, velocidade quando calculada e referências da fase clínica selecionada. Numeta 2:1 conserva o aviso sobre lipídios separados. Sem velocidade calculada, o relatório informa a ausência. Sexo ou IG discordantes entre velocidade e gráfico impedem combinar os resultados.
 

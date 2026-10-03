@@ -214,6 +214,7 @@
           </div></details>
           <div id="en-errors" class="notice danger" hidden></div>
           <button class="primary" type="submit">Calcular dieta enteral</button>
+          <p class="help">Para o relatório integrado, basta preencher esta aba e usar “Gerar relatório integrado” na aba GROW_Fenton. O aporte será calculado nesse momento.</p>
         </form>
         <section id="en-result" hidden aria-live="polite">
           <div id="en-context" class="context"></div>
@@ -243,7 +244,7 @@
             <label class="field">Dia de vida final<div class="input-box"><input id="gr-final-day" inputmode="numeric" type="text" required><span class="unit">D</span></div></label>
             <label class="field">Peso final<div class="input-box"><input id="gr-final-weight" inputmode="decimal" type="text" required><span class="unit">g</span></div></label>
           </div>
-          <p class="help">D1 corresponde ao dia do nascimento. Prefira intervalos de pelo menos 5–7 dias e pesos obtidos em condições comparáveis.</p>
+          <p class="help">D1 corresponde ao dia do nascimento. Prefira intervalos de pelo menos 5–7 dias e pesos obtidos em condições comparáveis. Para incluir a velocidade no relatório integrado, preencha os campos desta seção; o cálculo será feito ao gerar o relatório.</p>
           <div id="gr-errors" class="notice danger" role="alert" hidden></div>
           <button class="primary" type="submit">Calcular velocidade</button>
         </form>
@@ -262,20 +263,26 @@
             </div>
             <div id="fenton-measures" class="fenton-measures"></div>
             <button id="fenton-add" class="secondary" type="button">Adicionar medida</button>
-            <div class="fenton-actions"><button id="fenton-chart-button" class="primary" type="submit">Ver gráfico Fenton</button><button id="fenton-pdf-button" class="secondary" type="button">Gerar PDF Fenton</button><button id="fenton-z-button" class="secondary" type="button">Calcular escores Z</button></div>
           </form>
+          <div class="fenton-report-action">
+            <h3>Relatório integrado</h3>
+            <p class="help">Preencha a aba Enteral e as medidas acima. Um único comando calcula o aporte, obtém o gráfico e os escores e gera o PDF de duas páginas. Se usar NP ou HV, calcule e confira essas fontes nas respectivas abas.</p>
+            <button id="fenton-total-export" class="primary" type="button">Gerar relatório integrado — 2 páginas</button>
+            <p id="fenton-total-status" class="help" role="status"></p>
+          </div>
+          <button id="fenton-chart-button" class="secondary" type="submit" form="fenton-form">Ver gráfico Fenton</button>
+          <details class="fenton-exports">
+            <summary>Outras opções de exportação</summary>
+            <p class="help">Arquivos avulsos. Estas opções são independentes do relatório integrado.</p>
+            <a id="fenton-total-download" class="download-link" hidden>Baixar novamente o relatório integrado</a>
+            <button id="fenton-pdf-button" class="secondary" type="button">Gerar PDF Fenton avulso</button>
+            <button id="fenton-z-button" class="secondary" type="button">Obter tabela de escores Z</button>
+            <a id="fenton-chart-download" class="download-link" download="Fenton-2025.jpg" hidden>Baixar gráfico JPG</a>
+            <a id="fenton-pdf-download" class="download-link" download="Fenton-2025.pdf" hidden>Baixar PDF Fenton avulso</a>
+            <a id="fenton-csv-download" class="download-link" download="Fenton-2025-escores-z.csv" hidden>Baixar tabela de escores Z (CSV)</a>
+          </details>
           <p id="fenton-status" role="status" class="help"></p>
           <figure id="fenton-figure" hidden><img id="fenton-chart" alt="Gráfico Fenton 2025 das medidas informadas"></figure>
-          <a id="fenton-chart-download" class="download-link" download="Fenton-2025.jpg" hidden>Baixar gráfico JPG</a>
-          <a id="fenton-pdf-download" class="download-link" download="Fenton-2025.pdf" hidden>Baixar gráfico PDF</a>
-          <div class="section section-inner">
-            <h3>Aporte total + gráfico Fenton</h3>
-            <p class="help">Calcule o aporte total na aba Enteral e gere o gráfico acima. A página 1 reúne aportes, crescimento e tabela de escores Z e percentis; a página 2 contém o gráfico Fenton.</p>
-            <button id="fenton-total-export" class="primary" type="button">Exportar aporte total + Fenton em PDF</button>
-            <p id="fenton-total-status" class="help" role="status"></p>
-            <a id="fenton-total-download" class="download-link" hidden>Baixar relatório de duas páginas</a>
-          </div>
-          <a id="fenton-csv-download" class="download-link" download="Fenton-2025-escores-z.csv" hidden>Baixar tabela de escores Z (CSV)</a>
         </section>
       </section>
       <section id="notes" role="tabpanel" aria-labelledby="tab-notes" hidden>

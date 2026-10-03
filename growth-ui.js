@@ -7,8 +7,8 @@ export function initGrowth(doc){
  let last=null;const $=id=>doc.getElementById(id);
  const invalidate=()=>{last=null;$('gr-result').hidden=true;};
  for(const event of ['input','change'])$('growth-form').addEventListener(event,invalidate);
- $('growth-form').addEventListener('submit',event=>{
-  event.preventDefault();
+ const calculate=()=>{
+  invalidate();
   const r=calculateGrowth({sex:$('gr-sex').value,birthWeight:$('gr-birth-weight').value,gaWeeks:$('gr-ga-weeks').value,gaDays:$('gr-ga-days').value,initialDay:$('gr-initial-day').value,initialWeight:$('gr-initial-weight').value,finalDay:$('gr-final-day').value,finalWeight:$('gr-final-weight').value});
   $('gr-errors').hidden=r.ok;
   if(!r.ok){$('gr-errors').textContent=r.errors.map(e=>e.message).join(' ');return;}
@@ -24,6 +24,18 @@ export function initGrowth(doc){
    note(`Referência Fenton 2025 para ${r.input.sex==='female'?'meninas':'meninos'}, ${r.reference.startWeek}–${r.reference.endWeek} semanas: P50 ${fmt(r.reference.gramsPerKgDay)} g/kg/dia.${comparison}`,'notice info');
   }else note('A idade pós-menstrual média está fora da faixa de 22 a 49 semanas da referência Fenton 2025.','notice info');
   $('gr-result').hidden=false;
- });
- return {invalidate,getResult:()=>last,fenton};
+  return last;
+ };
+ $('growth-form').addEventListener('submit',event=>{event.preventDefault();calculate();});
+ const prepareReport=()=>{
+  const filled=Array.from($('growth-form').querySelectorAll('input,select')).some(el=>{
+   const value=String(el.value??'').trim();
+   return value!==''&&(el.id!=='gr-ga-days'||value!=='0');
+  });
+  if(!filled){invalidate();return null;}
+  const result=calculate();
+  if(!result)throw new Error('Na seção Velocidade de crescimento: '+$('gr-errors').textContent);
+  return result;
+ };
+ return {invalidate,getResult:()=>last,fenton,prepareReport};
 }

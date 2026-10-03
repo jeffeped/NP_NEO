@@ -1,5 +1,11 @@
 # Histórico de versões
 
+## 0.7.10 — 02/10/2026
+
+- Um único botão gera o relatório integrado a partir dos campos preenchidos: calcula Enteral e velocidade opcional, obtém gráfico/escores e inicia o download das duas páginas.
+- Botão principal antes do gráfico; arquivos avulsos e link de novo download reunidos em “Outras opções de exportação”.
+- Reutiliza gráfico e escores atuais, inclusive offline; alterações exigem resultados atualizados e invalidam downloads em andamento. Mantém as confirmações e os bloqueios das fontes IV.
+
 ## 0.7.9 — 02/10/2026
 
 - Recupera a tabela de escores Z e percentis pelo PDF oficial Fenton quando o CSV falha.
