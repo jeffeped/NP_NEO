@@ -1,6 +1,6 @@
 # Histórico de versões
 
-## 0.7.11 — 02/10/2026; candidata, publicação pendente
+## 0.7.11 — 02/10/2026
 
 - Campos opcionais de ureia plasmática, triglicerídeos e uso de ceftriaxona na NP individualizada; avisos clínicos sem ajuste automático de doses nem novas travas.
 - Triagem de hipofosfatemia anabólica com AA efetivos ≥3 g/kg/dia e energia não proteica presente, associada a P efetivo <1 mmol/kg/dia ou Ca:P acima da faixa já adotada.

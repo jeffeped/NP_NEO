@@ -1,6 +1,6 @@
 # GROW_NEO 0.7.11 — segurança clínica da NP
 
-Candidata preparada em 02/10/2026, a partir de `a2e0c44` (0.7.10). Publicação pendente. Responsável pelas regras e confirmação do critério operacional de hipofosfatemia: Jefferson Guilherme.
+Versão preparada em 02/10/2026, a partir de `a2e0c44` (0.7.10). Publicação autorizada por Jefferson Guilherme em 02/10/2026. Responsável pelas regras e confirmação do critério operacional de hipofosfatemia: Jefferson Guilherme.
 
 ## Comportamento
 
