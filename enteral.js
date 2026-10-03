@@ -147,7 +147,8 @@ export function transitionLines(integrated){
     :'Metas de transição não avaliadas: oferta enteral menor ou igual a 50 mL/kg/dia.'];
   return ['Metas de transição avaliadas: enteral >50 mL/kg/dia com PN presente.',
     `Energia total: ${assessment.energyMet?'meta atingida':'abaixo da meta'} (mínimo 110 kcal/kg/dia).`,
-    `Proteína total: ${assessment.proteinMet?'meta atingida':'abaixo da meta'} (mínimo 2,50 g/kg/dia).`];
+    `Proteína total: ${assessment.proteinMet?'meta atingida':'abaixo da meta'} (mínimo 2,50 g/kg/dia).`,
+    ...(!assessment.energyMet||!assessment.proteinMet?['Risco de déficit nutricional: reveja proteína e energia totais antes de reduzir a NP.']:[])];
 }
 
 

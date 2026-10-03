@@ -1,5 +1,13 @@
 # Histórico de versões
 
+## 0.7.11 — 02/10/2026
+
+- Campos opcionais de ureia plasmática, triglicerídeos e uso de ceftriaxona na NP individualizada; avisos clínicos sem ajuste automático de doses nem novas travas.
+- Triagem de hipofosfatemia anabólica com AA efetivos ≥3 g/kg/dia e energia não proteica presente, associada a P efetivo <1 mmol/kg/dia ou Ca:P acima da faixa já adotada.
+- Fotoproteção, monitorização metabólica, ceftriaxona/cálcio e situações de individualização na tela e nos PDFs de NP.
+- Transição reforçada por proteína e energia totais; decisão de acesso preservada para osmolaridade >900 mOsm/L.
+- 742 testes aprovados; verificação de navegador, exportação offline e inspeção visual dos PDFs. Ver [registro da candidata](docs/RELEASE_0.7.11.md).
+
 ## 0.7.10 — 02/10/2026
 
 - Um único botão gera o relatório integrado a partir dos campos preenchidos: calcula Enteral e velocidade opcional, obtém gráfico/escores e inicia o download das duas páginas.

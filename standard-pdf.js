@@ -38,7 +38,7 @@ export async function createStandardReport(result){
   for(const item of result.rows){room(23);text(item.label,49,y,9);right(`${formatStandardPer100(item.per100)} ${item.unit}`,316,y,8);right(`${f(item.perKg)} ${item.unit}`,428,y,8);right(`${f(item.total)} ${item.unit}`,546,y,8);y-=23;}
   y-=10;
   for(const alert of result.alerts)paragraph('ATENÇÃO: '+alert);
-  paragraph('Fotoproteção da bolsa e equipo; filtro de 1,2 micrometros recomendado. Conferir condições clínicas, exames, compatibilidade e suplementação.');
+  paragraph('Filtro de 1,2 micrometros recomendado. Conferir condições clínicas, exames, compatibilidade e suplementação.');
   paragraph('Fonte: Baxter, SmPC Numeta G13%E, atualização 19/05/2026, seções 2 e 4.2.');paragraph(NUMETA_SOURCE,8);
   paragraph('Versão de avaliação. Relatório de cálculo sujeito à revisão clínica antes do uso assistencial.',8);
   const pages=doc.getPages();pages.forEach((p,i)=>{page=p;text('GROW_NEO - versão '+VERSION+' | Jefferson Guilherme',42,34,8);right(`${i+1}/${pages.length}`,553,34,8);});

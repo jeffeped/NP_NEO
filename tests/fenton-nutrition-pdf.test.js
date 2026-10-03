@@ -15,7 +15,7 @@ const jpeg=Buffer.from('/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQN
 const chart={blob:new Blob([jpeg],{type:'image/jpeg'}),data:{sex:'F',birthGaWeeks:28,birthGaDays:0,measurements:[{weeks:30,days:5,weightGrams:1300}]}};
 chart.scores=[{weeks:30,days:5,weight:{value:1300,z:-.5,percentile:30.85}}];
 const growth=calculateGrowth({sex:'female',birthWeight:1400,initialWeight:1100,finalWeight:1300,gaWeeks:28,gaDays:0,initialDay:17,finalDay:20});
-test('vinte medidas fictícias completas cabem na primeira página e gráfico fica na segunda',async()=>{
+for(const deficit of [false,true])test(`vinte medidas fictícias completas cabem na primeira página e gráfico fica na segunda; déficit: ${deficit}`,async()=>{
  const measurements=Array.from({length:20},(_,i)=>({weeks:30+Math.floor(i/7),days:i%7,weightGrams:1200+i*25,headCm:25+i*.1,lengthCm:35+i*.2}));
  const scores=measurements.map((m,i)=>({weeks:m.weeks,days:m.days,weight:{value:m.weightGrams,z:-1+i*.1,percentile:10+i},head:{value:m.headCm,z:-.5,percentile:30+i},length:{value:m.lengthCm,z:.25,percentile:55+i}}));
  const sample={blob:chart.blob,data:{...chart.data,measurements},scores};
@@ -24,7 +24,9 @@ test('vinte medidas fictícias completas cabem na primeira página e gráfico fi
   assert.ok(options.y>=14&&options.x>=0&&options.x+options.font.widthOfTextAtSize(value,options.size)<=this.getWidth()-25,value);
   rows.push({value,page:this,y:options.y});return original.call(this,value,options);
  };
- let bytes;try{bytes=await createFentonNutritionReport({nutrition:nutrition('individual','growth'),growth,chart:sample});}
+ const input=nutrition('individual','growth');
+ if(deficit){input.integrated.total.calories=109.9;input.integrated.total.protein=2.49;}
+ let bytes;try{bytes=await createFentonNutritionReport({nutrition:input,growth,chart:sample});}
  finally{PDFLib.PDFPage.prototype.drawText=original;}
  const pdf=await PDFLib.PDFDocument.load(bytes);assert.equal(pdf.getPageCount(),2);
  for(const m of measurements)assert.ok(rows.some(r=>r.value===`${m.weeks}+${m.days}`&&r.y>56),`${m.weeks}+${m.days}`);

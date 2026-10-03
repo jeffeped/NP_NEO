@@ -308,6 +308,7 @@ test('travas de concentração final e taxa lipídica usam valores efetivos e li
 const baseline=JSON.parse(readFileSync(new URL('./fixtures/baseline-0.3.5.json',import.meta.url)));
 for(const {name,input,expected} of baseline.records.filter(record=>!['volume-insuficiente','volume-traco-zero'].includes(record.name)))test(`regressão 0.3.5: ${name}`,()=>{
   const actual=calculate({...input,birthWeight:input.weight,fluidPhase:'stable'});
+  delete actual.safetyNotes;delete actual.clinicalContext;delete actual.input.urea;delete actual.input.triglycerides;delete actual.input.ceftriaxone;
   delete actual.weightContext;delete actual.input.currentWeight;delete actual.alerts;delete actual.version;delete actual.sodiumBreakdown;delete actual.fluidReference;delete actual.input.birthWeight;delete actual.input.fluidPhase;delete actual.totals.osmolarity;delete actual.totals.calciumConcentration;delete actual.totals.phosphorusConcentration;delete actual.totals.aminoAcidPercent;delete actual.totals.lipidRate;delete actual.totals.requestedVolume;delete actual.totals.volumeAdjusted;
   const previous=structuredClone(expected);delete actual.blocks;delete actual.canExport;delete previous.blocks;delete previous.canExport;
   assert.deepEqual(actual,previous); // Fórmulas e demais saídas antigas, excluindo as novas decisões de segurança.
