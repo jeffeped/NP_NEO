@@ -1,5 +1,14 @@
 # Histórico de versões
 
+## 0.8.0 — 11/10/2026; avaliação, sem congelamento
+
+- Corrige a interpretação de pesos em gramas com separador de milhar no crescimento e no peso ao nascer da aba Enteral.
+- Edições e novos cálculos de crescimento invalidam o PDF Enteral anterior, preservando os totais nutricionais; exportações obsoletas, inclusive com erro tardio, não alteram o resultado atual.
+- O PDF Enteral passa o bloco de crescimento para uma página de continuação quando necessário para preservar o rodapé e os avisos.
+- Padroniza a autoria nos metadados dos PDFs Enteral, HV e INTERGROWTH como Jefferson Guilherme.
+- Recusa resultados não finitos por excesso de capacidade numérica no cálculo Enteral, na integração e na classificação das metas.
+- 757 testes aprovados, verificações de navegador e PDFs salvos/reabertos; revisão independente aprovada. Ver [registro da versão](docs/RELEASE_0.8.0.md).
+
 ## 0.7.11 — 02/10/2026
 
 - Campos opcionais de ureia plasmática, triglicerídeos e uso de ceftriaxona na NP individualizada; avisos clínicos sem ajuste automático de doses nem novas travas.

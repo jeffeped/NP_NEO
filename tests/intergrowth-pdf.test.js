@@ -20,7 +20,7 @@ test('PDF ambulatorial local gera três páginas vetoriais com versão, referên
  PDFLib.PDFPage.prototype.drawSvgPath=function(path,options){paths.push({path,options});return originalPath.call(this,path,options);};
  try{
   const bytes=await exportIntergrowthPdf(resultFor(20)),doc=await PDFLib.PDFDocument.load(bytes);
-  assert.equal(doc.getPageCount(),3);assert.equal(doc.getAuthor(),'Jefferson P Guilherme');
+  assert.equal(doc.getPageCount(),3);assert.equal(doc.getAuthor(),'Jefferson Guilherme');
   assert.match(doc.getTitle(),/Seguimento ambulatorial INTERGROWTH-21st/);assert.match(doc.getSubject(),/27\+0 a 64\+0/);
   assert.ok(lines.includes('20'));assert.ok(lines.includes('59 + 0'));assert.ok(lines.includes('4900'));
   assert.ok(lines.includes('-0,25'));assert.ok(lines.includes('40,1'));
@@ -62,7 +62,7 @@ test('prancha A4 reúne vinte avaliações em uma página vetorial com texto leg
  PDFLib.PDFPage.prototype.drawCircle=function(options){circles.push(options);return originalCircle.call(this,options);};
  try{
   const bytes=await exportIntergrowthSummaryPdf(resultFor(20)),doc=await PDFLib.PDFDocument.load(bytes),page=doc.getPage(0);
-  assert.equal(doc.getPageCount(),1);assert.equal(doc.getAuthor(),'Jefferson P Guilherme');
+  assert.equal(doc.getPageCount(),1);assert.equal(doc.getAuthor(),'Jefferson Guilherme');
   assert.ok(Math.abs(page.getWidth()-595.28)<.01&&Math.abs(page.getHeight()-841.89)<.01);
   assert.match(doc.getTitle(),/uma página/);
   assert.equal(paths.length,21);

@@ -16,7 +16,7 @@ test('PDF Enteral: gera aporte nutricional total com autoria e versão',async()=
   const bytes=await createEnteralReport({enteral:en,integrated});
   assert.ok(bytes.length>500);
   const doc=await PDFLib.PDFDocument.load(bytes);
-  assert.equal(doc.getAuthor(),'Jefferson P Guilherme');
+  assert.equal(doc.getAuthor(),'Jefferson Guilherme');
   assert.match(doc.getTitle(),/Avaliação nutricional integrada neonatal/);
   assert.match(doc.getSubject(),/aporte nutricional total/);
   assert.equal(doc.getPageCount(),1);
@@ -74,7 +74,7 @@ for(const [source,label,column] of [['none','Sem aporte intravenoso','IV (zero)'
  const integrated=integrateNutrition({source,parenteral:{fluid:60,calories:28.8,protein:1.88,weight:1},enteral:en});
  const original=PDFLib.PDFPage.prototype.drawText,lines=[];
  PDFLib.PDFPage.prototype.drawText=function(value,opts){lines.push(value);assert.ok(opts.x+opts.font.widthOfTextAtSize(value,opts.size)<=this.getWidth(),value);return original.call(this,value,opts);};
- try{const pdf=await PDFLib.PDFDocument.load(await createEnteralReport({enteral:en,integrated}));assert.equal(pdf.getPageCount(),1);assert.equal(pdf.getAuthor(),'Jefferson P Guilherme');}finally{PDFLib.PDFPage.prototype.drawText=original;}
+ try{const pdf=await PDFLib.PDFDocument.load(await createEnteralReport({enteral:en,integrated}));assert.equal(pdf.getPageCount(),1);assert.equal(pdf.getAuthor(),'Jefferson Guilherme');}finally{PDFLib.PDFPage.prototype.drawText=original;}
  assert.ok(lines.includes('Fonte: '+label));assert.ok(lines.includes(column));
  if(source!=='none')assert.ok(lines.some(x=>x.includes('peso de cálculo 1.000 g')));
  if(source==='hydration'||source==='none'){assert.ok(lines.includes('0,00'));assert.ok(lines.some(x=>x.includes('Metas de transição não avaliadas: sem PN')));}
@@ -89,7 +89,7 @@ for(const fortifier of [0,2])test(`PDF negative energy: explicit fallback, expor
   lines.push(value);assert.ok(opts.y>=14,value);assert.ok(opts.x+opts.font.widthOfTextAtSize(value,opts.size)<=this.getWidth()-25,value);
   return original.call(this,value,opts);
  };
- try{assert.equal((await PDFLib.PDFDocument.load(await createEnteralReport({enteral,integrated,growth,clinical:{phase:'growth',birthWeight:1400,gestationalAge:28}}))).getPageCount(),2);}
+ try{assert.equal((await PDFLib.PDFDocument.load(await createEnteralReport({enteral,integrated,growth,clinical:{phase:'growth',birthWeight:1400,gestationalAge:28}}))).getPageCount(),3);}
  finally{PDFLib.PDFPage.prototype.drawText=original;}
  assert.ok(lines.includes('Energia analisada inválida: -0,125 kcal/100 mL.'));
  assert.ok(lines.includes('Usado 0 kcal/100 mL para a energia do leite; não é valor medido.'));
@@ -104,7 +104,7 @@ for(const analyzedEnergy of [70,-1])for(const fortifier of [0,4])test(`PDF prote
  const growth=calculateGrowth({sex:'female',birthWeight:1400,initialWeight:1100,finalWeight:1300,gaWeeks:28,gaDays:0,initialDay:17,finalDay:20});
  const original=PDFLib.PDFPage.prototype.drawText,lines=[];
  PDFLib.PDFPage.prototype.drawText=function(value,opts){lines.push(value);assert.ok(opts.y>=14,value);assert.ok(opts.x+opts.font.widthOfTextAtSize(value,opts.size)<=this.getWidth()-25,value);return original.call(this,value,opts);};
- try{assert.equal((await PDFLib.PDFDocument.load(await createEnteralReport({enteral,integrated,growth}))).getPageCount(),1);}
+ try{assert.equal((await PDFLib.PDFDocument.load(await createEnteralReport({enteral,integrated,growth}))).getPageCount(),analyzedEnergy>=0&&fortifier>0?1:2);}
  finally{PDFLib.PDFPage.prototype.drawText=original;}
  assert.ok(lines.includes('Proteína analisada inválida: -0,125 g/100 mL; usado 0.'));
  assert.ok(lines.includes('Zero no cálculo não é valor medido. Revise os valores e recalcule.'));

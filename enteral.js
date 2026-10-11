@@ -43,7 +43,9 @@ export function calculateEnteral({rate,...options}){
   const r=Number(rate);
   if(!Number.isFinite(r)||r<0) throw new Error('Taxa enteral inválida.');
   const composition=compositionFor(options);
-  return {rate:r,composition,calories:r*composition.energy/100,protein:r*composition.protein/100};
+  const calories=r*composition.energy/100,protein=r*composition.protein/100;
+  if([composition.energy,composition.protein,calories,protein].some(value=>!Number.isFinite(value)))throw new Error('Valores excedem a capacidade numérica do cálculo. Revise os dados e recalcule.');
+  return {rate:r,composition,calories,protein};
 }
 export const IV_SOURCES=Object.freeze({none:'Sem aporte intravenoso',individual:'NP individualizada',standard:'NP padrão (Numeta)',hydration:'HV',individual_hydration:'NP individualizada + HV',standard_hydration:'NP padrão (Numeta) + HV'});
 export const IV_MEMBERS=Object.freeze({none:[],individual:['individual'],standard:['standard'],hydration:['hydration'],individual_hydration:['individual','hydration'],standard_hydration:['standard','hydration']});
@@ -86,6 +88,7 @@ export function integrateNutrition({parenteral={},enteral,source='individual'}){
     p[key]=a+b;
   }
   const e=enteral||{rate:0,calories:0,protein:0};
+  if(['fluid','calories','protein'].some(key=>!Number.isFinite(p[key]))||['rate','calories','protein'].some(key=>e[key]!=null&&!Number.isFinite(Number(e[key]))))throw new Error('Valores excedem a capacidade numérica do cálculo. Revise os dados e recalcule.');
   // Also protect integration of a legacy/direct result that bypassed calculateEnteral.
   const invalidCalories=Number(e.calories)<0;
   const calories=invalidCalories?0:e.calories||0;
@@ -94,8 +97,10 @@ export function integrateNutrition({parenteral={},enteral,source='individual'}){
   const protein=invalidProtein?0:e.protein||0;
   const proteinValidation=e.composition?.proteinValidation??(invalidProtein?{status:'invalid-negative-total',enteredValue:Number(e.protein),calculationValue:0}:null);
   const twoChamber=IV_MEMBERS[source].includes('standard')&&parenteral.formulation==='2in1';
+  const total={fluid:p.fluid+(e.rate||0),calories:p.calories+calories,protein:p.protein+protein};
+  if(Object.values(total).some(value=>!Number.isFinite(value)))throw new Error('Valores excedem a capacidade numérica do cálculo. Revise os dados e recalcule.');
   return {source,sourceLabel:twoChamber?'NP padrão (Numeta 2:1, sem lipídios)'+(combined?' + HV':''):IV_SOURCES[source],weight:source==='none'?null:parenteral.weight,weightContext:source==='none'?null:parenteral.weightContext??null,parenteral:p,...(combined?{intravenousComponents:parenteral.components}:{}),enteral:{fluid:e.rate||0,calories,protein,...(energyValidation?{energyValidation}:{}),...(proteinValidation?{proteinValidation}:{})},
-    total:{fluid:p.fluid+(e.rate||0),calories:p.calories+calories,protein:p.protein+protein}};
+    total};
 }
 
 // Shared by the on-screen summary and both nutritional PDF exports.
@@ -133,6 +138,7 @@ export function enteralNutrientWarnings(enteral,integrated){
 // Metas aprovadas em 19/09/2026. Comparar valores internos, sem arredondar.
 export function assessTransition(integrated){
   const {parenteral,enteral,total}=integrated;
+  if(!Number.isFinite(total.calories)||!Number.isFinite(total.protein))throw new Error('Totais inválidos: valores excedem a capacidade numérica do cálculo. Recalcule o aporte total.');
   const hasPN=['individual','standard','individual_hydration','standard_hydration'].includes(integrated.source)&&(integrated.intravenousComponents?.np??parenteral).fluid>0;
   const active=hasPN&&enteral.fluid>50;
   return {active,reason:!hasPN?'no-pn':enteral.fluid<=50?'enteral-threshold':null,

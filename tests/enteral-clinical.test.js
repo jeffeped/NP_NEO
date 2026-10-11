@@ -30,6 +30,6 @@ test('UI computes references and invalidates on phase edit',()=>{
 vm.runInThisContext(readFileSync(new URL('../vendor/pdf-lib.min.js',import.meta.url),'utf8'));
 test('PDF includes separate reference page and author',async()=>{
  const enteral=calculateEnteral({type:'fpt_prenan',rate:100});const integrated=integrateNutrition({source:'hydration',parenteral:all.parenteral,enteral});
- const bytes=await createEnteralReport({enteral,integrated,clinical});const pdf=await PDFLib.PDFDocument.load(bytes);assert.equal(pdf.getPageCount(),2);assert.equal(pdf.getAuthor(),'Jefferson P Guilherme');
+ const bytes=await createEnteralReport({enteral,integrated,clinical});const pdf=await PDFLib.PDFDocument.load(bytes);assert.equal(pdf.getPageCount(),2);assert.equal(pdf.getAuthor(),'Jefferson Guilherme');
  if(process.env.RENDER_ENTERAL_PDF)writeFileSync('/tmp/enteral-clinical.pdf',bytes);
 });

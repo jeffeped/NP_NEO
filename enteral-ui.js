@@ -1,10 +1,11 @@
 import {dosingWeightLabel} from './dosing-weight.js';
+import {parseWeightGrams} from './engine.js';
 import {calculateEnteral,integrateNutrition,enteralNutrientWarnings,transitionLines,clinicalReferenceLines,IV_SOURCES,IV_MEMBERS} from './enteral.js';
 import {createEnteralReport} from './enteral-pdf.js';
 const num=v=>{const s=String(v??'').trim();if(s==='')return null;const n=Number(s.replace(',','.'));return Number.isFinite(n)?n:null};
 const fmt=(n,digits=1)=>Number.isFinite(n)?n.toFixed(digits).replace('.',','):'—';
 export function initEnteral(doc,getParenteral,getGrowth=()=>null){
- let last=null,pdfUrl=null,downloadSnapshot=null;
+ let last=null,pdfUrl=null,downloadSnapshot=null,downloadGrowth=null,pdfRevision=0;
  const $=id=>doc.getElementById(id);
  const energyInput=$('en-energy'),energyWarning=$('en-energy-warning');
  const syncEnergyWarning=()=>{
@@ -24,7 +25,9 @@ export function initEnteral(doc,getParenteral,getGrowth=()=>null){
  };
  for(const event of ['input','change'])proteinInput.addEventListener(event,syncProteinWarning);
  syncProteinWarning();
- const invalidate=()=>{last=null;downloadSnapshot=null;$('en-result').hidden=true;$('en-pdf-download').hidden=true;$('en-pdf-download').removeAttribute('href');$('en-pdf-status').textContent='';if(pdfUrl){URL.revokeObjectURL(pdfUrl);pdfUrl=null;}};
+ const invalidatePdf=()=>{pdfRevision++;downloadSnapshot=null;downloadGrowth=null;$('en-pdf-download').hidden=true;$('en-pdf-download').removeAttribute('href');$('en-pdf-status').textContent='';if(pdfUrl){URL.revokeObjectURL(pdfUrl);pdfUrl=null;}};
+ const invalidate=()=>{last=null;$('en-result').hidden=true;invalidatePdf();};
+ for(const event of ['input','change','submit'])$('growth-form').addEventListener(event,invalidatePdf);
  const uses=source=>IV_MEMBERS[$('en-source').value]?.includes(source);
  for(const [source,formId] of [['individual','npp-form'],['standard','std-form'],['hydration','hv-form']])for(const event of ['input','change','submit'])$(formId).addEventListener(event,()=>{if(uses(source))invalidate();});
  $('hv-form').addEventListener('hv-review-change',()=>{if(uses('hydration'))invalidate();});
@@ -45,8 +48,9 @@ export function initEnteral(doc,getParenteral,getGrowth=()=>null){
    if(fortPer25===null&&fm.value==='custom')errors.push('Informe a concentração média de FM85 em g/25 mL.');
    if(fortPer25!==null&&fortPer25<0)errors.push('Informe uma concentração válida de FM85.');
    const fort=(fortPer25??0)*4;
-   const clinical={phase:$('en-phase').value,birthWeight:num($('en-birth-weight').value),gestationalAge:num($('en-gestational-age').value)};
-   for(const [id,value,max,label] of [['en-birth-weight',clinical.birthWeight,10000,'peso ao nascer'],['en-gestational-age',clinical.gestationalAge,45,'idade gestacional']])if($(id).value.trim()&&(value===null||value<=0||value>max))errors.push(`Informe ${label} válido.`);
+   const birthWeightValue=$('en-birth-weight').value.trim(),birthWeight=birthWeightValue?parseWeightGrams(birthWeightValue):null;
+   const clinical={phase:$('en-phase').value,birthWeight,gestationalAge:num($('en-gestational-age').value)};
+   for(const [id,value,max,label] of [['en-birth-weight',clinical.birthWeight,10000,'peso ao nascer'],['en-gestational-age',clinical.gestationalAge,45,'idade gestacional']])if($(id).value.trim()&&(!Number.isFinite(value)||value<=0||value>max))errors.push(`Informe ${label} válido.`);
    invalidate();$('en-errors').hidden=!errors.length;$('en-errors').textContent=errors.join(' ');if(errors.length)return;
    const opts={type:type.value,rate,lactationDays:ld,fm85GramsPer100mL:fort};if(ae!==null&&ap!==null){opts.analyzedEnergy=ae;opts.analyzedProtein=ap}
    try{const en=calculateEnteral(opts),pn=source==='none'?{}:getParenteral(source),all=integrateNutrition({parenteral:pn,enteral:en,source});last={enteral:en,integrated:all,clinical};
@@ -76,13 +80,13 @@ export function initEnteral(doc,getParenteral,getGrowth=()=>null){
    return result;
  };
  const validateSource=snapshot=>{if(snapshot.integrated.source!=='none')getParenteral(snapshot.integrated.source);};
- $('en-pdf-download').addEventListener('click',event=>{try{if(!last||downloadSnapshot!==last)throw new Error('Recalcule o aporte total.');validateSource(last);}catch(error){event.preventDefault();invalidate();$('en-pdf-status').textContent=error.message;}});
+ $('en-pdf-download').addEventListener('click',event=>{try{if(!last||downloadSnapshot!==last)throw new Error('Recalcule o aporte total.');if(getGrowth()!==downloadGrowth){event.preventDefault();invalidatePdf();$('en-pdf-status').textContent='Gere novamente o PDF com os dados atuais de crescimento.';return;}validateSource(last);}catch(error){event.preventDefault();invalidate();$('en-pdf-status').textContent=error.message;}});
  $('en-export').addEventListener('click',async()=>{
-   if(!last)return;const snapshot=last,growth=getGrowth();$('en-export').disabled=true;$('en-pdf-status').textContent='Preparando PDF no aparelho…';
-   try{validateSource(snapshot);const bytes=await createEnteralReport({...snapshot,growth});if(last!==snapshot||getGrowth()!==growth)return;validateSource(snapshot);
-     const blob=new Blob([bytes],{type:'application/pdf'});if(pdfUrl)URL.revokeObjectURL(pdfUrl);pdfUrl=URL.createObjectURL(blob);downloadSnapshot=snapshot;
+   if(!last)return;const snapshot=last,growth=getGrowth(),revision=pdfRevision;$('en-export').disabled=true;$('en-pdf-status').textContent='Preparando PDF no aparelho…';
+   try{validateSource(snapshot);const bytes=await createEnteralReport({...snapshot,growth});if(last!==snapshot||getGrowth()!==growth||pdfRevision!==revision)return;validateSource(snapshot);
+     const blob=new Blob([bytes],{type:'application/pdf'});if(pdfUrl)URL.revokeObjectURL(pdfUrl);pdfUrl=URL.createObjectURL(blob);downloadSnapshot=snapshot;downloadGrowth=growth;
      const link=$('en-pdf-download');link.href=pdfUrl;link.download='GROW_NEO-aporte-nutricional-total.pdf';link.hidden=false;link.click();$('en-pdf-status').textContent=growth?'PDF gerado com os dados de crescimento.':'PDF gerado. Calcule a aba GROW_Fenton para incluí-la no relatório.';
-   }catch(error){if(last===snapshot){invalidate();$('en-pdf-status').textContent=error.message||'Não foi possível gerar o PDF.';}}finally{$('en-export').disabled=false;}
+   }catch(error){if(last===snapshot&&getGrowth()===growth&&pdfRevision===revision){invalidate();$('en-pdf-status').textContent=error.message||'Não foi possível gerar o PDF.';}}finally{$('en-export').disabled=false;}
  });
  return {invalidate,getResult:()=>last,prepareReport};
 }

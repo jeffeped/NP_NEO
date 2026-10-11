@@ -9,9 +9,9 @@ const pma=n=>{const days=Math.round(n*7);return `${Math.floor(days/7)} sem + ${d
 export async function createEnteralReport({enteral,integrated,clinical,growth}){
  if(!enteral||!integrated)throw new Error('Enteral result is not exportable');
  const {PDFDocument,StandardFonts,rgb}=globalThis.PDFLib;const doc=await PDFDocument.create();
- doc.setTitle('Avaliação nutricional integrada neonatal');doc.setAuthor('Jefferson P Guilherme');doc.setCreator('Jefferson P Guilherme');doc.setSubject('GROW_NEO — aporte nutricional total');
+ doc.setTitle('Avaliação nutricional integrada neonatal');doc.setAuthor('Jefferson Guilherme');doc.setCreator('Jefferson Guilherme');doc.setSubject('GROW_NEO — aporte nutricional total');
  const regular=await doc.embedFont(StandardFonts.Helvetica),bold=await doc.embedFont(StandardFonts.HelveticaBold);
- const page=doc.addPage([612,792]),ink=rgb(.1,.17,.13),muted=rgb(.32,.39,.35),shade=rgb(.91,.95,.92),L=43,R=569;
+ let page=doc.addPage([612,792]);const ink=rgb(.1,.17,.13),muted=rgb(.32,.39,.35),shade=rgb(.91,.95,.92),L=43,R=569;
  const text=(v,x,y,s=9,f=regular,c=ink)=>page.drawText(String(v),{x,y,size:s,font:f,color:c});
  const right=(v,x,y,s=9,f=regular)=>text(v,x-f.widthOfTextAtSize(String(v),s),y,s,f);
  text('GROW_NEO',L,744,16,bold);text('Avaliação nutricional integrada',L,722,13,bold);text('Versão '+VERSION,L,705,8,regular,muted);
@@ -39,6 +39,8 @@ export async function createEnteralReport({enteral,integrated,clinical,growth}){
  const lossLine=weightLossLine({growth,weightContext:integrated.weightContext});
  if(lossLine){y-=15;text(lossLine,L,y,8,bold);}
  if(growth){
+  const growthHeight=101+(!growth.birthWeightRecovered?16:0)+(growth.reference?16:0);
+  if(y-growthHeight<100){page=doc.addPage([612,792]);text('GROW_NEO',L,744,16,bold);text('Avaliação nutricional integrada · continuação',L,722,13,bold);text('Versão '+VERSION,L,705,8,regular,muted);y=705;}
   y-=30;text('Crescimento ponderal',L,y,11,bold);y-=20;
   text(`${growth.input.sex==='female'?'Feminino':'Masculino'} · intervalo ${growth.intervalDays} dias · IPM média ${pma(growth.midpointPmaWeeks)}`,L,y,9);y-=17;
   text(`Ganho: ${fmt(growth.totalGain,0)} g · ${fmt(growth.gramsPerDay)} g/dia · peso médio ${fmt(growth.averageWeight,0)} g`,L,y,9);y-=17;
@@ -47,8 +49,10 @@ export async function createEnteralReport({enteral,integrated,clinical,growth}){
   if(growth.reference){text(`Fenton 2025 · ${growth.reference.startWeek}–${growth.reference.endWeek} sem · P50 ${fmt(growth.reference.gramsPerKgDay)} g/kg/dia${growth.percentOfReference===null?'':` · ${fmt(growth.percentOfReference,0)}% da referência`}`,L,y,8,regular,muted);y-=16;}
   if(growth.shortInterval)text('Intervalo inferior a 5 dias: maior sensibilidade a variações hídricas e de pesagem.',L,y,8,regular,muted);
  }
- text('Sem identificação do paciente. Conferir os resultados antes do uso assistencial.',L,82,8,regular,muted);
- text('GROW_NEO by Prof. Jefferson · processamento local',L,50,8,regular,muted);
+ for(const dataPage of doc.getPages()){
+  dataPage.drawText('Sem identificação do paciente. Conferir os resultados antes do uso assistencial.',{x:L,y:82,size:8,font:regular,color:muted});
+  dataPage.drawText('GROW_NEO by Prof. Jefferson · processamento local',{x:L,y:50,size:8,font:regular,color:muted});
+ }
  if(clinical){
   const refPage=doc.addPage([612,792]);let ry=742;
   refPage.drawText('Referências por fase clínica',{x:L,y:ry,size:14,font:bold,color:ink});ry-=30;

@@ -20,7 +20,7 @@ export async function exportIntergrowthPdf(result){
  if(!globalThis.PDFLib)throw new Error('Biblioteca de PDF indisponível. Reabra o aplicativo e tente novamente.');
  const {PDFDocument,StandardFonts,rgb}=globalThis.PDFLib,doc=await PDFDocument.create();
  doc.setTitle('GROW_NEO — Seguimento ambulatorial INTERGROWTH-21st');
- doc.setAuthor('Jefferson P Guilherme');doc.setCreator(`GROW_NEO ${VERSION}`);
+ doc.setAuthor('Jefferson Guilherme');doc.setCreator(`GROW_NEO ${VERSION}`);
  doc.setSubject('Padrão pós-natal para prematuros · 27+0 a 64+0 semanas de idade pós-menstrual');
  const regular=await doc.embedFont(StandardFonts.Helvetica),bold=await doc.embedFont(StandardFonts.HelveticaBold);
  const color=hex=>rgb(parseInt(hex.slice(1,3),16)/255,parseInt(hex.slice(3,5),16)/255,parseInt(hex.slice(5,7),16)/255);
@@ -115,7 +115,7 @@ export async function exportIntergrowthSummaryPdf(result){
  if(!globalThis.PDFLib)throw new Error('Biblioteca de PDF indisponível. Reabra o aplicativo e tente novamente.');
  const {PDFDocument,StandardFonts,rgb}=globalThis.PDFLib,doc=await PDFDocument.create();
  doc.setTitle('GROW_NEO - Prancha INTERGROWTH-21st em uma página');
- doc.setAuthor('Jefferson P Guilherme');doc.setCreator(`GROW_NEO ${VERSION}`);
+ doc.setAuthor('Jefferson Guilherme');doc.setCreator(`GROW_NEO ${VERSION}`);
  doc.setSubject('Padrão pós-natal para prematuros; 27+0 a 64+0 semanas de IPM; resumo da última avaliação');
  const regular=await doc.embedFont(StandardFonts.Helvetica),bold=await doc.embedFont(StandardFonts.HelveticaBold);
  const page=doc.addPage([595.28,841.89]),left=32,right=563.28;

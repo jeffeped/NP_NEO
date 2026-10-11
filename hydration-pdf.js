@@ -22,7 +22,7 @@ async function renderHydrationReport(result,review){
   const volume=fv;
   const {PDFDocument,StandardFonts,rgb}=globalThis.PDFLib;
   const doc=await PDFDocument.create();
-  doc.setTitle(review?'HV - REVISÃO - NÃO ADMINISTRAR':'Hidratação venosa neonatal');doc.setAuthor('Jefferson P Guilherme');doc.setCreator('GROW_NEO by Prof. Jefferson');doc.setSubject(review?'Cálculo de revisão com água para injetáveis, não administrar':hasWfi?'HV com água para injetáveis e confirmação de revisão pelo prescritor':'Relatório de cálculo de HV em 24 horas');
+  doc.setTitle(review?'HV - REVISÃO - NÃO ADMINISTRAR':'Hidratação venosa neonatal');doc.setAuthor('Jefferson Guilherme');doc.setCreator('GROW_NEO by Prof. Jefferson');doc.setSubject(review?'Cálculo de revisão com água para injetáveis, não administrar':hasWfi?'HV com água para injetáveis e confirmação de revisão pelo prescritor':'Relatório de cálculo de HV em 24 horas');
   const regular=await doc.embedFont(StandardFonts.Helvetica),bold=await doc.embedFont(StandardFonts.HelveticaBold);
   const response=await fetch(new URL('./assets/uea-logo.png',import.meta.url));if(!response.ok)throw new Error('Logo unavailable');
   const logo=await doc.embedPng(await response.arrayBuffer());

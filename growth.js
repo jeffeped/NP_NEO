@@ -1,3 +1,4 @@
+import {parseWeightGrams} from './engine.js';
 const REFERENCES=Object.freeze({
  female:Object.freeze([[22,28,21.2],[28,32,16.6],[32,37,13.3],[37,41,8.7],[41,45,6.5],[45,50,5.4]]),
  male:Object.freeze([[22,28,20.8],[28,32,15.9],[32,37,13.2],[37,41,9.1],[41,45,7.3],[45,50,6.0]])
@@ -19,7 +20,7 @@ export function calculateGrowth(input){
  const n={};
  const labels={birthWeight:'Peso ao nascer',initialWeight:'Peso inicial',finalWeight:'Peso final',gaWeeks:'Idade gestacional',gaDays:'Dias adicionais de gestação',initialDay:'Dia de vida inicial',finalDay:'Dia de vida final'};
  for(const field of Object.keys(labels)){
-  n[field]=number(input[field]);
+  n[field]=['birthWeight','initialWeight','finalWeight'].includes(field)?parseWeightGrams(input[field]):number(input[field]);
   if(!Number.isFinite(n[field])||n[field]<0)errors.push({field,message:`${labels[field]}: informe um número válido.`});
  }
  for(const field of ['birthWeight','initialWeight','finalWeight','gaWeeks','initialDay','finalDay'])if(n[field]===0)errors.push({field,message:`${labels[field]} deve ser maior que zero.`});

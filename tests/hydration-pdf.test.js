@@ -9,7 +9,7 @@ globalThis.fetch=async url=>({ok:true,arrayBuffer:async()=>{const b=readFileSync
 test('HV PDF: real PDF generation, one-page prescription and author metadata',async()=>{
  const r=calculateHydration({access:'central',day:8,weight:2,fluid:100,vig:5,doseUnit:'perKgDay',na:1.7,k:1.34,ca:0.5,mg:0.8,concentrations:{na:1.7,k:1.34,ca:0.5,mg:0.8}});
  const bytes=await createHydrationReport(r),doc=await PDFLib.PDFDocument.load(bytes);
- assert.equal(doc.getPageCount(),1);assert.equal(doc.getAuthor(),'Jefferson P Guilherme');
+ assert.equal(doc.getPageCount(),1);assert.equal(doc.getAuthor(),'Jefferson Guilherme');
  assert.equal(doc.getTitle(),'Hidratação venosa neonatal');
 });
 test('HV PDF: registra o acesso venoso e recusa mistura bloqueada em acesso periférico',async()=>{
