@@ -46,3 +46,21 @@ export function calculateGrowth(input){
   percentOfReference:birthWeightRecovered&&reference?gramsPerKgDay/reference.gramsPerKgDay*100:null,
   shortInterval:intervalDays<5};
 }
+
+// Descriptive interval velocity; no automatic diagnosis or percentile comparison.
+export function calculateSerialWeightVelocity(measurements){
+ if(!Array.isArray(measurements))throw new Error('Confira as medidas para calcular a VC.');
+ let lastWeight=null,lastAge=-1;
+ return measurements.map(row=>{
+  if(!row||!Number.isInteger(row.weeks)||!Number.isInteger(row.days)||row.weeks<0||row.days<0||row.days>6)throw new Error('Confira a IPM das medidas para calcular a VC.');
+  const age=row.weeks*7+row.days;
+  if(age<=lastAge)throw new Error('As IPMs das medidas precisam estar em ordem crescente para calcular a VC.');
+  lastAge=age;
+  if(row.weightGrams==null)return null;
+  if(!Number.isFinite(row.weightGrams)||row.weightGrams<=0)throw new Error('Confira o peso das medidas para calcular a VC.');
+  const current={age,weight:row.weightGrams};
+  const velocity=lastWeight?1000*(current.weight-lastWeight.weight)/(((current.weight+lastWeight.weight)/2)*(current.age-lastWeight.age)):null;
+  if(velocity!==null&&!Number.isFinite(velocity))throw new Error('Confira os pesos e o intervalo das medidas para calcular a VC.');
+  lastWeight=current;return velocity;
+ });
+}

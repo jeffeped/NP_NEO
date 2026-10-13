@@ -15,6 +15,15 @@ const jpeg=Buffer.from('/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQN
 const chart={blob:new Blob([jpeg],{type:'image/jpeg'}),data:{sex:'F',birthGaWeeks:28,birthGaDays:0,measurements:[{weeks:30,days:5,weightGrams:1300}]}};
 chart.scores=[{weeks:30,days:5,weight:{value:1300,z:-.5,percentile:30.85}}];
 const growth=calculateGrowth({sex:'female',birthWeight:1400,initialWeight:1100,finalWeight:1300,gaWeeks:28,gaDays:0,initialDay:17,finalDay:20});
+test('coluna VC fica após P do peso, antes do comprimento, com ganho e perda calculados',async()=>{
+ const measurements=[{weeks:28,days:0,weightGrams:775},{weeks:29,days:0,weightGrams:700},{weeks:30,days:0,weightGrams:730}];
+ const scores=measurements.map(m=>({weeks:m.weeks,days:m.days,weight:{value:m.weightGrams,z:-.5,percentile:30}}));
+ const lines=[],original=PDFLib.PDFPage.prototype.drawText;PDFLib.PDFPage.prototype.drawText=function(value,opts){lines.push({value,...opts});return original.call(this,value,opts);};
+ try{const pdf=await PDFLib.PDFDocument.load(await createFentonNutritionReport({nutrition:nutrition(),chart:{...chart,data:{...chart.data,measurements},scores}}));assert.equal(pdf.getPageCount(),2);}finally{PDFLib.PDFPage.prototype.drawText=original;}
+ const vc=lines.find(l=>l.value==='VC g/kg/dia'),weightP=lines.find(l=>l.value==='P'),length=lines.find(l=>l.value==='Comp cm');assert.ok(vc);assert.ok(weightP.x<vc.x&&vc.x<length.x);
+ const cells=lines.filter(l=>l.x===vc.x&&l.y<vc.y).slice(0,3);assert.deepEqual(cells.map(l=>l.value),['-','-14,5','6,0']);
+ assert.ok(lines.some(l=>l.value.includes('desde a pesagem anterior, pelo peso médio')));
+});
 test('relato de cinco linhas cabe na página 1 com vinte medidas e gráfico integral na página 2',async()=>{
  const measurements=Array.from({length:20},(_,i)=>({weeks:30+Math.floor(i/7),days:i%7,weightGrams:1200+i*25,headCm:25+i*.1,lengthCm:35+i*.2}));
  const scores=measurements.map(m=>({weeks:m.weeks,days:m.days,weight:{value:m.weightGrams,z:-.5,percentile:30},head:{value:m.headCm,z:-.5,percentile:30},length:{value:m.lengthCm,z:-.5,percentile:30}}));

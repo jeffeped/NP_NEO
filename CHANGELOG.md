@@ -1,5 +1,11 @@
 # Histórico de versões
 
+## 0.8.2 — 12/10/2026; avaliação, sem congelamento
+
+- Coluna VC em g/kg/dia na tabela Fenton do PDF integrado, depois do percentil do peso e antes do comprimento. Calculada desde a última pesagem, pelo peso médio e intervalo da IPM em dias; uma casa decimal, primeira pesagem sem valor e perdas preservadas.
+- Linhas sem peso não geram VC; a próxima pesagem é comparada à última disponível. Não há diagnóstico automático de RCEU, nem alteração do resumo do intervalo selecionado. Relato de cinco linhas e gráfico integral na segunda página preservados.
+- Ver [registro da versão](docs/RELEASE_0.8.2.md).
+
 ## 0.8.1 — 12/10/2026; avaliação, sem congelamento
 
 - HV: apresentação de volumes e vazão com uma casa decimal, preservando a precisão interna e a visibilidade de valores muito pequenos.

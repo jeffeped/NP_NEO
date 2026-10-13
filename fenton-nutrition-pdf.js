@@ -2,6 +2,7 @@ import {dosingWeightLabel} from './dosing-weight.js';
 import {stampPdfIssueDate} from './pdf-date.js';
 import {VERSION} from './engine.js';
 import {weightLossLine} from './weight-loss.js';
+import {calculateSerialWeightVelocity} from './growth.js';
 import {transitionLines,clinicalReferenceLines,enteralNutrientWarnings} from './enteral.js';
 
 const fmt=(n,d=1)=>Number.isFinite(n)?n.toFixed(d).replace('.',','):'—';
@@ -115,20 +116,21 @@ export async function createFentonNutritionReport({nutrition,growth=null,chart,a
 
  if(y<60)throw new Error('O conteúdo excede uma página. Revise os dados antes de exportar.');
  section('Fenton 2025 - medidas, escores Z e percentis');
- const x=[L+4,130,168,210,284,326,366,438,480,520];
- const headers=['IPM','Peso g','Z','P','Comp cm','Z','P','PC cm','Z','P'];
+ const x=[L+4,96,139,177,210,273,316,352,407,453,491];
+ const headers=['IPM','Peso g','Z','P','VC g/kg/dia','Comp cm','Z','P','PC cm','Z','P'];
+ const velocities=calculateSerialWeightVelocity(data.measurements);
  if(y-27-chart.scores.length*9<58)throw new Error('As medidas e os avisos excedem a primeira página. Revise o conteúdo antes de exportar.');
  for(let j=0;j<headers.length;j++)text(first,headers[j],x[j],y,7.2,bold);
  y-=12;
- for(const row of chart.scores){
-  const values=[`${row.weeks}+${row.days}`,row.weight?.value,row.weight?.z,row.weight?.percentile,row.length?.value,row.length?.z,row.length?.percentile,row.head?.value,row.head?.z,row.head?.percentile];
+ for(const [i,row] of chart.scores.entries()){
+  const values=[`${row.weeks}+${row.days}`,row.weight?.value,row.weight?.z,row.weight?.percentile,velocities[i],row.length?.value,row.length?.z,row.length?.percentile,row.head?.value,row.head?.z,row.head?.percentile];
   for(let j=0;j<values.length;j++){
-   const v=values[j],p=j===3||j===6||j===9;
-   text(first,v==null?'-':j===0?v:typeof v==='string'?v:p?fmt(v,1):j===1?fmt(v,0):j===4||j===7?fmt(v,1):fmt(v,2),x[j],y,7.2);
+   const v=values[j],p=j===3||j===7||j===10;
+   text(first,v==null?'-':j===0?v:typeof v==='string'?v:p?fmt(v,1):j===1?fmt(v,0):j===4||j===5||j===8?fmt(v,1):fmt(v,2),x[j],y,7.2);
   }
   y-=9;
  }
- line(chart.scoresSource==='pdf'?'P = percentil; tabela extraída do PDF oficial Fenton 2025.':'P = percentil; escores recebidos do serviço Fenton junto ao gráfico.',{size:7.2,leading:9,color:muted});
+ line((chart.scoresSource==='pdf'?'P = percentil; escores do PDF oficial Fenton 2025.':'P = percentil; escores do serviço Fenton.')+' VC (g/kg/dia): desde a pesagem anterior, pelo peso médio.',{size:7.2,leading:9,color:muted});
  section('Avaliação nutricional');
  if(y-44<56)throw new Error('O conteúdo e o relato excedem a primeira página. Revise os dados antes de exportar.');
  for(let i=0;i<5;i++){
