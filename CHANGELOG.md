@@ -1,5 +1,11 @@
 # Histórico de versões
 
+## 0.8.4 — 12/10/2026; avaliação, sem congelamento
+
+- Reconhece `~` como marcador oficial de PC/comprimento não informados no PDF Fenton. Mantém a validação de dados e escores recebidos.
+- Corrige as consultas com apenas pesos, necessárias às projeções em 14 e 28 dias.
+- Ver [registro da versão](docs/RELEASE_0.8.4.md).
+
 ## 0.8.3 — 12/10/2026; avaliação, sem congelamento
 
 - Alerta de risco de RCEU para queda do Z do peso superior a2pontos desde a medida ao nascimento, conforme limiar definido pelo responsável; orientação para avaliar aporteproteico-calórico e discutir com especialista. Não diagnostica nem ajusta doses automaticamente.
