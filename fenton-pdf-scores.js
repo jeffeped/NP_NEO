@@ -53,7 +53,7 @@ export function parseFentonPdfTable(items,request){
   const result={weeks:source.weeks,days:source.days};
   for(const [metric,field,tolerance] of [['weight','weightGrams',.5],['head','headCm',.05],['length','lengthCm',.05]]){
    const values=row.cells.slice(names.indexOf(metric)*4,names.indexOf(metric)*4+4);
-   if(source[field]==null){if(values.some(v=>v&&!/^[-–]$/.test(v)))throw new Error('O PDF Fenton contém uma medida que não foi enviada ao gráfico.');continue;}
+   if(source[field]==null){if(values.some(v=>v&&!/^[-–~]$/.test(v)))throw new Error('O PDF Fenton contém uma medida que não foi enviada ao gráfico.');continue;}
    const value=number(values[0]),z=number(values[1]);
    if(!Number.isFinite(value)||Math.abs(value-source[field])>tolerance||!Number.isFinite(z))throw new Error('Medida ou escore divergente na tabela do PDF Fenton.');
    result[metric]={value,z,percentile:percentile(values[3])};

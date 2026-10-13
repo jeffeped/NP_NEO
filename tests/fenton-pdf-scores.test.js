@@ -14,6 +14,21 @@ function table(){
 test('official grouped PDF layout preserves Z rather than dZ and allows missing metrics',()=>{
  assert.deepEqual(parseFentonPdfTable(table(),request),[{weeks:24,days:3,weight:{value:613,z:-1.12,percentile:13.1},head:{value:21.5,z:-.4,percentile:34.5},length:{value:31,z:.25,percentile:59.9}},{weeks:25,days:0,weight:{value:655,z:-1.05,percentile:14.7}}]);
 });
+
+test('official tilde markers mean absent head and length measurements',()=>{
+ const missing=table();
+ [273,315,357,391,425,467,509,543].forEach(x=>missing.push(item('~',x,665)));
+ assert.deepEqual(parseFentonPdfTable(missing,request)[1],{weeks:25,days:0,weight:{value:655,z:-1.05,percentile:14.7}});
+ missing.find(i=>i.str==='~'&&i.transform[4]===273).str='20';
+ assert.throws(()=>parseFentonPdfTable(missing,request),/não foi enviada/);
+});
+
+test('tilde cannot replace a requested value or Z score',()=>{
+ for(const value of ['655','-1.05']){
+  const missing=table();missing.find(i=>i.str===value).str='~';
+  assert.throws(()=>parseFentonPdfTable(missing,request),/divergente|inválido/);
+ }
+});
 test('PDF sex, birth age, measurement age, values and row count must match the current request',()=>{
  for(const altered of [{...request,sex:'M'},{...request,birthGaDays:2},{...request,measurements:[{...request.measurements[0],days:4},request.measurements[1]]},{...request,measurements:[{...request.measurements[0],weightGrams:614},request.measurements[1]]}])assert.throws(()=>parseFentonPdfTable(table(),altered),/correspondem|divergente/);
  assert.throws(()=>parseFentonPdfTable(table().filter(i=>i.transform[5]!==665),request),/mesmas medidas/);
