@@ -1,6 +1,7 @@
 import {resolveDosingWeight,dosingWeightLabel,measuredWeightLabel} from './dosing-weight.js';
 import {initFentonNutritionReport} from './fenton-nutrition-ui.js';
 import {initFollowup} from './followup.js';
+import {initFentonOutlook} from './fenton-outlook-ui.js';
 import {initAppUpdate} from './app-update.js';
 import {initStandard} from './standard-ui.js';
 import {calculate,parseNumber,parseWeightGrams,round1,formatVolume,VERSION} from './engine.js';
@@ -117,6 +118,7 @@ const hydrationUI=initHydration(document);
 const standardUI=initStandard(document);
 const growthUI=initGrowth(document);
 initFollowup(document,{fenton:growthUI.fenton});
+initFentonOutlook(document,{fenton:growthUI.fenton});
 const intergrowthUI=initIntergrowth(document);
 function currentIntravenous(source){
   const combined=IV_MEMBERS[source]?.length===2;

@@ -1,5 +1,12 @@
 # Histórico de versões
 
+## 0.8.3 — 12/10/2026; avaliação, sem congelamento
+
+- Alerta de risco de RCEU para queda do Z do peso superior a2pontos desde a medida ao nascimento, conforme limiar definido pelo responsável; orientação para avaliar aporteproteico-calórico e discutir com especialista. Não diagnostica nem ajusta doses automaticamente.
+- Simulação condicional de peso/IPM/Z/percentil em14e28dias com a VC das duas últimas pesagens Fenton, por crescimento proporcional constante. Gráfico hipotético separado; dados reais, acompanhamento e PDF preservados. Limites da curva e dados insuficientes explicitados.
+- Edições descartam simulações anteriores; novas consultas podem começar antes de respostas antigas, sem que estas substituam resultados atuais. Correção do ruído numérico na comparação estrita com2Z.
+- Ver [registro da versão](docs/RELEASE_0.8.3.md).
+
 ## 0.8.2 — 12/10/2026; avaliação, sem congelamento
 
 - Coluna VC em g/kg/dia na tabela Fenton do PDF integrado, depois do percentil do peso e antes do comprimento. Calculada desde a última pesagem, pelo peso médio e intervalo da IPM em dias; uma casa decimal, primeira pesagem sem valor e perdas preservadas.

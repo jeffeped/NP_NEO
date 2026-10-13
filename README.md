@@ -1,6 +1,6 @@
 # GROW_NEO by Prof. Jefferson
 
-Instrumento de apoio à terapia nutricional neonatal, com nutrição parenteral, hidratação venosa, avaliação da dieta enteral e acompanhamento do crescimento. Versão de avaliação 0.8.2.
+Instrumento de apoio à terapia nutricional neonatal, com nutrição parenteral, hidratação venosa, avaliação da dieta enteral e acompanhamento do crescimento. Versão de avaliação 0.8.3.
 
 As mudanças de cada versão estão documentadas em [CHANGELOG.md](CHANGELOG.md), além do histórico auditável de commits do repositório.
 
@@ -13,6 +13,12 @@ Na aba GROW_Fenton, **Salvar acompanhamento** baixa um arquivo com sexo/IG, até
 O campo **Avaliação nutricional breve** é opcional e ocupa até cinco linhas na página 1 do relatório integrado A4. Texto maior gera aviso sem truncamento. A página 2 conserva o gráfico Fenton integral. O relato permanece no aparelho e no arquivo/PDF que o usuário salva; não integra as consultas ao serviço Fenton.
 
 A tabela Fenton do relatório integrado inclui **VC g/kg/dia** após o percentil do peso. A VC é calculada desde a pesagem anterior, pelo peso médio e pela diferença entre as IPMs em dias, com uma casa decimal na apresentação. A primeira pesagem e as linhas sem peso ficam sem VC; a próxima pesagem utiliza a última disponível. Valores negativos representam perda ponderal. A coluna é descritiva, não compara automaticamente com metas nem atribui diagnóstico de RCEU. O resumo de crescimento continua usando o intervalo escolhido pelo médico.
+
+## Trajetória do peso e simulação
+
+Depois de gerar o gráfico/escores Fenton das medidas atuais, o app compara o Z do último peso com o Z do peso na IPM exata do nascimento. Uma queda **superior a 2 pontos de Z** gera: “Risco de RCEU: avaliar aporte proteico-calórico e discutir o caso com especialista.” Este limiar de alerta foi definido por Jefferson Guilherme; não constitui critério diagnóstico universal nem ajuste automático de nutrientes. Sem medida/escore ao nascimento, a comparação fica indisponível.
+
+**Simular 14 e 28 dias** usa a VC das duas últimas pesagens válidas da tabela, não o intervalo escolhido no resumo. Aplica crescimento proporcional constante: peso(t) = peso atual × exp(VC × t/1000), com VC em g/kg/dia e t em dias. É uma simulação matemática condicional, sem previsão de mudanças clínicas, aporte ou perdas. Os pesos aproximados em gramas são consultados na Fenton para obter Z, percentil e um gráfico separado, identificado como hipotético. Medidas observadas, gráfico real, arquivo de acompanhamento e PDF integrado permanecem separados da simulação. Fora da faixa do plotador (22–50 semanas;100–20000g), a posição na curva fica indisponível. Internet é necessária para consultar a Fenton.
 
 Os volumes e a vazão da HV são apresentados com uma casa decimal, conforme a decisão do responsável. Valores muito pequenos conservam precisão adicional; fórmulas, totais internos e bloqueios são avaliados sem esse arredondamento de apresentação.
 

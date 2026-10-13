@@ -41,3 +41,11 @@ textarea{width:100%;box-sizing:border-box;min-height:7em;padding:12px;border:1px
 .followup-actions{margin:16px 0;padding:12px;border:1px solid #d5e4db;border-radius:10px}
 .followup-open{display:block;margin:12px 0;font-weight:600}
 .followup-open input{display:block;max-width:100%;margin-top:8px}
+#fenton-projection-chart{display:block;width:100%;height:auto;max-width:100%}
+#fenton-projection-figure{margin:16px 0}
+#fenton-projection-figure figcaption{margin-bottom:8px;font-size:.85rem;color:#425c4d}
+#fenton-projection-result .table-wrap{overflow-x:auto}
+#fenton-projection-result table{min-width:500px;table-layout:auto}
+#fenton-projection-result th:first-child{width:auto}
+#fenton-projection-result th,#fenton-projection-result td{white-space:nowrap;overflow-wrap:normal;padding:10px 8px}
+.projection-scroll-hint{display:none}@media(max-width:480px){.projection-scroll-hint{display:block}}
