@@ -30,13 +30,15 @@ for(const invalid of ['NaN','Infinity','-Infinity','abc','1e309'])test(`audit D1
  el('en-rate').value='100';el('en-energy').value=invalid;el('en-protein').value=invalid;
  el('enteral-form').dispatchEvent(new window.Event('submit',{bubbles:true,cancelable:true}));assert.equal(ui.getResult(),null);assert.equal(el('en-errors').hidden,false);assert.match(el('en-errors').textContent,/número finito/);assert.equal(el('en-result').hidden,true);
 });
-test('audit D2: small and ordinary displayed volumes conserve dose and mass',()=>{
+test('audit D2: internal volumes conserve dose and mass; ordinary display rounds and tiny volumes retain precision',()=>{
  const r=calculateHydration({...hvInput,fluid:100,vig:4,na:.001});
  const read=v=>Number(formatHydrationVolume(v).replace(',','.'));
  near(read(r.rows[0].volume)*1.7,.001,1e-12);assert.notEqual(formatHydrationVolume(r.rows[0].volume),'0,1');
- near(r.rows.reduce((a,x)=>a+read(x.volume),0)+read(r.mixture.sg5)+read(r.mixture.sg50),100);
- near(read(r.mixture.sg5)*.05+read(r.mixture.sg50)*.5,5.76);
- for(const v of [1e-15,1e-9,.000001,.049999,.05,.099999,.1,.100001,1.21,1/3,5000.09999])near(read(v),v,Math.max(1e-15,Math.abs(v)*1e-10));
+ near(r.rows.reduce((a,x)=>a+x.volume,0)+r.mixture.sg5+r.mixture.sg50,100);
+ near(r.mixture.sg5*.05+r.mixture.sg50*.5,5.76);
+ near(r.rows.reduce((a,x)=>a+read(x.volume),0)+read(r.mixture.sg5)+read(r.mixture.sg50),100,.1);
+ for(const v of [1e-15,1e-9,.000001,.049999])near(read(v),v,Math.max(1e-15,Math.abs(v)*1e-10));
+ for(const [v,expected] of [[.05,.1],[.099999,.1],[.1,.1],[.100001,.1],[1.21,1.2],[1/3,.3],[5000.09999,5000.1]])assert.equal(read(v),expected);
  assert.equal(formatStandardVolume(1.21),'1,3');
 });
 test('three sources: NP + HV + enteral, with no double count',()=>{

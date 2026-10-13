@@ -8,7 +8,7 @@ const fmt=(n,d=1)=>Number.isFinite(n)?n.toFixed(d).replace('.',','):'—';
 const ipm=(w,d)=>`${w} sem + ${d} d`;
 
 // Uses the existing calculation objects; no nutritional or growth recalculation.
-export async function createFentonNutritionReport({nutrition,growth=null,chart}){
+export async function createFentonNutritionReport({nutrition,growth=null,chart,assessment=''}){
  if(!nutrition?.enteral||!nutrition.integrated)throw new Error('Calcule o aporte total na aba Enteral antes de exportar.');
  if(!chart?.blob||!chart.data)throw new Error('Gere o gráfico Fenton atualizado antes de exportar.');
  const {enteral,integrated,clinical}=nutrition,data=chart.data;
@@ -35,6 +35,22 @@ export async function createFentonNutritionReport({nutrition,growth=null,chart})
  doc.setSubject('Aportes e crescimento calculados na sessão atual');
  const regular=await doc.embedFont(StandardFonts.Helvetica),bold=await doc.embedFont(StandardFonts.HelveticaBold);
  const W=595.28,H=841.89,L=38,R=W-38,ink=rgb(.1,.22,.16),muted=rgb(.32,.39,.35),shade=rgb(.91,.95,.92);
+ if(typeof assessment!=='string')throw new Error('Confira o texto da avaliação nutricional.');
+ const assessmentLines=[];
+ try{
+  for(const paragraph of assessment.trim().replace(/\r\n?/g,'\n').split('\n')){
+   if(!assessment.trim())break;
+   let row='';
+   for(const word of paragraph.trim().split(/\s+/)){
+    if(regular.widthOfTextAtSize(row?row+' '+word:word,8.5)<=R-L){row=row?row+' '+word:word;continue;}
+    if(row){assessmentLines.push(row);row='';}
+    for(const letter of word){if(regular.widthOfTextAtSize(row+letter,8.5)>R-L){assessmentLines.push(row);row='';}row+=letter;}
+   }
+   assessmentLines.push(row);
+  }
+ }catch{throw new Error('O relato contém um caractere que não pode ser impresso. Revise o texto da avaliação nutricional.');}
+ if(assessmentLines.length>5)throw new Error('Resuma a avaliação nutricional para caber em até 5 linhas na página 1. O texto não foi cortado.');
+ const compact=data.measurements.length>10||enteralNutrientWarnings(enteral,integrated).length>0;
  const first=doc.addPage([W,H]);
  const text=(page,s,x,y,size=8.5,font=regular,color=ink)=>page.drawText(String(s),{x,y,size,font,color});
  const right=(s,x,y,size=9,font=regular)=>text(first,s,x-font.widthOfTextAtSize(s,size),y,size,font);
@@ -47,7 +63,7 @@ export async function createFentonNutritionReport({nutrition,growth=null,chart})
  };
  header(first,'Aporte nutricional total e crescimento',1);
  let y=H-102;
- const line=(value,{size=8.5,font=regular,color=ink,leading=12}={})=>{
+ const line=(value,{size=8.5,font=regular,color=ink,leading=compact?10:12}={})=>{
   let row='';
   for(const word of String(value).split(/\s+/)){
    const next=row?row+' '+word:word;
@@ -55,7 +71,7 @@ export async function createFentonNutritionReport({nutrition,growth=null,chart})
   }
   text(first,row,L,y,size,font,color);y-=leading;
  };
- const section=title=>{y-=8;line(title,{size:10,font:bold,leading:17});};
+ const section=title=>{y-=compact?4:8;line(title,{size:10,font:bold,leading:compact?14:17});};
  line('Fonte intravenosa: '+integrated.sourceLabel,{font:bold});
  line(integrated.weightContext?dosingWeightLabel(integrated.weightContext):Number.isFinite(integrated.weight)?`Peso usado no aporte: ${fmt(integrated.weight*1000,0)} g`:'Aporte somente enteral; valores por kg de peso.');
  const lossLine=weightLossLine({growth,weightContext:integrated.weightContext});
@@ -76,7 +92,7 @@ export async function createFentonNutritionReport({nutrition,growth=null,chart})
  for(const [name,unit,key,d] of [['Taxa hídrica','mL/kg/dia','fluid',1],['Energia','kcal/kg/dia','calories',1],['Proteína','g/kg/dia','protein',2]]){
   text(first,`${name} (${unit})`,L+6,y,9);
   for(const [label,values,x] of columns)right(fmt(values[key],d),x,y,9,label==='Total'?bold:regular);
-  y-=23;
+  y-=compact?20:23;
  }
  section('Metas de transição NP / enteral');
  for(const item of transitionLines(integrated))line(item);
@@ -113,7 +129,14 @@ export async function createFentonNutritionReport({nutrition,growth=null,chart})
   y-=9;
  }
  line(chart.scoresSource==='pdf'?'P = percentil; tabela extraída do PDF oficial Fenton 2025.':'P = percentil; escores recebidos do serviço Fenton junto ao gráfico.',{size:7.2,leading:9,color:muted});
- if(y<56)throw new Error('O conteúdo excede uma página. Revise os dados antes de exportar.');
+ section('Avaliação nutricional');
+ if(y-44<56)throw new Error('O conteúdo e o relato excedem a primeira página. Revise os dados antes de exportar.');
+ for(let i=0;i<5;i++){
+  if(assessmentLines[i])text(first,assessmentLines[i],L,y,8.5);
+  first.drawLine({start:{x:L,y:y-3},end:{x:R,y:y-3},thickness:.3,color:shade});
+  y-=11;
+ }
+ if(y+11<56)throw new Error('O conteúdo excede uma página. Revise os dados antes de exportar.');
  const second=doc.addPage([W,H]);header(second,'Fenton 2025 - trajetória antropométrica',2);
  const measurements=data.measurements;
  text(second,`${measurements.length} medida(s) · IPM ${ipm(measurements[0].weeks,measurements[0].days)} a ${ipm(measurements.at(-1).weeks,measurements.at(-1).days)}`,L,H-98,8);

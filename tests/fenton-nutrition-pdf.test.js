@@ -15,6 +15,27 @@ const jpeg=Buffer.from('/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQN
 const chart={blob:new Blob([jpeg],{type:'image/jpeg'}),data:{sex:'F',birthGaWeeks:28,birthGaDays:0,measurements:[{weeks:30,days:5,weightGrams:1300}]}};
 chart.scores=[{weeks:30,days:5,weight:{value:1300,z:-.5,percentile:30.85}}];
 const growth=calculateGrowth({sex:'female',birthWeight:1400,initialWeight:1100,finalWeight:1300,gaWeeks:28,gaDays:0,initialDay:17,finalDay:20});
+test('relato de cinco linhas cabe na página 1 com vinte medidas e gráfico integral na página 2',async()=>{
+ const measurements=Array.from({length:20},(_,i)=>({weeks:30+Math.floor(i/7),days:i%7,weightGrams:1200+i*25,headCm:25+i*.1,lengthCm:35+i*.2}));
+ const scores=measurements.map(m=>({weeks:m.weeks,days:m.days,weight:{value:m.weightGrams,z:-.5,percentile:30},head:{value:m.headCm,z:-.5,percentile:30},length:{value:m.lengthCm,z:-.5,percentile:30}}));
+ const lines=[],original=PDFLib.PDFPage.prototype.drawText;
+ PDFLib.PDFPage.prototype.drawText=function(value,opts){lines.push({value,page:this,y:opts.y,size:opts.size});return original.call(this,value,opts);};
+ let bytes;try{bytes=await createFentonNutritionReport({nutrition:nutrition('standard'),growth,chart:{...chart,data:{...chart.data,measurements},scores},assessment:'História dirigida: tolerância preservada.\nAvaliação: acompanhar a trajetória.\nConduta: manter programação.\nProgramação: reavaliar medidas.\nRelato escrito pelo médico.'});}finally{PDFLib.PDFPage.prototype.drawText=original;}
+ const pdf=await PDFLib.PDFDocument.load(bytes);assert.equal(pdf.getPageCount(),2);
+ const note=lines.filter(l=>/^(História dirigida:|Avaliação:|Conduta:|Programação:|Relato escrito)/.test(l.value));assert.equal(note.length,5);
+ assert.ok(note.every(l=>l.page===lines[0].page&&l.y>=56));assert.ok(note[0].y<lines.find(l=>l.value.startsWith('P = percentil')).y);
+ const first=lines.filter(l=>l.page===lines[0].page&&!/^(Sem identificação|GROW_NEO by|Emissão:)/.test(l.value));assert.ok(first.every(l=>l.y>=56));
+});
+test('relato que ocupa mais de cinco linhas é recusado sem truncamento',async()=>{
+ await assert.rejects(createFentonNutritionReport({nutrition:nutrition(),chart,assessment:'Linha 1\nLinha 2\nLinha 3\nLinha 4\nLinha 5\nLinha 6'}),/cinco|5 linhas/);
+});
+for(const extreme of [false,true])test(`vinte medidas, avisos dos dois nutrientes e NP padrão 2:1 preservam relato e duas páginas; extremos: ${extreme}`,async()=>{
+ const measurements=Array.from({length:20},(_,i)=>({weeks:30+Math.floor(i/7),days:i%7,weightGrams:1200+i*25,headCm:25+i*.1,lengthCm:35+i*.2}));
+ const scores=measurements.map(m=>({weeks:m.weeks,days:m.days,weight:{value:m.weightGrams,z:-.5,percentile:30},head:{value:m.headCm,z:-.5,percentile:30},length:{value:m.lengthCm,z:-.5,percentile:30}}));
+ const enteral=calculateEnteral({type:'lhop',rate:165,analyzedEnergy:extreme?-Number.MAX_VALUE:-.125,analyzedProtein:extreme?-Number.MAX_VALUE:-1.2,fm85GramsPer100mL:4});
+ const input=nutrition('standard');input.enteral=enteral;input.integrated=integrateNutrition({source:'standard',enteral,parenteral:{fluid:60,calories:45,protein:2,weight:1.3,formulation:'2in1'}});
+ const bytes=await createFentonNutritionReport({nutrition:input,growth,chart:{...chart,data:{...chart.data,measurements},scores},assessment:'História dirigida.\nAvaliação.\nConduta.\nProgramação.\nReavaliação.'});assert.equal((await PDFLib.PDFDocument.load(bytes)).getPageCount(),2);
+});
 for(const deficit of [false,true])test(`vinte medidas fictícias completas cabem na primeira página e gráfico fica na segunda; déficit: ${deficit}`,async()=>{
  const measurements=Array.from({length:20},(_,i)=>({weeks:30+Math.floor(i/7),days:i%7,weightGrams:1200+i*25,headCm:25+i*.1,lengthCm:35+i*.2}));
  const scores=measurements.map((m,i)=>({weeks:m.weeks,days:m.days,weight:{value:m.weightGrams,z:-1+i*.1,percentile:10+i},head:{value:m.headCm,z:-.5,percentile:30+i},length:{value:m.lengthCm,z:.25,percentile:55+i}}));

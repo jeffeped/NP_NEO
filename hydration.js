@@ -13,7 +13,7 @@ export const HYDRATION_GLUCOSE_OSMOLARITY = Object.freeze({sg5:252.3,sg50:2775})
 // This gate records that review; it does not validate compatibility or tonicity.
 export const HYDRATION_WFI_REVIEW_WARNING = 'Água para injetáveis é diluente da mistura, nunca para infusão isolada. Osmolaridade estimada não comprova tonicidade ou compatibilidade. A glicose é metabolizada; a composição, a tonicidade e a compatibilidade exigem revisão individual pelo prescritor e conferência farmacêutica conforme o protocolo do serviço.';
 export const HYDRATION_WFI_REVIEW_BLOCK = 'Confirme explicitamente que o prescritor revisou a composição, a tonicidade e a compatibilidade desta mistura antes de exportar o PDF ou integrar os aportes.';
-export const HYDRATION_VOLUME_NOTE = 'Volumes calculados, sem arredondamento para cima. Não arredonde volumes pequenos para 0,1 mL. Confira a oferta efetiva e o volume final após definir a precisão e as diluições de preparo.';
+export const HYDRATION_VOLUME_NOTE = 'Volumes e vazão exibidos com uma casa decimal; valores muito pequenos conservam precisão adicional para não aparecerem como zero. Os cálculos internos mantêm a precisão. Confira a oferta efetiva e o fechamento do volume final após definir a precisão e as diluições de preparo.';
 const SALT_OSMOLES_PER_MEQ = Object.freeze({na:2,k:2,ca:1.5,mg:1});
 
 export const HYDRATION_COMPONENTS = Object.freeze([
@@ -53,10 +53,9 @@ export function formatHydrationNumber(value){
 
 export function formatHydrationVolume(value){
   if(!Number.isFinite(value))return '—';
-  // Calculated volumes, not rounded preparation volumes. Relative precision
-  // preserves small quantities instead of raising them to 0.1 mL or to zero.
-  const displayed=Number(value.toPrecision(12));
-  return (Number.isInteger(displayed)?displayed.toFixed(1):String(displayed)).replace('.',',');
+  // Presentation only; never change the calculated mixture or its viability.
+  if(value!==0&&Math.abs(value)<0.05)return String(Number(value.toPrecision(12))).replace('.',',');
+  return value.toFixed(1).replace('.',',');
 }
 
 export function calculateHydration(input){
