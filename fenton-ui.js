@@ -57,6 +57,7 @@ export function initFenton(doc,{proxyUrl=FENTON_PROXY_URL,fetcher=globalThis.fet
  const chartLink=doc.getElementById('fenton-chart-download'),csvLink=doc.getElementById('fenton-csv-download'),pdfLink=doc.getElementById('fenton-pdf-download');
  const jobs=[doc.getElementById('fenton-chart-button'),doc.getElementById('fenton-pdf-button'),doc.getElementById('fenton-z-button')];
  let chartUrl=null,csvUrl=null,pdfUrl=null,busy=false,revision=0,chartResult=null,pending=null;
+ const listeners=new Set(),notify=()=>{for(const listener of listeners)listener();};
  const clear=()=>{
   chartResult=null;
   if(chartUrl)urls.revokeObjectURL(chartUrl);
@@ -64,6 +65,7 @@ export function initFenton(doc,{proxyUrl=FENTON_PROXY_URL,fetcher=globalThis.fet
   if(pdfUrl)urls.revokeObjectURL(pdfUrl);
   chartUrl=csvUrl=pdfUrl=null;chart.removeAttribute('src');figure.hidden=true;
   chartLink.hidden=csvLink.hidden=pdfLink.hidden=true;chartLink.removeAttribute('href');csvLink.removeAttribute('href');pdfLink.removeAttribute('href');
+  notify();
  };
  const addRow=()=>{
   if(rows.children.length>=20){status.textContent='Máximo de 20 medições.';return;}
@@ -83,14 +85,14 @@ export function initFenton(doc,{proxyUrl=FENTON_PROXY_URL,fetcher=globalThis.fet
   if(!response.ok)throw Object.assign(new Error(response.status===429?'Muitas consultas em sequência. Aguarde e tente novamente.':'Não foi possível consultar a Fenton. Confira a conexão e tente novamente.'),{status:response.status});
   return response.blob();
  };
- const loadScores=async(data,version)=>{
+ const loadScores=async(data,version,feedback=true)=>{
   try{
    const file=await fetchFile('zscores',data);
    if(!file.type.startsWith('text/csv'))throw new Error('Formato de tabela Fenton inesperado.');
    return {scores:parseFentonScores(await file.text(),data),csvFile:file,source:'csv'};
   }catch(error){
    if(version!==revision||error.status===429)throw error;
-   status.textContent='Obtendo a tabela no PDF oficial Fenton…';
+   if(feedback)status.textContent='Obtendo a tabela no PDF oficial Fenton…';
    const pdfFile=await fetchFile('chart-pdf',data);
    return {scores:await extractPdfScores(pdfFile,data),pdfFile,source:'pdf'};
   }
@@ -99,6 +101,7 @@ export function initFenton(doc,{proxyUrl=FENTON_PROXY_URL,fetcher=globalThis.fet
   if(chartResult&&JSON.stringify(chartResult.data)===JSON.stringify(data))chartResult={...chartResult,scores:result.scores,scoresSource:result.source};
   if(result.csvFile){if(csvUrl)urls.revokeObjectURL(csvUrl);csvUrl=urls.createObjectURL(result.csvFile);csvLink.href=csvUrl;csvLink.hidden=false;}
   if(result.pdfFile){if(pdfUrl)urls.revokeObjectURL(pdfUrl);pdfUrl=urls.createObjectURL(result.pdfFile);pdfLink.href=pdfUrl;pdfLink.hidden=false;}
+  notify();
  };
  async function runRequest(kind){
   let data;
@@ -113,6 +116,7 @@ export function initFenton(doc,{proxyUrl=FENTON_PROXY_URL,fetcher=globalThis.fet
     if(chartUrl)urls.revokeObjectURL(chartUrl);
     chartUrl=urls.createObjectURL(file);chart.src=chartUrl;figure.hidden=false;
     chartResult={blob:file,data,scores:null};
+    notify();
     chartLink.href=chartUrl;chartLink.hidden=false;status.textContent='Gráfico Fenton 2025 gerado.';
     // Preserve a working chart when the separate score request fails.
     try{
@@ -133,6 +137,7 @@ export function initFenton(doc,{proxyUrl=FENTON_PROXY_URL,fetcher=globalThis.fet
       const scores=await extractPdfScores(file,data);
       if(currentRevision!==revision)return;
       chartResult={...chartResult,scores,scoresSource:'pdf'};
+      notify();
       status.textContent='PDF Fenton pronto; tabela de escores disponível para o relatório integrado.';
      }catch(error){if(currentRevision===revision)status.textContent='PDF Fenton pronto. Tabela de escores indisponível: '+error.message;}
     }
@@ -171,5 +176,14 @@ export function initFenton(doc,{proxyUrl=FENTON_PROXY_URL,fetcher=globalThis.fet
   for(const measurement of checked.measurements){addRow();const row=rows.lastElementChild;for(const key of fields)row.querySelector(`[data-field="${key}"]`).value=measurement[key]==null?'':String(measurement[key]).replace('.',',');}
   form.dispatchEvent(new doc.defaultView.Event('input',{bubbles:true}));
  };
- return {read:()=>readFentonForm(form),restore,getChart:()=>chartResult,invalidate,ensureChart};
+ const requestProjections=async input=>{
+  const data=validateFentonData(input),version=revision;
+  const blob=await fetchFile('chart',data);
+  if(blob.type!=='image/jpeg')throw new Error('Formato de gráfico projetado inesperado.');
+  if(version!==revision)throw new Error('Medidas alteradas; simule novamente.');
+  const result=await loadScores(data,version,false);
+  if(version!==revision)throw new Error('Medidas alteradas; simule novamente.');
+  return {blob,scores:result.scores};
+ };
+ return {read:()=>readFentonForm(form),restore,getChart:()=>chartResult,invalidate,ensureChart,subscribe:listener=>listeners.add(listener),requestProjections};
 }

@@ -301,6 +301,20 @@
           </details>
           <p id="fenton-status" role="status" class="help"></p>
           <figure id="fenton-figure" hidden><img id="fenton-chart" alt="Gráfico Fenton 2025 das medidas informadas"></figure>
+          <section class="section section-inner" aria-labelledby="fenton-outlook-title">
+            <h3 id="fenton-outlook-title">Trajetória do peso e simulação</h3>
+            <p id="fenton-risk" class="notice caution" role="alert" hidden></p>
+            <p id="fenton-risk-context" class="help" role="status"></p>
+            <p class="help">Gere o gráfico das medidas atuais. A simulação usa a VC entre as duas últimas pesagens válidas e estima a posição do peso em 14 e 28 dias, supondo crescimento proporcional constante.</p>
+            <button id="fenton-projection-run" class="secondary" type="button" disabled>Simular 14 e 28 dias</button>
+            <p id="fenton-projection-status" class="help" role="status"></p>
+            <div id="fenton-projection-result" hidden>
+              <p id="fenton-projection-context" class="help"></p>
+              <div class="table-wrap"><table aria-label="Posições hipotéticas do peso na curva Fenton"><thead><tr><th>Horizonte</th><th>IPM</th><th>Peso (g)</th><th>Z</th><th>P</th><th>Tipo</th></tr></thead><tbody id="fenton-projection-rows"></tbody></table></div>
+              <p class="help projection-scroll-hint">Deslize a tabela para ver todas as colunas.</p>
+              <figure id="fenton-projection-figure" hidden><figcaption>Projeção hipotética · os pontos de 14 e 28 dias não são medidas observadas</figcaption><img id="fenton-projection-chart" alt="Simulação hipotética dos pesos em 14 e 28 dias na curva Fenton"></figure>
+            </div>
+          </section>
         </section>
       </section>
       <section id="notes" role="tabpanel" aria-labelledby="tab-notes" hidden>

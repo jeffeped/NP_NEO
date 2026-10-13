@@ -1,5 +1,6 @@
 import {initFentonNutritionReport} from '../fenton-nutrition-ui.js';
 import {initFollowup} from '../followup.js';
+import {initFentonOutlook} from '../fenton-outlook-ui.js';
 import {intravenousFromResult,IV_MEMBERS} from '../enteral.js';
 import {initAppUpdate} from '../app-update.js';
 import test from 'node:test';
@@ -43,7 +44,7 @@ function openApp(createReport=async()=>new Uint8Array()) {
   const {document,window}=parseHTML(html);
   window.HTMLElement.prototype.scrollIntoView=function(){};
   const context={document,window:{addEventListener(){},scrollTo(){}},navigator:{},
-    console,URL,Blob,MessageChannel,resolveDosingWeight,dosingWeightLabel,measuredWeightLabel,initFentonNutritionReport,initFollowup,initAppUpdate,intravenousFromResult,IV_MEMBERS,...engine,macroReference,formatAlertNumber,initHydration,initStandard,initEnteral,initGrowth,initIntergrowth,
+    console,URL,Blob,MessageChannel,resolveDosingWeight,dosingWeightLabel,measuredWeightLabel,initFentonNutritionReport,initFollowup,initFentonOutlook,initAppUpdate,intravenousFromResult,IV_MEMBERS,...engine,macroReference,formatAlertNumber,initHydration,initStandard,initEnteral,initGrowth,initIntergrowth,
     createReport};
   vm.runInNewContext(source,context);
   // O DOM simulado não seleciona implicitamente a primeira opção como o navegador.
