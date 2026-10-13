@@ -18,7 +18,6 @@ const rowHtml=`<label>IPM (semanas)<input data-field="weeks" inputmode="numeric"
 export function readFentonForm(form){
  const value=id=>form.querySelector('#'+id)?.value??'';
  const sex=value('fenton-sex'),birthGaWeeks=whole(value('fenton-ga-weeks')),birthGaDays=whole(value('fenton-ga-days'));
- if(!['F','M'].includes(sex)||!Number.isInteger(birthGaWeeks)||birthGaWeeks<22||birthGaWeeks>42||!Number.isInteger(birthGaDays)||birthGaDays<0||birthGaDays>6)throw new Error('Informe sexo e idade gestacional ao nascer (22–42 semanas).');
  const measurements=Array.from(form.querySelectorAll('.fenton-measure')).map(el=>{
   const get=k=>el.querySelector(`[data-field="${k}"]`).value.trim();
   const row={weeks:whole(get('weeks')),days:whole(get('days'))};
@@ -28,16 +27,23 @@ export function readFentonForm(form){
   }
   return row;
  });
- if(!measurements.length||measurements.length>20)throw new Error('Informe de 1 a 20 medições.');
+ return validateFentonData({sex,birthGaWeeks,birthGaDays,measurements});
+}
+
+export function validateFentonData(data){
+ const {sex,birthGaWeeks,birthGaDays,measurements}=data??{};
+ if(!['F','M'].includes(sex)||!Number.isInteger(birthGaWeeks)||birthGaWeeks<22||birthGaWeeks>42||!Number.isInteger(birthGaDays)||birthGaDays<0||birthGaDays>6)throw new Error('Informe sexo e idade gestacional ao nascer (22–42 semanas).');
+ if(!Array.isArray(measurements)||!measurements.length||measurements.length>20)throw new Error('Informe de 1 a 20 medições.');
  let previous=-1;
  for(const [idx,row] of measurements.entries()){
+  if(!row||typeof row!=='object')throw new Error(`Confira a IPM da medida ${idx+1}.`);
   const age=row.weeks+row.days/7;
   if(!Number.isInteger(row.weeks)||!Number.isInteger(row.days)||row.days<0||row.days>6||age<22||age>50||age<birthGaWeeks+birthGaDays/7||age<=previous)throw new Error(`Confira a IPM da medida ${idx+1}; as idades precisam estar em ordem crescente, entre 22 e 50 semanas.`);
   previous=age;
   if(!fields.slice(2).some(k=>row[k]!=null))throw new Error(`Informe pelo menos uma medida antropométrica na linha ${idx+1}.`);
-  if(row.weightGrams!=null&&!(row.weightGrams>=100&&row.weightGrams<=20000)||row.headCm!=null&&!(row.headCm>=10&&row.headCm<=60)||row.lengthCm!=null&&!(row.lengthCm>=15&&row.lengthCm<=90))throw new Error(`Confira as unidades e os valores da medida ${idx+1}.`);
+  if(fields.slice(2).some(k=>row[k]!=null&&!Number.isFinite(row[k]))||row.weightGrams!=null&&!(row.weightGrams>=100&&row.weightGrams<=20000)||row.headCm!=null&&!(row.headCm>=10&&row.headCm<=60)||row.lengthCm!=null&&!(row.lengthCm>=15&&row.lengthCm<=90))throw new Error(`Confira as unidades e os valores da medida ${idx+1}.`);
  }
- return {sex,birthGaWeeks,birthGaDays,measurements};
+ return {sex,birthGaWeeks,birthGaDays,measurements:measurements.map(row=>Object.fromEntries(fields.filter(k=>row[k]!=null).map(k=>[k,row[k]])))};
 }
 
 export function initFenton(doc,{proxyUrl=FENTON_PROXY_URL,fetcher=globalThis.fetch,urls=globalThis.URL,extractPdfScores=extractFentonPdfScores}={}){
@@ -156,5 +162,14 @@ export function initFenton(doc,{proxyUrl=FENTON_PROXY_URL,fetcher=globalThis.fet
  form.addEventListener('submit',event=>{event.preventDefault();request('chart');});
  jobs[1].addEventListener('click',()=>request('chart-pdf'));
  jobs[2].addEventListener('click',()=>request('zscores'));
- return {read:()=>readFentonForm(form),getChart:()=>chartResult,invalidate,ensureChart};
+ const restore=data=>{
+  const checked=validateFentonData(data);
+  const sexSelect=doc.getElementById('fenton-sex');for(const option of sexSelect.options)option.selected=false;Array.from(sexSelect.options).find(option=>option.value===checked.sex).selected=true;
+  doc.getElementById('fenton-ga-weeks').value=String(checked.birthGaWeeks);
+  doc.getElementById('fenton-ga-days').value=String(checked.birthGaDays);
+  rows.replaceChildren();
+  for(const measurement of checked.measurements){addRow();const row=rows.lastElementChild;for(const key of fields)row.querySelector(`[data-field="${key}"]`).value=measurement[key]==null?'':String(measurement[key]).replace('.',',');}
+  form.dispatchEvent(new doc.defaultView.Event('input',{bubbles:true}));
+ };
+ return {read:()=>readFentonForm(form),restore,getChart:()=>chartResult,invalidate,ensureChart};
 }

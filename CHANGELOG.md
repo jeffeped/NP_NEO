@@ -1,5 +1,12 @@
 # Histórico de versões
 
+## 0.8.1 — 12/10/2026; avaliação, sem congelamento
+
+- HV: apresentação de volumes e vazão com uma casa decimal, preservando a precisão interna e a visibilidade de valores muito pequenos.
+- Salvar e abrir acompanhamento em arquivo local com medidas seriadas Fenton, campos de velocidade e relato; validação antes de restaurar e invalidação dos resultados anteriores.
+- Campo manual de avaliação nutricional breve, com espaço de cinco linhas na página 1 do PDF integrado; a página 2 conserva o gráfico Fenton integral. Textos maiores são recusados sem corte silencioso.
+- Registro das verificações em [RELEASE_0.8.1.md](docs/RELEASE_0.8.1.md).
+
 ## 0.8.0 — 11/10/2026; avaliação, sem congelamento
 
 - Corrige a interpretação de pesos em gramas com separador de milhar no crescimento e no peso ao nascer da aba Enteral.

@@ -112,7 +112,7 @@ test('HV: exibição nunca converte um volume pequeno positivo em zero',()=>{
 });
 test('HV: volumes mantêm precisão sem teto para 0,1 mL',()=>{
   assert.equal(formatHydrationVolume(1.20),'1,2');
-  assert.equal(formatHydrationVolume(1.21),'1,21');
+  assert.equal(formatHydrationVolume(1.21),'1,2');
   assert.equal(formatHydrationVolume(0.1+0.2),'0,3');
   assert.equal(formatHydrationVolume(200),'200,0');
   assert.equal(formatHydrationVolume(0.000001),'0,000001');

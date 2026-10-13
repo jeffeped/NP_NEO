@@ -26,9 +26,9 @@ function setup(){
 async function waitFor(app){for(let i=0;i<100&&app.el('pdf-status').textContent==='Preparando PDF no aparelho…';i++)await new Promise(r=>setTimeout(r,5));}
 test('WFI UI: exact theoretical composition, metrics, review label, clinical PDF blocked',()=>{
  const a=setup();a.calculate();assert.equal(a.el('composition').hidden,false);assert.equal(a.el('export').disabled,true);assert.equal(a.el('review').hidden,false);
- assert.match(a.el('rows').textContent,/Água para injetáveis.*72,609/);assert.match(a.el('rows').textContent,/SG 5%115,2/);
+ assert.match(a.el('rows').textContent,/Água para injetáveis.*72,6/);assert.match(a.el('rows').textContent,/SG 5%115,2/);
  assert.match(a.el('summary').textContent,/glicose2,88%Osmolaridade estimada282 mOsm\/LNa final40 mmol\/LK final20 mmol\/L/);
- assert.match(a.el('final-summary').textContent,/200,0 mL \| 8,33333333333 mL\/h/);assert.match(a.el('volume-note').textContent,/Confira a oferta efetiva/);
+ assert.match(a.el('final-summary').textContent,/200,0 mL \| 8,3 mL\/h/);assert.match(a.el('volume-note').textContent,/Confira a oferta efetiva/);
 });
 test('WFI UI: opt-out restores blocked legacy math; opting in alone does not authorize review PDF',()=>{
  const a=setup();a.check('allow-wfi',false);a.calculate();assert.equal(a.el('composition').hidden,true);assert.equal(a.el('review').hidden,true);
@@ -64,7 +64,7 @@ test('WFI PDF: genuine review PDF warns on every page and preserves full computa
  PDFLib.PDFPage.prototype.drawText=function(text,opts){lines.push(String(text));return original.call(this,text,opts);};
  let bytes;try{bytes=await createHydrationReviewReport(r,{acknowledged:true});}finally{PDFLib.PDFPage.prototype.drawText=original;}
  const doc=await PDFLib.PDFDocument.load(bytes);assert.equal(doc.getTitle(),'HV - REVISÃO - NÃO ADMINISTRAR');assert.ok(lines.filter(x=>x==='REVISÃO - NÃO PREPARAR / ADMINISTRAR').length===doc.getPageCount());
- for(const expected of ['Água para injetáveis - diluente da mistura','72,6090430202','2,88%','282 mOsm/L','40 / 20 mmol/L'])assert.ok(lines.includes(expected),expected);
+ for(const expected of ['Água para injetáveis - diluente da mistura','72,6','2,88%','282 mOsm/L','40 / 20 mmol/L'])assert.ok(lines.includes(expected),expected);
  assert.match(lines.join(' '),/não estabelece tonicidade segura/);assert.match(lines.join(' '),/Confira a oferta efetiva/);
  await assert.rejects(createHydrationReport(r),/not exportable/);
 });
@@ -79,7 +79,7 @@ test('WFI PDF: clinical report records prescriber review, actual composition, do
  const lines=[],original=PDFLib.PDFPage.prototype.drawText;PDFLib.PDFPage.prototype.drawText=function(text,opts){lines.push(String(text));return original.call(this,text,opts);};
  let bytes;try{bytes=await createHydrationReport(a.ui.getResult());}finally{PDFLib.PDFPage.prototype.drawText=original;}
  const doc=await PDFLib.PDFDocument.load(bytes);assert.equal(doc.getTitle(),'Hidratação venosa neonatal');
- for(const expected of ['Água para injetáveis - diluente da mistura','72,6090430202','2,88%','282 mOsm/L','40 / 20 mmol/L'])assert.ok(lines.includes(expected),expected);
+ for(const expected of ['Água para injetáveis - diluente da mistura','72,6','2,88%','282 mOsm/L','40 / 20 mmol/L'])assert.ok(lines.includes(expected),expected);
  assert.match(lines.join(' '),/prescritor declarou ter revisado a composição, a tonicidade e a compatibilidade/);assert.match(lines.join(' '),/Peso de cálculo: 2.000 g/);assert.match(lines.join(' '),/Emissão:/);assert.ok(!lines.some(x=>x.includes('REVISÃO - NÃO ADMINISTRAR')));
 });
 test('WFI UI: all relevant input edits clear prescriber confirmation',()=>{

@@ -37,3 +37,7 @@ main{padding:18px 16px 30px}.section{background:var(--panel);border:1px solid va
 
 /* Negative analyzed nutrients remain editable; its warning never blocks submission. */
 #en-energy-warning,#en-protein-warning{display:block;margin:8px 0 0;padding:9px 10px;font-size:.8rem}
+textarea{width:100%;box-sizing:border-box;min-height:7em;padding:12px;border:1px solid #b9cdc0;border-radius:8px;font:inherit;resize:vertical;color:inherit;background:#fff}
+.followup-actions{margin:16px 0;padding:12px;border:1px solid #d5e4db;border-radius:10px}
+.followup-open{display:block;margin:12px 0;font-weight:600}
+.followup-open input{display:block;max-width:100%;margin-top:8px}

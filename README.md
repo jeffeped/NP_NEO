@@ -1,10 +1,18 @@
 # GROW_NEO by Prof. Jefferson
 
-Instrumento de apoio à terapia nutricional neonatal, com nutrição parenteral, hidratação venosa, avaliação da dieta enteral e acompanhamento do crescimento. Versão de avaliação 0.8.0.
+Instrumento de apoio à terapia nutricional neonatal, com nutrição parenteral, hidratação venosa, avaliação da dieta enteral e acompanhamento do crescimento. Versão de avaliação 0.8.1.
 
 As mudanças de cada versão estão documentadas em [CHANGELOG.md](CHANGELOG.md), além do histórico auditável de commits do repositório.
 
-O médico informa os parâmetros; o app calcula volumes, avalia a oferta enteral, integra o aporte nutricional parenteral + enteral e gera relatórios PDF no próprio aparelho. Não há cadastro de pacientes nem histórico de casos.
+O médico informa os parâmetros; o app calcula volumes, avalia a oferta enteral, integra o aporte nutricional parenteral + enteral e gera relatórios PDF no próprio aparelho. Não há cadastro de pacientes nem salvamento automático de casos. O acompanhamento antropométrico pode ser salvo e reaberto em arquivo pelo usuário.
+
+## Acompanhamento e relato
+
+Na aba GROW_Fenton, **Salvar acompanhamento** baixa um arquivo com sexo/IG, até 20 medidas seriadas, campos de velocidade de crescimento e o relato manual. **Abrir acompanhamento** restaura essas entradas para acrescentar novas medidas. Os resultados anteriores são invalidados; os gráficos e relatórios devem ser gerados novamente. O arquivo não guarda parâmetros de NP/HV nem resultados como cálculos válidos. Salve novamente após editar e conserve o arquivo para a próxima avaliação.
+
+O campo **Avaliação nutricional breve** é opcional e ocupa até cinco linhas na página 1 do relatório integrado A4. Texto maior gera aviso sem truncamento. A página 2 conserva o gráfico Fenton integral. O relato permanece no aparelho e no arquivo/PDF que o usuário salva; não integra as consultas ao serviço Fenton.
+
+Os volumes e a vazão da HV são apresentados com uma casa decimal, conforme a decisão do responsável. Valores muito pequenos conservam precisão adicional; fórmulas, totais internos e bloqueios são avaliados sem esse arredondamento de apresentação.
 
 ## Instalar no celular
 

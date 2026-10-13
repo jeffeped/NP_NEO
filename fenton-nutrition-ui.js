@@ -2,6 +2,7 @@ import {createFentonNutritionReport} from './fenton-nutrition-pdf.js';
 
 export function initFentonNutritionReport(doc,{getNutrition,getGrowth,getChart,prepareNutrition=getNutrition,prepareGrowth=getGrowth,ensureChart,validateNutrition=()=>{},createReport=createFentonNutritionReport,urls=globalThis.URL}){
  const button=doc.getElementById('fenton-total-export'),link=doc.getElementById('fenton-total-download'),status=doc.getElementById('fenton-total-status');
+ const assessment=doc.getElementById('fenton-assessment');
  let revision=0,url=null,busy=false,download=null;
  const invalidate=()=>{
   revision++;download=null;
@@ -9,6 +10,7 @@ export function initFentonNutritionReport(doc,{getNutrition,getGrowth,getChart,p
   url=null;link.hidden=true;link.removeAttribute('href');
   status.textContent='';
  };
+ for(const event of ['input','change'])assessment.addEventListener(event,invalidate);
  // A report is valid only for the current inputs and calculated results.
  for(const id of ['npp-form','std-form','hv-form','enteral-form','growth-form','fenton-form']){
   const form=doc.getElementById(id);
@@ -18,7 +20,7 @@ export function initFentonNutritionReport(doc,{getNutrition,getGrowth,getChart,p
  doc.getElementById('fenton-measures').addEventListener('click',event=>{if(event.target.closest('button'))invalidate();});
  doc.getElementById('acknowledgements').addEventListener('change',invalidate);
  doc.getElementById('hv-form').addEventListener('hv-review-change',invalidate);
- const current=s=>s&&s.nutrition===getNutrition()&&s.growth===getGrowth()&&s.chart===getChart();
+ const current=s=>s&&s.nutrition===getNutrition()&&s.growth===getGrowth()&&s.chart===getChart()&&s.assessment===assessment.value;
  link.addEventListener('click',event=>{
   try{if(!current(download))throw new Error('Dados alterados. Gere novamente o relatório.');validateNutrition(download.nutrition);}
   catch(error){event.preventDefault();invalidate();status.textContent=error.message;}
@@ -29,7 +31,7 @@ export function initFentonNutritionReport(doc,{getNutrition,getGrowth,getChart,p
   const version=revision;
   busy=true;button.disabled=true;status.textContent='Conferindo os dados do relatório…';
   try{
-   const snapshot={nutrition:prepareNutrition(),growth:prepareGrowth(),chart:getChart()};
+   const snapshot={nutrition:prepareNutrition(),growth:prepareGrowth(),chart:getChart(),assessment:assessment.value};
    if(!snapshot.nutrition)throw new Error('Calcule o aporte total na aba Enteral antes de exportar.');
    validateNutrition(snapshot.nutrition);
    if(ensureChart){

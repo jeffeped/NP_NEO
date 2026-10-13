@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#08764f">
-  <meta name="description" content="Apoio à nutrição parenteral e enteral neonatal. Processamento local, sem histórico de casos.">
+  <meta name="description" content="Apoio à nutrição parenteral e enteral neonatal. Processamento local e acompanhamento em arquivo salvo pelo usuário.">
   <meta name="referrer" content="no-referrer">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -263,6 +263,13 @@
         </section>
         <section id="fenton-integration" class="section section-inner" hidden>
           <h2>Fenton 2025 · medidas seriadas</h2>
+          <div class="followup-actions">
+            <button id="followup-save" class="secondary" type="button">Salvar acompanhamento</button>
+            <label class="followup-open">Abrir acompanhamento<input id="followup-file" type="file" accept=".json,application/json"></label>
+            <a id="followup-download" class="download-link" hidden>Baixar novamente o acompanhamento</a>
+            <p class="help">O arquivo guarda as medidas, os campos de velocidade e o relato. Para continuar, abra o arquivo e acrescente novas medidas. Não há salvamento automático; salve novamente após editar.</p>
+            <p id="followup-status" class="help" role="status"></p>
+          </div>
           <p class="help">Informe a idade pós-menstrual (IPM) de cada medida. Somente sexo, idade gestacional e medidas serão enviados ao serviço externo da Fenton, sem nome, número ou data de nascimento. É necessária conexão à internet.</p>
           <form id="fenton-form" autocomplete="off" novalidate>
             <div class="field-grid">
@@ -275,6 +282,8 @@
           </form>
           <div class="fenton-report-action">
             <h3>Relatório integrado</h3>
+            <label class="field full">Avaliação nutricional breve<textarea id="fenton-assessment" rows="5" maxlength="2000" placeholder="História dirigida relevante, conduta e programação." aria-describedby="fenton-assessment-help"></textarea></label>
+            <p id="fenton-assessment-help" class="help">Opcional. Espaço de até 5 linhas na página 1 do PDF A4. Se o texto ultrapassar esse espaço, será solicitado que o resuma. O relato não é enviado ao serviço Fenton.</p>
             <p class="help">Preencha a aba Enteral e as medidas acima. Um único comando calcula o aporte, obtém o gráfico e os escores e gera o PDF de duas páginas. Se usar NP ou HV, calcule e confira essas fontes nas respectivas abas.</p>
             <button id="fenton-total-export" class="primary" type="button">Gerar relatório integrado — 2 páginas</button>
             <p id="fenton-total-status" class="help" role="status"></p>
@@ -388,7 +397,7 @@
         </div></section>
         <section class="section"><div class="section-inner">
           <h2>Privacidade</h2>
-          <p>Os parâmetros, cálculos e PDFs são processados no aparelho. O aplicativo não mantém cadastro ou histórico de pacientes. Não insira informações identificáveis nos campos ou arquivos exportados.</p>
+          <p>Os parâmetros, cálculos e PDFs são processados no aparelho. Não há cadastro de pacientes nem salvamento automático. O acompanhamento Fenton pode ser salvo e reaberto em arquivo pelo usuário. Não insira informações identificáveis nos campos ou arquivos exportados.</p>
         </div></section>
       </section>
       <section id="intergrowth" role="tabpanel" aria-labelledby="tab-intergrowth" hidden>
@@ -444,7 +453,7 @@
         <button id="install-app" type="button" class="text-button" hidden>Instalar no celular</button>
         <button id="install-help-button" type="button" class="text-button">Como instalar</button>
         <p id="install-help" hidden>No iPhone: abra este link no Safari, toque em Compartilhar e em Adicionar à Tela de Início. No Android: abra no Chrome e use Instalar app ou Adicionar à tela inicial. Se o atalho instalado continuar com o ícone antigo NP_NEO após a atualização, remova apenas o atalho e adicione o app novamente.</p>
-        <details class="privacy"><summary>Privacidade e dados</summary><p>Parâmetros, cálculos e PDFs são processados neste aparelho. O app não cria histórico de casos nem envia esses campos a um servidor. Fechar ou recarregar a página descarta os dados do formulário. O PDF salvo ou compartilhado fica no destino escolhido por você. A hospedagem e o acesso ao link podem gerar registros técnicos do provedor.</p></details>
+        <details class="privacy"><summary>Privacidade e dados</summary><p>Parâmetros, cálculos e PDFs são processados neste aparelho. Não há salvamento automático. Fechar ou recarregar a página descarta os dados do formulário; salve o acompanhamento em arquivo para reabri-lo depois. O arquivo de acompanhamento e o PDF ficam no destino escolhido por você. O relato não é enviado ao serviço Fenton; somente sexo, idade gestacional e medidas são enviados quando você solicita o gráfico ou os escores. A hospedagem e o acesso ao link podem gerar registros técnicos do provedor.</p></details>
         <span>GROW_NEO by Prof. Jefferson · versão <span id="app-version"></span></span>
       </footer>
     </main>

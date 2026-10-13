@@ -1,4 +1,5 @@
 import {initFentonNutritionReport} from '../fenton-nutrition-ui.js';
+import {initFollowup} from '../followup.js';
 import {intravenousFromResult,IV_MEMBERS} from '../enteral.js';
 import {initAppUpdate} from '../app-update.js';
 import test from 'node:test';
@@ -42,7 +43,7 @@ function openApp(createReport=async()=>new Uint8Array()) {
   const {document,window}=parseHTML(html);
   window.HTMLElement.prototype.scrollIntoView=function(){};
   const context={document,window:{addEventListener(){},scrollTo(){}},navigator:{},
-    console,URL,Blob,MessageChannel,resolveDosingWeight,dosingWeightLabel,measuredWeightLabel,initFentonNutritionReport,initAppUpdate,intravenousFromResult,IV_MEMBERS,...engine,macroReference,formatAlertNumber,initHydration,initStandard,initEnteral,initGrowth,initIntergrowth,
+    console,URL,Blob,MessageChannel,resolveDosingWeight,dosingWeightLabel,measuredWeightLabel,initFentonNutritionReport,initFollowup,initAppUpdate,intravenousFromResult,IV_MEMBERS,...engine,macroReference,formatAlertNumber,initHydration,initStandard,initEnteral,initGrowth,initIntergrowth,
     createReport};
   vm.runInNewContext(source,context);
   // O DOM simulado não seleciona implicitamente a primeira opção como o navegador.
@@ -325,8 +326,8 @@ test('interface HV: calcula com as fórmulas confirmadas e mostra seis component
   assert.equal(app.el('hv-rows').children.length,6);
   const summary=app.el('hv-summary').textContent;
   assert.match(summary,/200,0 mL\/24 h/);assert.match(summary,/14,4 g\/24 h/);assert.match(summary,/192,0 mL/);
-  assert.match(summary,/10,6666666667 mL/);assert.match(summary,/181,333333333 mL/);assert.match(summary,/8,33333333333 mL\/h/);assert.match(summary,/5 \/ 5 mg\/kg\/min/);
-  assert.deepEqual([...app.el('hv-rows').children].map(row=>row.children[1].textContent),['2,0','2,0','2,0','2,0','181,333333333','10,6666666667']);
+  assert.match(summary,/10,7 mL/);assert.match(summary,/181,3 mL/);assert.match(summary,/8,3 mL\/h/);assert.match(summary,/5 \/ 5 mg\/kg\/min/);
+  assert.deepEqual([...app.el('hv-rows').children].map(row=>row.children[1].textContent),['2,0','2,0','2,0','2,0','181,3','10,7']);
 });
 
 test('interface HV: campos de dose, VIG e peso começam sem sugestão',()=>{
@@ -359,7 +360,7 @@ test('interface HV: mudar equivalência do rótulo exige recálculo',()=>{
   const app=openHydration();app.calculateHydration();app.set('hv-concentration-ca','0,465');
   assert.equal(app.el('hv-result').hidden,true);app.calculateHydration();
   const ca=app.document.querySelector('[data-hv-component="ca"]');
-  assert.match(ca.textContent,/0,465 mEq\/mL/);assert.match(ca.textContent,/2,15053763441/);
+  assert.match(ca.textContent,/0,465 mEq\/mL/);assert.match(ca.textContent,/2,2/);
 });
 
 test('interface HV: formulário independente preserva resultado e exportação da NP',()=>{
