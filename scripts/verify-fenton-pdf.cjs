@@ -62,7 +62,8 @@ const server=http.createServer((req,res)=>{
   },fs.readFileSync(path.join(out,'integrated-fabricated.pdf')).toString('base64'));
   assert.equal(result.pages,2);
   for(const value of ['25+0','26+0','27+4','760','620','700','0,40','-1,60','-1,90','65,5','5,5','2,9','7,9%'])assert.ok(result.text[0].includes(value),'Missing PDF value: '+value);
-  assert.ok(result.text[0].includes('tabela extraída do PDF oficial'));assert.ok(result.text[1].includes('Fenton 2025'));
+  assert.ok(result.text[0].includes('escores do PDF oficial'));assert.ok(result.text[1].includes('Fenton 2025'));
+  for(const value of ['VC g/kg/dia','-29,0','11,0','desde a pesagem anterior, pelo peso médio'])assert.ok(result.text[0].includes(value),'Missing interval VC value: '+value);
   result.images.forEach((value,i)=>{fs.writeFileSync(path.join(out,'page-'+(i+1)+'.png'),Buffer.from(value,'base64'));});
   fs.writeFileSync(path.join(out,'pdf-text.json'),JSON.stringify({pages:result.pages,text:result.text},null,2));
   await ctx.setOffline(true);await download('integrated-offline-fabricated.pdf');assert.equal(requests.length,3);await ctx.setOffline(false);
