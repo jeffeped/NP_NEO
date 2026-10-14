@@ -64,7 +64,7 @@ test('Ambulatório: adicionar e remover preserva sequência e invalida o resulta
 
 test('Ambulatório: percentis extremos não são apresentados como zero ou cem',()=>{
  const app=setup();app.fill({weeks:40,weight:100});app.click('ig-add');app.fill({weeks:41,weight:20000},1);app.submit();
- const cells=[...app.el('ig-result-rows').children].map(row=>row.lastElementChild.textContent);
+ const cells=[...app.el('ig-result-rows').children].map(row=>row.children[3].textContent);
  assert.deepEqual(cells,['<0,1','>99,9']);
 });
 

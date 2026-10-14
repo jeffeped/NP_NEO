@@ -1,12 +1,14 @@
 # GROW_NEO by Prof. Jefferson
 
-Instrumento de apoio à terapia nutricional neonatal, com nutrição parenteral, hidratação venosa, avaliação da dieta enteral e acompanhamento do crescimento. Versão de avaliação 0.8.4.
+Instrumento de apoio à terapia nutricional neonatal, com nutrição parenteral, hidratação venosa, avaliação da dieta enteral e acompanhamento do crescimento. Versão de avaliação 0.8.5.
 
 As mudanças de cada versão estão documentadas em [CHANGELOG.md](CHANGELOG.md), além do histórico auditável de commits do repositório.
 
 O médico informa os parâmetros; o app calcula volumes, avalia a oferta enteral, integra o aporte nutricional parenteral + enteral e gera relatórios PDF no próprio aparelho. Não há cadastro de pacientes nem salvamento automático de casos. O acompanhamento antropométrico pode ser salvo e reaberto em arquivo pelo usuário.
 
 ## Acompanhamento e relato
+
+A aba INTERGROWTH também integra o aporte atual da aba Enteral com as medidas, a velocidade do intervalo escolhido e o relato de até cinco linhas na página 1 do PDF A4; a página 2 reúne os três gráficos. Oferece arquivo próprio para salvar/reabrir medidas e relato, tabela CSV com VC por pesagem, alerta de queda superior a 2 Z desde o nascimento explicitamente informado e simulação hipotética em 14/28 dias pela VC das duas últimas pesagens válidas. Tudo é processado localmente. A comparação com o nascimento exige peso nessa IPM e não combina padrões Fenton/INTERGROWTH; nascimento fora da faixa de 27+0 a 64+0 fica sem comparação. Projeções não alteram medidas, arquivo ou PDF integrado. Ver [registro 0.8.5](docs/RELEASE_0.8.5.md).
 
 Na aba GROW_Fenton, **Salvar acompanhamento** baixa um arquivo com sexo/IG, até 20 medidas seriadas, campos de velocidade de crescimento e o relato manual. **Abrir acompanhamento** restaura essas entradas para acrescentar novas medidas. Os resultados anteriores são invalidados; os gráficos e relatórios devem ser gerados novamente. O arquivo não guarda parâmetros de NP/HV nem resultados como cálculos válidos. Salve novamente após editar e conserve o arquivo para a próxima avaliação.
 

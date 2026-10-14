@@ -11,6 +11,7 @@ import {initHydration} from './hydration-ui.js';
 import {initEnteral} from './enteral-ui.js';
 import {initGrowth} from './growth-ui.js';
 import {initIntergrowth} from './intergrowth-ui.js';
+import {initIntergrowthNutritionReport} from './intergrowth-nutrition-ui.js';
 import {intravenousFromResult,IV_MEMBERS} from './enteral.js';
 const $=id=>document.getElementById(id);
 const f=n=>Number.isFinite(n)?round1(n).toFixed(1).replace('.',','):'—';
@@ -136,5 +137,9 @@ const fentonReportUI=initFentonNutritionReport(document,{
   currentIntravenous(source);
  }
 });
-window.addEventListener('pageshow',e=>{if(e.persisted){$('npp-form').reset();invalidate();updateRules();hydrationUI.reset();standardUI.reset();enteralUI.invalidate();growthUI.invalidate();growthUI.fenton?.invalidate();fentonReportUI.invalidate();intergrowthUI.reset();}});
+const intergrowthReportUI=initIntergrowthNutritionReport(document,{
+ intergrowth:intergrowthUI,getNutrition:()=>enteralUI.getResult(),prepareNutrition:()=>enteralUI.prepareReport(),
+ validateNutrition:nutrition=>currentIntravenous(nutrition.integrated.source)
+});
+window.addEventListener('pageshow',e=>{if(e.persisted){$('npp-form').reset();invalidate();updateRules();hydrationUI.reset();standardUI.reset();enteralUI.invalidate();growthUI.invalidate();growthUI.fenton?.invalidate();fentonReportUI.invalidate();intergrowthUI.reset();intergrowthReportUI.invalidate();}});
 updateRules();

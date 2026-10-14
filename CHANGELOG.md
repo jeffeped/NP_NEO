@@ -1,5 +1,13 @@
 # Histórico de versões
 
+## 0.8.5 — 14/10/2026; avaliação, sem congelamento
+
+- INTERGROWTH com avaliação nutricional integrada: aporte Enteral + fonte IV selecionada, tabela com VC por pesagem, velocidade do intervalo escolhido e relato de até cinco linhas na página 1; três gráficos vetoriais na página 2 A4.
+- Salvar/reabrir acompanhamento INTERGROWTH em arquivo próprio, sem persistência automática de casos. Tabela de escores em CSV; relatórios avulsos preservados.
+- Alerta de queda >2 Z desde o nascimento explicitamente informado, indisponível sem peso/IG correspondente ou fora da curva. Simulação hipotética em 14/28 dias pelas duas últimas pesagens, sem extrapolação e sem acrescentar projeções ao acompanhamento ou PDF.
+- Reabertura preserva decimais; percentis extremos conservam <0,1 / >99,9. Travas de revisão dos aportes e descarte de exportações desatualizadas mantidos.
+- Ver [registro da versão](docs/RELEASE_0.8.5.md).
+
 ## 0.8.4 — 12/10/2026; avaliação, sem congelamento
 
 - Reconhece `~` como marcador oficial de PC/comprimento não informados no PDF Fenton. Mantém a validação de dados e escores recebidos.

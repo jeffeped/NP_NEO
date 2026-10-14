@@ -16,6 +16,7 @@ import {initHydration} from '../hydration-ui.js';
 import {initEnteral} from '../enteral-ui.js';
 import {initGrowth} from '../growth-ui.js';
 import {initIntergrowth} from '../intergrowth-ui.js';
+import {initIntergrowthNutritionReport} from '../intergrowth-nutrition-ui.js';
 
 // Executa o app real em um DOM simulado; não substitui a revisão visual em navegador.
 const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
@@ -44,7 +45,7 @@ function openApp(createReport=async()=>new Uint8Array()) {
   const {document,window}=parseHTML(html);
   window.HTMLElement.prototype.scrollIntoView=function(){};
   const context={document,window:{addEventListener(){},scrollTo(){}},navigator:{},
-    console,URL,Blob,MessageChannel,resolveDosingWeight,dosingWeightLabel,measuredWeightLabel,initFentonNutritionReport,initFollowup,initFentonOutlook,initAppUpdate,intravenousFromResult,IV_MEMBERS,...engine,macroReference,formatAlertNumber,initHydration,initStandard,initEnteral,initGrowth,initIntergrowth,
+    console,URL,Blob,MessageChannel,resolveDosingWeight,dosingWeightLabel,measuredWeightLabel,initFentonNutritionReport,initFollowup,initFentonOutlook,initAppUpdate,intravenousFromResult,IV_MEMBERS,...engine,macroReference,formatAlertNumber,initHydration,initStandard,initEnteral,initGrowth,initIntergrowth,initIntergrowthNutritionReport,
     createReport};
   vm.runInNewContext(source,context);
   // O DOM simulado não seleciona implicitamente a primeira opção como o navegador.
