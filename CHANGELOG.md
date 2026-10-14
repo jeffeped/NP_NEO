@@ -1,5 +1,10 @@
 # Histórico de versões
 
+## 0.8.6 — 14/10/2026; avaliação, sem congelamento
+
+- Corrige a leitura das tabelas INTERGROWTH no celular: medidas reais/VC e projeções mantêm colunas legíveis com rolagem horizontal. Evita que a regra geral da primeira coluna comprima os demais valores.
+- Gráfico da simulação mantém largura mínima e rolagem, como os gráficos reais. Cálculos, relatórios e acompanhamento da 0.8.5 preservados.
+
 ## 0.8.5 — 14/10/2026; avaliação, sem congelamento
 
 - INTERGROWTH com avaliação nutricional integrada: aporte Enteral + fonte IV selecionada, tabela com VC por pesagem, velocidade do intervalo escolhido e relato de até cinco linhas na página 1; três gráficos vetoriais na página 2 A4.
