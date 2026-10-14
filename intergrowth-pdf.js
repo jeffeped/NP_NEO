@@ -108,7 +108,7 @@ export async function exportIntergrowthPdf(result){
 }
 
 /** Compact A4 chart sheet. It shares the reference models, not the detailed page layout. */
-export async function exportIntergrowthSummaryPdf(result){
+export async function exportIntergrowthSummaryPdf(result,{pageLabel='1/1',stamp=true}={}){
  if(!result||!['male','female'].includes(result.sex)||!Array.isArray(result.measurements)||!result.measurements.length)throw new Error('Calcule as avaliações ambulatoriais antes de exportar.');
  if(result.measurements.length>20)throw new Error('A prancha de uma página comporta até vinte avaliações.');
  const velocity=velocityFor(result),summaryOffset=velocity?42:0;
@@ -189,7 +189,7 @@ export async function exportIntergrowthSummaryPdf(result){
  text('Gráficos próprios, sem endosso dos autores. Sem identificação do paciente; processamento local.',left,60,8,regular,muted);
  if(velocity)text(velocityReference,left,48,8,regular,muted);
  text('Conferir os resultados antes do uso assistencial.',left,velocity?30:42,8,regular,muted);
- rightText('1/1',right,velocity?30:42,8,regular,muted);
- await stampPdfIssueDate(doc);
+ rightText(pageLabel,right,velocity?30:42,8,regular,muted);
+ if(stamp)await stampPdfIssueDate(doc);
  return doc.save();
 }

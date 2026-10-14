@@ -411,7 +411,7 @@
         </div></section>
         <section class="section"><div class="section-inner">
           <h2>Privacidade</h2>
-          <p>Os parâmetros, cálculos e PDFs são processados no aparelho. Não há cadastro de pacientes nem salvamento automático. O acompanhamento Fenton pode ser salvo e reaberto em arquivo pelo usuário. Não insira informações identificáveis nos campos ou arquivos exportados.</p>
+          <p>Os parâmetros, cálculos e PDFs são processados no aparelho. Não há cadastro de pacientes nem salvamento automático. Os acompanhamentos Fenton e INTERGROWTH podem ser salvos e reabertos em arquivo pelo usuário. Não insira informações identificáveis nos campos ou arquivos exportados.</p>
         </div></section>
       </section>
       <section id="intergrowth" role="tabpanel" aria-labelledby="tab-intergrowth" hidden>
@@ -420,6 +420,11 @@
         <p class="notice info">Use a <strong>idade pós-menstrual (IPM)</strong>: idade gestacional ao nascer + idade cronológica decorrida. Não use a idade corrigida neste campo. Exemplo: nascimento com 30 semanas + 10 semanas de vida = 40 semanas de IPM.</p>
         <form id="ig-form" class="section section-inner" autocomplete="off" novalidate>
           <label class="field">Sexo<select id="ig-sex" class="hv-select" required><option value="">Selecione</option><option value="female">Feminino</option><option value="male">Masculino</option></select></label>
+          <div class="ig-velocity-fields">
+            <label class="field">IG ao nascer (opcional)<input id="ig-birth-weeks" inputmode="numeric" aria-label="IG ao nascer em semanas para INTERGROWTH"><span class="unit">semanas</span></label>
+            <label class="field">Dias adicionais<input id="ig-birth-days" inputmode="numeric" value="0" aria-label="Dias adicionais da IG ao nascer para INTERGROWTH"><span class="unit">0–6 dias</span></label>
+          </div>
+          <p class="help">Para comparar o Z com o nascimento, informe a IG e inclua o peso nessa IPM. Se o nascimento estiver fora de 27+0 a 64+0, a comparação ficará indisponível. Este módulo usa o padrão pós-natal; não classifica o tamanho ao nascer.</p>
           <p class="help">Informe as medidas em ordem crescente de IPM, com 0–6 dias adicionais e pelo menos uma medida antropométrica por linha. Peso em gramas; comprimento e perímetro cefálico (PC) em centímetros.</p>
           <div id="ig-measures" class="ig-measures"></div>
           <button id="ig-add" class="secondary" type="button">Adicionar medida</button>
@@ -428,10 +433,28 @@
           <div class="ig-actions"><button class="primary" type="submit">Gerar curvas e escores</button><button id="ig-clear" class="secondary" type="button">Limpar medidas</button></div>
         </form>
         <p id="ig-status" class="help" role="status"></p>
+        <section class="section section-inner" aria-labelledby="ig-followup-title">
+          <h3 id="ig-followup-title">Arquivo de acompanhamento</h3>
+          <button id="ig-followup-save" class="secondary" type="button">Salvar acompanhamento</button>
+          <label class="field">Abrir acompanhamento INTERGROWTH<input id="ig-followup-file" type="file" accept=".json,application/json"></label>
+          <a id="ig-followup-download" class="download-link" hidden>Baixar novamente o acompanhamento</a>
+          <p id="ig-followup-status" class="help" role="status"></p>
+          <p class="help">Salva as medidas, a IG ao nascer e o relato. Sem salvamento automático. Não inclui aportes NP/HV/enteral ou projeções. Ao reabrir, confira e recalcule.</p>
+        </section>
+        <section class="section section-inner" aria-labelledby="ig-total-title">
+          <h3 id="ig-total-title">Avaliação nutricional integrada</h3>
+          <label class="field full">Avaliação nutricional breve<textarea id="ig-assessment" rows="5" maxlength="2000" placeholder="História dirigida relevante, conduta e programação." aria-describedby="ig-assessment-help"></textarea></label>
+          <p id="ig-assessment-help" class="help">Opcional. Até 5 linhas na página 1 do PDF A4, sem cortar o texto. Calcule o aporte na aba Enteral; o relatório usa a fonte IV selecionada (NP, HV, combinação ou somente enteral).</p>
+          <button id="ig-total-export" class="primary" type="button">Gerar relatório integrado — 2 páginas</button>
+          <p id="ig-total-status" class="help" role="status"></p>
+          <a id="ig-total-download" class="download-link" hidden>Baixar novamente o relatório integrado</a>
+          <p class="help">Página 1: aporte, metas, velocidade, medidas, escores e relato. Página 2: os três gráficos INTERGROWTH. Processamento local.</p>
+        </section>
         <section id="ig-result" hidden>
           <div id="ig-context" class="context"></div>
           <h3>Medidas e posição na curva</h3>
-          <div class="table-wrap"><table class="ig-table" aria-label="Medidas seriadas, escores Z e percentis INTERGROWTH-21st"><thead><tr><th>IPM</th><th>Medida</th><th>Escore Z</th><th>Percentil</th></tr></thead><tbody id="ig-result-rows"></tbody></table></div>
+          <div class="table-wrap"><table class="ig-table" aria-label="Medidas seriadas, escores Z e percentis INTERGROWTH-21st"><thead><tr><th>IPM</th><th>Medida</th><th>Escore Z</th><th>Percentil</th><th>VC (g/kg/dia)</th></tr></thead><tbody id="ig-result-rows"></tbody></table></div>
+          <p class="help">VC: variação do peso desde a pesagem anterior válida, pelo método do peso médio. Primeira pesagem e indicadores sem peso: —.</p>
           <section class="section section-inner ig-velocity" aria-labelledby="ig-velocity-title">
             <h3 id="ig-velocity-title">Velocidade de crescimento ponderal</h3>
             <p class="help">Selecione duas avaliações com peso. O intervalo é calculado pela diferença de IPM em dias. Para avaliar ganho ponderal, escolha um período após a perda inicial de peso pós-natal.</p>
@@ -454,6 +477,20 @@
           <p class="help">Escolha o PDF: as curvas em 1 página reúnem os três gráficos e o resumo da última avaliação. O relatório detalhado inclui as tabelas de todas as avaliações.</p>
           <div class="ig-actions"><button id="ig-export-summary" class="primary" type="button" disabled>Curvas em 1 página</button><button id="ig-export" class="secondary" type="button" disabled>Relatório detalhado</button></div>
           <a id="ig-pdf-download" class="download-link" hidden>Baixar relatório INTERGROWTH-21st em PDF</a>
+          <button id="ig-csv-export" class="secondary" type="button" disabled>Baixar tabela de escores Z (CSV)</button>
+          <a id="ig-csv-download" class="download-link" hidden>Baixar novamente a tabela CSV</a>
+        </section>
+        <section class="section section-inner" aria-labelledby="ig-outlook-title">
+          <h3 id="ig-outlook-title">Trajetória do peso e simulação</h3>
+          <p id="ig-risk" class="notice caution" role="alert" hidden></p>
+          <p id="ig-risk-context" class="help" role="status"></p>
+          <button id="ig-projection-run" class="secondary" type="button" disabled>Simular 14 e 28 dias</button>
+          <p id="ig-projection-status" class="help" role="status"></p>
+          <div id="ig-projection-result" hidden>
+            <p id="ig-projection-context" class="help"></p>
+            <div class="table-wrap"><table aria-label="Posições hipotéticas do peso na curva INTERGROWTH"><thead><tr><th>Horizonte</th><th>IPM</th><th>Peso (g)</th><th>Z</th><th>P</th><th>Tipo</th></tr></thead><tbody id="ig-projection-rows"></tbody></table></div>
+            <div id="ig-projection-chart" class="ig-chart-viewport" tabindex="0" role="region" aria-label="Gráfico da simulação hipotética com rolagem horizontal"></div>
+          </div>
         </section>
         <details class="section ig-reference"><summary>Referência e limites</summary><div class="section-inner">
           <p>Padrão pós-natal de prematuros, derivado de uma coorte selecionada sem restrição de crescimento fetal ou morbidade grave. A amostra de nascidos antes de 33 semanas foi pequena; interpretar no contexto clínico.</p>

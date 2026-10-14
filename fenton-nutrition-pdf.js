@@ -9,9 +9,9 @@ const fmt=(n,d=1)=>Number.isFinite(n)?n.toFixed(d).replace('.',','):'—';
 const ipm=(w,d)=>`${w} sem + ${d} d`;
 
 // Uses the existing calculation objects; no nutritional or growth recalculation.
-export async function createFentonNutritionReport({nutrition,growth=null,chart,assessment=''}){
+export async function createFentonNutritionReport({nutrition,growth=null,chart,assessment=''},intergrowth=null){
  if(!nutrition?.enteral||!nutrition.integrated)throw new Error('Calcule o aporte total na aba Enteral antes de exportar.');
- if(!chart?.blob||!chart.data)throw new Error('Gere o gráfico Fenton atualizado antes de exportar.');
+ if((!chart?.blob&&!intergrowth)||!chart?.data)throw new Error('Gere o gráfico Fenton atualizado antes de exportar.');
  const {enteral,integrated,clinical}=nutrition,data=chart.data;
  if(!Array.isArray(data.measurements)||!Array.isArray(chart.scores)||chart.scores.length!==data.measurements.length||data.measurements.length<1||data.measurements.length>20)
   throw new Error('A tabela de escores Fenton não corresponde ao gráfico; gere novamente antes de exportar.');
@@ -31,7 +31,7 @@ export async function createFentonNutritionReport({nutrition,growth=null,chart,a
  }
  const {PDFDocument,StandardFonts,rgb}=globalThis.PDFLib;
  const doc=await PDFDocument.create();
- doc.setTitle('GROW_NEO - Aporte nutricional total e Fenton 2025');
+ doc.setTitle('GROW_NEO - Aporte nutricional total e '+(intergrowth?'INTERGROWTH-21st':'Fenton 2025'));
  doc.setAuthor('Jefferson Guilherme');doc.setCreator(`GROW_NEO ${VERSION}`);
  doc.setSubject('Aportes e crescimento calculados na sessão atual');
  const regular=await doc.embedFont(StandardFonts.Helvetica),bold=await doc.embedFont(StandardFonts.HelveticaBold);
@@ -58,7 +58,7 @@ export async function createFentonNutritionReport({nutrition,growth=null,chart,a
  const header=(page,title,number)=>{
   text(page,'GROW_NEO',L,H-40,16,bold);
   text(page,title,L,H-61,12,bold);
-  text(page,`Versão ${VERSION} · ${data.sex==='F'?'Feminino':'Masculino'} · IG ao nascer: ${ipm(data.birthGaWeeks,data.birthGaDays)}`,L,H-79,8,regular,muted);
+  text(page,`Versão ${VERSION} · ${data.sex==='F'?'Feminino':'Masculino'} · ${intergrowth?'INTERGROWTH-21st · padrão pós-natal':`IG ao nascer: ${ipm(data.birthGaWeeks,data.birthGaDays)}`}`,L,H-79,8,regular,muted);
   text(page,'Sem identificação do paciente. Conferir antes do uso assistencial.',L,41,8,regular,muted);
   text(page,`GROW_NEO by Prof. Jefferson · ${number}/2`,L,26,8,regular,muted);
  };
@@ -99,7 +99,14 @@ export async function createFentonNutritionReport({nutrition,growth=null,chart,a
  for(const item of transitionLines(integrated))line(item);
  line('Metas avaliadas antes do arredondamento; não determinam ajuste automático.',{color:muted});
  section('Crescimento ponderal');
- if(growth){
+ if(intergrowth?.velocity){
+  const v=intergrowth.velocity;
+  line(`Intervalo: avaliações ${v.initialEvaluation} a ${v.finalEvaluation} · ${v.intervalDays} dias · pesos ${fmt(v.startWeight,0)} a ${fmt(v.endWeight,0)} g`);
+  line(`Ganho: ${fmt(v.totalGain,0)} g · ${fmt(v.gramsPerDay)} g/dia · peso médio ${fmt(v.averageWeight,0)} g`);
+  line(`Velocidade pelo peso médio: ${fmt(v.gramsPerKgDay)} g/kg/dia`,{font:bold});
+  if(v.intervalDays<5)line('Intervalo inferior a 5 dias: maior sensibilidade a variações hídricas e de pesagem.');
+  line('Velocidade observada; sem percentil ou escore Z de velocidade INTERGROWTH.',{color:muted});
+ }else if(growth){
   line(`Intervalo: D${growth.input.initialDay} a D${growth.input.finalDay} · ${growth.intervalDays} dias · pesos ${fmt(growth.input.initialWeight,0)} a ${fmt(growth.input.finalWeight,0)} g`);
   line(`Ganho: ${fmt(growth.totalGain,0)} g · ${fmt(growth.gramsPerDay)} g/dia · peso médio ${fmt(growth.averageWeight,0)} g`);
   line(`Velocidade pelo peso médio: ${fmt(growth.gramsPerKgDay)} g/kg/dia`,{font:bold});
@@ -108,14 +115,14 @@ export async function createFentonNutritionReport({nutrition,growth=null,chart,a
   else line('IPM média fora da faixa de 22 a 49 semanas da referência de velocidade.');
   if(growth.shortInterval)line('Intervalo inferior a 5 dias: maior sensibilidade a variações hídricas e de pesagem.');
   line('Comparação descritiva; interpretar com o estado clínico e a trajetória antropométrica.',{color:muted});
- }else line('Velocidade não calculada nesta sessão. Gráfico Fenton na página 2.');
+ }else line(`Velocidade não calculada nesta sessão. ${intergrowth?'Curvas INTERGROWTH':'Gráfico Fenton'} na página 2.`);
  if(clinical?.phase){
   line(clinicalReferenceLines(integrated,clinical)[0],{size:8,leading:11});
   line('Referências clínicas detalhadas no PDF de aporte total e na aba Notas.',{size:7.5,color:muted});
  }
 
  if(y<60)throw new Error('O conteúdo excede uma página. Revise os dados antes de exportar.');
- section('Fenton 2025 - medidas, escores Z e percentis');
+ section((intergrowth?'INTERGROWTH-21st':'Fenton 2025')+' - medidas, escores Z e percentis');
  const x=[L+4,96,139,177,210,273,316,352,407,453,491];
  const headers=['IPM','Peso g','Z','P','VC g/kg/dia','Comp cm','Z','P','PC cm','Z','P'];
  const velocities=calculateSerialWeightVelocity(data.measurements);
@@ -130,7 +137,7 @@ export async function createFentonNutritionReport({nutrition,growth=null,chart,a
   }
   y-=9;
  }
- line((chart.scoresSource==='pdf'?'P = percentil; escores do PDF oficial Fenton 2025.':'P = percentil; escores do serviço Fenton.')+' VC (g/kg/dia): desde a pesagem anterior, pelo peso médio.',{size:7.2,leading:9,color:muted});
+ line((intergrowth?'P = percentil; equações pós-natais INTERGROWTH-21st.':chart.scoresSource==='pdf'?'P = percentil; escores do PDF oficial Fenton 2025.':'P = percentil; escores do serviço Fenton.')+' VC (g/kg/dia): desde a pesagem anterior, pelo peso médio.',{size:7.2,leading:9,color:muted});
  section('Avaliação nutricional');
  if(y-44<56)throw new Error('O conteúdo e o relato excedem a primeira página. Revise os dados antes de exportar.');
  for(let i=0;i<5;i++){
@@ -139,6 +146,11 @@ export async function createFentonNutritionReport({nutrition,growth=null,chart,a
   y-=11;
  }
  if(y+11<56)throw new Error('O conteúdo excede uma página. Revise os dados antes de exportar.');
+ if(intergrowth){
+  const curves=await PDFDocument.load(await intergrowth.summary());
+  const [second]=await doc.copyPages(curves,[0]);doc.addPage(second);
+  await stampPdfIssueDate(doc);return doc.save();
+ }
  const second=doc.addPage([W,H]);header(second,'Fenton 2025 - trajetória antropométrica',2);
  const measurements=data.measurements;
  text(second,`${measurements.length} medida(s) · IPM ${ipm(measurements[0].weeks,measurements[0].days)} a ${ipm(measurements.at(-1).weeks,measurements.at(-1).days)}`,L,H-98,8);
