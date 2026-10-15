@@ -420,6 +420,8 @@
         <p class="notice info">Use a <strong>idade pós-menstrual (IPM)</strong>: idade gestacional ao nascer + idade cronológica decorrida. Não use a idade corrigida neste campo. Exemplo: nascimento com 30 semanas + 10 semanas de vida = 40 semanas de IPM.</p>
         <form id="ig-form" class="section section-inner" autocomplete="off" novalidate>
           <label class="field">Sexo<select id="ig-sex" class="hv-select" required><option value="">Selecione</option><option value="female">Feminino</option><option value="male">Masculino</option></select></label>
+          <label class="field">Identificação opcional por código<input id="ig-code" maxlength="32" autocomplete="off" spellcheck="false" aria-describedby="ig-code-help"></label>
+          <p id="ig-code-help" class="help">Use somente letras sem acentos, números, ponto, hífen ou sublinhado; não informe nomes. O código aparece na prancha e no PDF, sem salvamento automático nem inclusão no arquivo de acompanhamento.</p>
           <div class="ig-velocity-fields">
             <label class="field">IG ao nascer (opcional)<input id="ig-birth-weeks" inputmode="numeric" aria-label="IG ao nascer em semanas para INTERGROWTH"><span class="unit">semanas</span></label>
             <label class="field">Dias adicionais<input id="ig-birth-days" inputmode="numeric" value="0" aria-label="Dias adicionais da IG ao nascer para INTERGROWTH"><span class="unit">0–6 dias</span></label>
@@ -466,7 +468,7 @@
             <button id="ig-velocity-calculate" class="secondary" type="button" disabled>Calcular velocidade ponderal</button>
             <div id="ig-velocity-error" class="notice danger" role="alert" hidden></div>
             <div id="ig-velocity-result" class="notice info" role="status" hidden></div>
-            <p class="help">Velocidade observada pelo método do peso médio (Average2pt), sem percentil ou escore Z de velocidade INTERGROWTH. Depois de calculada, será incluída nos dois formatos de PDF.</p>
+            <p class="help">Velocidade observada pelo método do peso médio (Average2pt), sem percentil ou escore Z de velocidade INTERGROWTH. Depois de calculada, será incluída na prancha integrada em PDF.</p>
             <details class="ig-reference"><summary>Método de cálculo</summary><div>
               <p>g/dia = (peso final − peso inicial) ÷ dias. g/kg/dia = 1.000 × (peso final − peso inicial) ÷ [peso médio × dias], com pesos em gramas e peso médio = (peso inicial + peso final) ÷ 2.</p>
               <p><a href="https://doi.org/10.1038/s41390-019-0313-z" target="_blank" rel="noopener noreferrer">Fenton et al., Pediatric Research, 2019</a>. Método descritivo; não estabelece uma meta ambulatorial nem classifica a adequação do crescimento.</p>
@@ -474,8 +476,8 @@
           </section>
           <p class="help">Curvas de referência: escores Z de −3 a +3. A posição na curva descreve a medida e não estabelece diagnóstico. Interprete a trajetória com o contexto clínico. Em telas pequenas, deslize o gráfico na horizontal para ver toda a curva.</p>
           <div id="ig-charts"></div>
-          <p class="help">Escolha o PDF: as curvas em 1 página reúnem os três gráficos e o resumo da última avaliação. O relatório detalhado inclui as tabelas de todas as avaliações.</p>
-          <div class="ig-actions"><button id="ig-export-summary" class="primary" type="button" disabled>Curvas em 1 página</button><button id="ig-export" class="secondary" type="button" disabled>Relatório detalhado</button></div>
+          <p class="help">A prancha integrada usa uma única grade para peso, comprimento e PC, com o mesmo eixo de IPM. O PDF tem uma página. Valores e escores de todas as avaliações permanecem na tabela e no CSV. Medidas ausentes interrompem os traços; valores fora das escalas fixas são sinalizados.</p>
+          <button id="ig-export" class="primary" type="button" disabled>Exportar prancha integrada (PDF)</button>
           <a id="ig-pdf-download" class="download-link" hidden>Baixar relatório INTERGROWTH-21st em PDF</a>
           <button id="ig-csv-export" class="secondary" type="button" disabled>Baixar tabela de escores Z (CSV)</button>
           <a id="ig-csv-download" class="download-link" hidden>Baixar novamente a tabela CSV</a>

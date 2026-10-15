@@ -57,3 +57,5 @@ textarea{width:100%;box-sizing:border-box;min-height:7em;padding:12px;border:1px
 #ig-projection-result th,#ig-projection-result td{white-space:nowrap;overflow-wrap:normal;padding:10px 8px}
 #ig-projection-chart svg{display:block;width:100%;min-width:620px;height:auto}
 .projection-scroll-hint{display:none}@media(max-width:480px){.projection-scroll-hint{display:block}}
+
+.ig-chart svg[data-presentation="integrated"]{min-width:760px}
