@@ -1,5 +1,11 @@
 # Histórico de versões
 
+## 0.8.7 — 15/10/2026; avaliação, sem congelamento
+
+- Substitui os três gráficos e os dois formatos de PDF avulso INTERGROWTH por uma prancha integrada: grade contínua, IPM compartilhada, escalas próprias, curvas Z -3 a +3 e PDF A4 de uma página. Tela/SVG e PDF usam a mesma geometria.
+- Código opcional de identificação só na sessão e nas pranchas, sem entrar no acompanhamento/CSV. Ausências interrompem o traço; valores fora da escala são sinalizados. Em consultas muito próximas, reduz a numeração para evitar sobreposição, preservando todos os pontos e os valores na tabela/CSV.
+- Equações, resultados, demais abas e relatório nutricional integrado preservados. Novos módulos incluídos no cache offline. [Registro da versão](docs/RELEASE_0.8.7.md).
+
 ## 0.8.6 — 14/10/2026; avaliação, sem congelamento
 
 - Corrige a leitura das tabelas INTERGROWTH no celular: medidas reais/VC e projeções mantêm colunas legíveis com rolagem horizontal. Evita que a regra geral da primeira coluna comprima os demais valores.

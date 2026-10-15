@@ -15,7 +15,7 @@ test('offline install stores all ambulatory modules and serves them without netw
  vm.runInNewContext(readFileSync(new URL('../sw.js',import.meta.url),'utf8'),context);
  let installing;handlers.install({waitUntil:promise=>installing=promise});await installing;
  const requestsAfterInstall=requests;
- for(const path of ['intergrowth.js','intergrowth-ui.js','intergrowth-charts.js','intergrowth-pdf.js']){
+ for(const path of ['intergrowth.js','intergrowth-ui.js','intergrowth-charts.js','intergrowth-pdf.js','intergrowth-integrated.js','intergrowth-integrated-pdf.js']){
   assert.ok(existsSync(new URL('../'+path,import.meta.url)));
   const url=new URL(path,scope).href;assert.ok(stored.has(url));
   let response;handlers.fetch({request:{method:'GET',url,mode:'cors'},respondWith:promise=>response=promise});

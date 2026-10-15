@@ -1,8 +1,8 @@
 import {parseNumber,parseWeightGrams} from './engine.js';
 import {calculateIntergrowth} from './intergrowth.js';
 import {calculateIntergrowthVelocity} from './intergrowth-velocity.js';
-import {createIntergrowthChart} from './intergrowth-charts.js';
-import {exportIntergrowthPdf,exportIntergrowthSummaryPdf} from './intergrowth-pdf.js';
+import {createIntegratedIntergrowthChart,buildIntegratedIntergrowthModel,intergrowthIdentification} from './intergrowth-integrated.js';
+import {exportIntegratedIntergrowthPdf} from './intergrowth-integrated-pdf.js';
 import {serialIntergrowthVelocity,decodeIntergrowthFollowup,encodeIntergrowthFollowup} from './intergrowth-followup.js';
 import {initIntergrowthTools} from './intergrowth-tools-ui.js';
 
@@ -24,12 +24,12 @@ export function readIntergrowthForm(form){
  };
 }
 
-export function initIntergrowth(doc,{calculate=calculateIntergrowth,chart=createIntergrowthChart,pdf=exportIntergrowthPdf,summaryPdf=exportIntergrowthSummaryPdf,urls=globalThis.URL}={}){
+export function initIntergrowth(doc,{calculate=calculateIntergrowth,chart=createIntegratedIntergrowthChart,pdf=exportIntegratedIntergrowthPdf,urls=globalThis.URL}={}){
  const $=id=>doc.getElementById(id),form=$('ig-form'),rows=$('ig-measures'),status=$('ig-status');
  const resultSection=$('ig-result'),charts=$('ig-charts'),table=$('ig-result-rows');
- const exportButton=$('ig-export'),summaryButton=$('ig-export-summary'),download=$('ig-pdf-download'),add=$('ig-add'),errors=$('ig-errors');
+ const exportButton=$('ig-export'),download=$('ig-pdf-download'),add=$('ig-add'),errors=$('ig-errors');
  const velocityStart=$('ig-velocity-start'),velocityEnd=$('ig-velocity-end'),velocityButton=$('ig-velocity-calculate'),velocityOutput=$('ig-velocity-result'),velocityError=$('ig-velocity-error');
- const setExportDisabled=value=>{exportButton.disabled=value;summaryButton.disabled=value;};
+ const setExportDisabled=value=>{exportButton.disabled=value;};
  let last=null,pdfUrl=null,revision=0,busy=false;const chartUrls=[];
  const listeners=new Set(),notify=()=>{for(const listener of listeners)listener();};
  const text=(tag,value,cls)=>{const element=doc.createElement(tag);element.textContent=value;if(cls)element.className=cls;return element;};
@@ -110,10 +110,9 @@ export function initIntergrowth(doc,{calculate=calculateIntergrowth,chart=create
  const calculateResults=()=>{
   clear();
   try{
-   const result=calculate(readIntergrowthForm(form));
+   const identification=intergrowthIdentification($('ig-code').value),result=calculate(readIntergrowthForm(form));
    const birth=readBirth();if(birth!==null&&birth>result.measurements[0].pmaDays)throw new Error('A IG ao nascer não pode ser posterior às medidas.');
    const velocities=serialIntergrowthVelocity(result);
-   const present=metrics.filter(([metric])=>result.measurements.some(row=>row[metric]!=null));
    $('ig-context').append(text('span',result.sex==='female'?'Feminino':'Masculino'),text('span',`${result.measurements.length} ${result.measurements.length===1?'medida':'medidas'}`),text('span','Idade pós-menstrual (IPM)'));
    for(const [index,row] of result.measurements.entries())for(const [metric,label] of metrics){
     if(row[metric]==null)continue;
@@ -123,16 +122,21 @@ export function initIntergrowth(doc,{calculate=calculateIntergrowth,chart=create
     tr.append(pmaCell,value,text('td',number(score.z)),text('td',percentile(score.percentile)),text('td',metric==='weight'&&velocities[index]!=null?number(velocities[index],1):'—'));
     tr.dataset.measurement=String(index+1);table.append(tr);
    }
-   for(const [metric,label] of present){
+   {
     const figure=doc.createElement('figure');figure.className='ig-chart';
-    const viewport=text('div','','ig-chart-viewport');viewport.tabIndex=0;viewport.setAttribute('role','region');viewport.setAttribute('aria-label',`Gráfico de ${label.toLowerCase()}, com rolagem horizontal`);
-    const svg=chart(doc,{sex:result.sex,metric,measurements:result.measurements});viewport.append(svg);
-    const imageDownload=text('a','Baixar gráfico SVG','download-link');imageDownload.download=`GROW_NEO-INTERGROWTH-${metric}.svg`;
+    const viewport=text('div','','ig-chart-viewport');viewport.tabIndex=0;viewport.setAttribute('role','region');viewport.setAttribute('aria-label','Prancha integrada, com rolagem horizontal');
+    const svg=chart(doc,result,{identification});viewport.append(svg);
+    const imageDownload=text('a','Baixar prancha integrada SVG','download-link');imageDownload.download='GROW_NEO-INTERGROWTH-integrado.svg';
     imageDownload.addEventListener('click',event=>{
      if(!last){event.preventDefault();return;}if(imageDownload.hasAttribute('href'))return;
      svg.setAttribute('xmlns','http://www.w3.org/2000/svg');const url=urls.createObjectURL(new Blob([svg.outerHTML],{type:'image/svg+xml'}));chartUrls.push(url);imageDownload.href=url;
     });
-    figure.append(text('figcaption',label),viewport,imageDownload);charts.append(figure);
+    figure.append(text('figcaption','Peso, comprimento e perímetro cefálico em uma única grade'),viewport,imageDownload);charts.append(figure);
+    const offScale=buildIntegratedIntergrowthModel(result).offScale;
+    if(offScale.length){
+     const warning=text('p','Medidas fora da grade fixa (preservadas na tabela e no CSV): ','notice info');
+     warning.append(doc.createTextNode(offScale.map(p=>`consulta ${p.index}, ${p.label}: ${number(p.value,p.metric==='weight'?3:1)} ${p.unit}`).join('; ')));charts.append(warning);
+    }
    }
    last=result;prepareVelocity();resultSection.hidden=false;setExportDisabled(busy);
    status.textContent='Curvas e escores calculados neste aparelho.';notify();
@@ -140,28 +144,27 @@ export function initIntergrowth(doc,{calculate=calculateIntergrowth,chart=create
   return last;
  };
  form.addEventListener('submit',event=>{event.preventDefault();calculateResults();});
- const generatePdf=async(summary=false)=>{
+ const generatePdf=async()=>{
   if(!last||busy)return;
   const snapshot=last,currentRevision=revision;busy=true;setExportDisabled(true);
   clearDownload();
   status.textContent='Preparando PDF no aparelho…';
   try{
-   const bytes=await (summary?summaryPdf:pdf)(snapshot);
+   const bytes=await pdf(snapshot,{identification:intergrowthIdentification($('ig-code').value)});
    if(last!==snapshot||revision!==currentRevision)return;
    if(pdfUrl)urls.revokeObjectURL(pdfUrl);
    pdfUrl=urls.createObjectURL(new Blob([bytes],{type:'application/pdf'}));
-   download.href=pdfUrl;download.download=summary?'GROW_NEO-INTERGROWTH-21st-1-pagina.pdf':'GROW_NEO-INTERGROWTH-21st.pdf';
-   download.textContent=summary?'Baixar curvas em 1 página (PDF)':'Baixar relatório detalhado (PDF)';download.hidden=false;
-   status.textContent=summary?'PDF de 1 página pronto. Use o link abaixo para baixar.':'Relatório detalhado pronto. Use o link abaixo para baixar.';
+   download.href=pdfUrl;download.download='GROW_NEO-INTERGROWTH-21st.pdf';
+   download.textContent='Baixar prancha integrada em 1 página (PDF)';download.hidden=false;
+   status.textContent='Prancha integrada de 1 página pronta. Use o link abaixo para baixar.';
   }catch(error){if(last===snapshot&&revision===currentRevision)status.textContent='Não foi possível gerar o PDF. Tente novamente.';}
   finally{busy=false;setExportDisabled(last===null);}
  };
  exportButton.addEventListener('click',()=>generatePdf());
- summaryButton.addEventListener('click',()=>generatePdf(true));
  const reset=()=>{
   clear();for(const option of $('ig-sex').options)option.selected=false;$('ig-sex').options[0].selected=true;
   rows.replaceChildren();addRow();
-  $('ig-birth-weeks').value='';$('ig-birth-days').value='0';$('ig-assessment').value='';notify();
+  $('ig-birth-weeks').value='';$('ig-birth-days').value='0';$('ig-assessment').value='';$('ig-code').value='';notify();
  };
  $('ig-clear').addEventListener('click',reset);addRow();
  const api={reset,invalidate,getResult:()=>last,readBirth,subscribe:listener=>{listeners.add(listener);return ()=>listeners.delete(listener);},
@@ -169,7 +172,7 @@ export function initIntergrowth(doc,{calculate=calculateIntergrowth,chart=create
   readFollowup:()=>({input:readIntergrowthForm(form),birthPmaDays:readBirth(),assessment:$('ig-assessment').value}),
   restore:content=>{
    const value=decodeIntergrowthFollowup(encodeIntergrowthFollowup(content));
-   clear();for(const option of $('ig-sex').options)option.selected=false;
+   clear();$('ig-code').value='';for(const option of $('ig-sex').options)option.selected=false;
    Array.from($('ig-sex').options).find(option=>option.value===value.input.sex).selected=true;
    rows.replaceChildren();for(const measurement of value.input.measurements)addRow(measurement);
    $('ig-birth-weeks').value=value.birthPmaDays===null?'':String(Math.floor(value.birthPmaDays/7));$('ig-birth-days').value=String(value.birthPmaDays===null?0:value.birthPmaDays%7);$('ig-assessment').value=value.assessment;notify();

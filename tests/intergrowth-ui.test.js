@@ -27,18 +27,17 @@ test('Ambulatório: gera curvas SVG locais e resultados apenas dos indicadores i
  const app=setup();app.fill({weeks:40,weight:3000,head:34.5});app.submit();
  assert.equal(app.el('ig-errors').hidden,true,app.el('ig-errors').textContent);
  assert.equal(app.el('ig-result').hidden,false);
- assert.deepEqual([...app.el('ig-charts').querySelectorAll('svg')].map(node=>node.getAttribute('data-metric')),['weight','head']);
+ assert.equal(app.el('ig-charts').querySelectorAll('svg[data-presentation="integrated"]').length,1);
+ assert.equal(app.el('ig-charts').querySelectorAll('[data-measurement]').length,2);
  assert.equal(app.el('ig-result-rows').children.length,2);
  assert.match(app.el('ig-result-rows').textContent,/40 sem \+ 0 dMedida 1Peso3\.000 g/);
  assert.equal(app.el('ig-export').disabled,false);
- assert.equal(app.el('ig-export-summary').disabled,false);
 });
 
 test('Ambulatório: IPM fora da referência ou linha vazia impede curva, escore e exportação',()=>{
  const app=setup();app.fill({weeks:64,days:1,weight:6500});app.submit();
  assert.equal(app.el('ig-result').hidden,true);
  assert.equal(app.el('ig-export').disabled,true);
- assert.equal(app.el('ig-export-summary').disabled,true);
  assert.match(app.el('ig-errors').textContent,/64 semanas \+ 0 dias/);
  app.fill({weeks:40,days:0,weight:''});app.submit();
  assert.match(app.el('ig-errors').textContent,/pelo menos uma medida/);
@@ -104,54 +103,37 @@ test('Ambulatório: reset usado ao restaurar a página impede reutilizar dados d
  assert.equal(app.el('ig-charts').children.length,0);
 });
 
-test('Ambulatório: escolhe PDF de uma página ou detalhado e substitui o download anterior',async()=>{
- const calls=[],app=setup({
-  pdf:async result=>{calls.push(['detailed',result]);return new Uint8Array([1]);},
-  summaryPdf:async result=>{calls.push(['summary',result]);return new Uint8Array([2]);}
- });
- app.fill({weeks:40,weight:3000});app.submit();app.click('ig-export-summary');
- assert.equal(app.el('ig-export').disabled,true);
- assert.equal(app.el('ig-export-summary').disabled,true);
- app.click('ig-export'); // Ignore competing requests while an export is pending.
- await new Promise(resolve=>setImmediate(resolve));
- assert.deepEqual(calls,[['summary',app.ui.getResult()]]);
- assert.equal(app.el('ig-pdf-download').download,'GROW_NEO-INTERGROWTH-21st-1-pagina.pdf');
- assert.match(app.el('ig-pdf-download').textContent,/1 página/);
- assert.equal(app.el('ig-export').disabled,false);
+test('Ambulatório: prancha integrada é a única opção de PDF e ignora cliques concorrentes',async()=>{
+ const calls=[],app=setup({pdf:async result=>{calls.push(result);return new Uint8Array([1]);}});
+ app.fill({weeks:40,weight:3000});app.submit();app.click('ig-export');app.click('ig-export');
+ assert.equal(app.el('ig-export').disabled,true);assert.equal(app.el('ig-export-summary'),null);
+ await new Promise(resolve=>setImmediate(resolve));assert.deepEqual(calls,[app.ui.getResult()]);
+ assert.match(app.el('ig-pdf-download').textContent,/integrada em 1 página/);
  app.click('ig-export');assert.equal(app.el('ig-pdf-download').hidden,true);
- await new Promise(resolve=>setImmediate(resolve));
- assert.deepEqual(calls,[['summary',app.ui.getResult()],['detailed',app.ui.getResult()]]);
- assert.equal(app.el('ig-pdf-download').download,'GROW_NEO-INTERGROWTH-21st.pdf');
- assert.match(app.el('ig-pdf-download').textContent,/detalhado/);
- assert.deepEqual(app.revoked,['blob:intergrowth-test']);
- app.fill({weight:3100});
- assert.equal(app.el('ig-pdf-download').hidden,true);
- assert.equal(app.el('ig-export-summary').disabled,true);
+ await new Promise(resolve=>setImmediate(resolve));assert.equal(calls.length,2);assert.deepEqual(app.revoked,['blob:intergrowth-test']);
+ app.fill({weight:3100});assert.equal(app.el('ig-pdf-download').hidden,true);
 });
 
 test('Ambulatório: PDF de uma página pendente é descartado ao editar e recalcular',async()=>{
- let complete;const app=setup({summaryPdf:()=>new Promise(resolve=>{complete=resolve;})});
- app.fill({weeks:40,weight:3000});app.submit();app.click('ig-export-summary');
+ let complete;const app=setup({pdf:()=>new Promise(resolve=>{complete=resolve;})});
+ app.fill({weeks:40,weight:3000});app.submit();app.click('ig-export');
  app.fill({weight:3100});app.submit();
  complete(new Uint8Array([1,2,3]));await new Promise(resolve=>setImmediate(resolve));
  assert.equal(app.el('ig-pdf-download').hidden,true);
  assert.equal(app.el('ig-pdf-download').getAttribute('href'),null);
  assert.equal(app.el('ig-export').disabled,false);
- assert.equal(app.el('ig-export-summary').disabled,false);
  assert.equal(app.ui.getResult().measurements[0].weight,3100);
  assert.match(app.el('ig-status').textContent,/Curvas e escores calculados/);
 });
 
 test('Ambulatório: falha em exportação permite tentar novamente sem link antigo',async()=>{
- const app=setup({pdf:async()=>new Uint8Array([1]),summaryPdf:async()=>{throw new Error('PDF indisponível');}});
+ let calls=0;const app=setup({pdf:async()=>{if(++calls===2)throw new Error('PDF indisponível');return new Uint8Array([1]);}});
  app.fill({weeks:40,weight:3000});app.submit();app.click('ig-export');
- await new Promise(resolve=>setImmediate(resolve));app.click('ig-export-summary');
- await new Promise(resolve=>setImmediate(resolve));
- assert.equal(app.el('ig-pdf-download').hidden,true);
- assert.equal(app.el('ig-pdf-download').getAttribute('href'),null);
- assert.equal(app.el('ig-export').disabled,false);
- assert.equal(app.el('ig-export-summary').disabled,false);
+ await new Promise(resolve=>setImmediate(resolve));app.click('ig-export');
+ await new Promise(resolve=>setImmediate(resolve));assert.equal(app.el('ig-pdf-download').hidden,true);
+ assert.equal(app.el('ig-pdf-download').getAttribute('href'),null);assert.equal(app.el('ig-export').disabled,false);
  assert.match(app.el('ig-status').textContent,/Não foi possível gerar/);
+ app.click('ig-export');await new Promise(resolve=>setImmediate(resolve));assert.equal(app.el('ig-pdf-download').hidden,false);
 });
 
 function velocityExample(options={}){
@@ -260,7 +242,6 @@ test('INTERGROWTH: mudar o período descarta velocidade e download sem apagar as
  assert.equal(app.el('ig-result').hidden,false);
  assert.deepEqual([...app.el('ig-charts').children],curves);
  assert.equal(app.el('ig-export').disabled,false);
- assert.equal(app.el('ig-export-summary').disabled,false);
  app.click('ig-velocity-calculate');
  assert.equal(app.ui.getResult().velocity.initialEvaluation,2);
  assert.equal(app.ui.getResult().velocity.intervalDays,4);
@@ -270,8 +251,8 @@ test('INTERGROWTH: mudar o período descarta velocidade e download sem apagar as
 test('INTERGROWTH: alterar a seleção ou calcular velocidade durante PDF pendente descarta o arquivo antigo',async()=>{
  for(const mode of ['selection','calculation']){
   let complete,received;
-  const app=velocityExample({summaryPdf:result=>{received=result;return new Promise(resolve=>{complete=resolve;});}});
-  app.click('ig-export-summary');
+  const app=velocityExample({pdf:result=>{received=result;return new Promise(resolve=>{complete=resolve;});}});
+  app.click('ig-export');
   assert.equal(received.velocity,undefined);
   if(mode==='selection')chooseVelocity(app,'ig-velocity-start',1);
   else app.click('ig-velocity-calculate');
@@ -281,7 +262,6 @@ test('INTERGROWTH: alterar a seleção ou calcular velocidade durante PDF penden
   assert.equal(app.el('ig-pdf-download').getAttribute('href'),null);
   assert.equal(app.el('ig-result').hidden,false);
   assert.equal(app.el('ig-export').disabled,false);
-  assert.equal(app.el('ig-export-summary').disabled,false);
   if(mode==='calculation'){
    assert.equal(app.ui.getResult().velocity.gramsPerDay,30);
    assert.equal(app.el('ig-velocity-result').hidden,false);
@@ -289,20 +269,21 @@ test('INTERGROWTH: alterar a seleção ou calcular velocidade durante PDF penden
  }
 });
 
-test('INTERGROWTH: ambos os formatos de PDF recebem a velocidade do período calculado',async()=>{
- const calls=[],app=velocityExample({
-  pdf:async result=>{calls.push(['detailed',result]);return new Uint8Array([1]);},
-  summaryPdf:async result=>{calls.push(['summary',result]);return new Uint8Array([2]);}
- });
- app.click('ig-velocity-calculate');
- const current=app.ui.getResult();
- app.click('ig-export-summary');await new Promise(resolve=>setImmediate(resolve));
- app.click('ig-export');await new Promise(resolve=>setImmediate(resolve));
- assert.deepEqual(calls,[['summary',current],['detailed',current]]);
- for(const [,result] of calls){
-  assert.equal(result.velocity.initialIndex,0);
-  assert.equal(result.velocity.finalIndex,1);
-  assert.equal(result.velocity.gramsPerDay,30);
- }
- assert.equal(app.el('ig-pdf-download').hidden,false);
+test('INTERGROWTH: prancha integrada recebe a velocidade do período calculado',async()=>{
+ let received;const app=velocityExample({pdf:async result=>{received=result;return new Uint8Array([1]);}});
+ app.click('ig-velocity-calculate');const current=app.ui.getResult();
+ app.click('ig-export');await new Promise(resolve=>setImmediate(resolve));assert.equal(received,current);
+ assert.equal(received.velocity.initialIndex,0);assert.equal(received.velocity.finalIndex,1);
+ assert.equal(received.velocity.gramsPerDay,30);assert.equal(app.el('ig-pdf-download').hidden,false);
+});
+
+test('código só identifica a prancha da sessão; editar invalida PDF e abrir/limpar remove o código',async()=>{
+ let complete,receivedOptions;const app=setup({pdf:(result,options)=>{receivedOptions=options;return new Promise(resolve=>{complete=resolve;});}});
+ app.fill({weeks:40,weight:3000});app.el('ig-code').value='DEMO-001';app.submit();
+ assert.match(app.el('ig-charts').textContent,/DEMO-001/);assert.ok(!JSON.stringify(app.ui.readFollowup()).includes('DEMO-001'));
+ app.click('ig-export');assert.equal(receivedOptions.identification,'DEMO-001');
+ app.el('ig-code').value='DEMO-002';app.event(app.el('ig-code'),'input');complete(new Uint8Array([1]));await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(app.el('ig-pdf-download').hidden,true);assert.equal(app.ui.getResult(),null);
+ const content=app.ui.readFollowup();app.ui.restore(content);assert.equal(app.el('ig-code').value,'');
+ app.el('ig-code').value='DEMO-003';app.click('ig-clear');assert.equal(app.el('ig-code').value,'');
 });
