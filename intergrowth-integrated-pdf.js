@@ -1,17 +1,19 @@
 import {buildIntegratedIntergrowthModel,paintIntegratedIntergrowth,intergrowthIdentification} from './intergrowth-integrated.js';
 import {calculateIntergrowthVelocity} from './intergrowth-velocity.js';
 
-export async function exportIntegratedIntergrowthPdf(result,{identification='',date=new Date()}={}){
+export async function exportIntegratedIntergrowthPdf(result,{identification='',date=new Date(),reportPage=false}={}){
  intergrowthIdentification(identification);
  const model=buildIntegratedIntergrowthModel(result);
  const velocity=result.velocity?calculateIntergrowthVelocity(model.result,result.velocity.initialIndex,result.velocity.finalIndex):null;
  if(!globalThis.PDFLib)throw new Error('Biblioteca de PDF indisponível. Reabra o aplicativo e tente novamente.');
- const {PDFDocument,StandardFonts,rgb,degrees}=globalThis.PDFLib,doc=await PDFDocument.create();
+ const {PDFDocument,StandardFonts,rgb,degrees,pushGraphicsState,popGraphicsState,concatTransformationMatrix}=globalThis.PDFLib,doc=await PDFDocument.create();
  doc.setTitle('GROW_NEO - Prancha integrada INTERGROWTH-21st');doc.setAuthor('Jefferson Guilherme');doc.setCreator('Jefferson Guilherme');
  doc.setSubject('Padrão pós-natal INTERGROWTH-21st; 27+0 a 64+0 semanas de idade pós-menstrual; gráfico próprio, sem endosso institucional. DOI: 10.1016/S2214-109X(15)00163-1');
  doc.setCreationDate(date);doc.setModificationDate(date);
  const regular=await doc.embedFont(StandardFonts.Helvetica),bold=await doc.embedFont(StandardFonts.HelveticaBold),page=doc.addPage([model.width,model.height]);
  const color=hex=>rgb(...[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)/255));
+ // Uniform reduction preserves all axes and reserves the existing report's issuance footer.
+ if(reportPage)page.pushOperators(pushGraphicsState(),concatTransformationMatrix(.96,0,0,.96,model.width*.02,26));
  paintIntegratedIntergrowth({
   beginGrid(){},endGrid(){},
   text(value,x,y,o){const font=o.bold?bold:regular,span=font.widthOfTextAtSize(value,o.size),offset=o.align==='center'?span/2:o.align==='right'?span:0;
@@ -24,6 +26,10 @@ export async function exportIntegratedIntergrowthPdf(result,{identification='',d
    else if(o.shape==='square')page.drawRectangle({x:x-o.size,y:model.height-y-o.size,width:o.size*2,height:o.size*2,...options});
    else page.drawSvgPath(`M ${x} ${y-o.size-1} L ${x-o.size-1} ${y+o.size} L ${x+o.size+1} ${y+o.size} Z`,{x:0,y:model.height,...options});
   }
- },model,{identification,date,velocity});
+ },model,{identification,date,velocity,issueDate:!reportPage});
+ if(reportPage){
+  page.pushOperators(popGraphicsState());
+  page.drawText('2/2',{x:model.width-38-regular.widthOfTextAtSize('2/2',8),y:14,size:8,font:regular,color:rgb(.32,.39,.35)});
+ }
  return doc.save();
 }

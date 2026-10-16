@@ -56,14 +56,14 @@ export function buildIntegratedIntergrowthModel(input){
 }
 
 /** Both renderers consume this same scene; positions are in PDF points, with Y downward. */
-export function paintIntegratedIntergrowth(p,model,{identification='',date=new Date(),velocity=null}={}){
+export function paintIntegratedIntergrowth(p,model,{identification='',date=new Date(),velocity=null,issueDate=true}={}){
  const code=intergrowthIdentification(identification),{width,height,plot}=model;
  const text=(value,x,y,size=8,options={})=>p.text(value,x,y,{size,color:'#2c3a39',...options});
  text('GROW_NEO | INTERGROWTH-21st',25,28,15,{bold:true,color:'#153e32'});
  text('Prancha integrada de crescimento pós-natal do prematuro',25,46,10.5);
  text(`Identificação: ${code||'não informada'} (código)`,25,64,9);
  text(`Sexo: ${model.sex==='female'?'feminino':'masculino'} · ${model.result.measurements.length} consultas`,365,64,9);
- text(formatIssueDate(date),25,80,8);
+ if(issueDate)text(formatIssueDate(date),25,80,8);
  text('Idade pós-menstrual exata · Curvas Z -3, -2, -1, 0, +1, +2, +3 · Escalas lineares fixas',25,96,8);
  if(velocity)text(`VC ${velocity.initialEvaluation}-${velocity.finalEvaluation}: ${fmt(velocity.gramsPerDay)} g/dia · ${fmt(velocity.gramsPerKgDay)} g/kg/dia · ${velocity.intervalDays} dias`,570,80,7.5,{align:'right'});
  const missing=model.series.filter(s=>!model.result.measurements.some(row=>row[s.metric]!=null)).map(s=>s.label),warnings=[];

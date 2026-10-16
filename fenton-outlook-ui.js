@@ -1,4 +1,5 @@
 import {analyzeWeightTrend,makeWeightProjections} from './fenton-outlook.js';
+import {fentonReadingRows,weightReadingText,renderGrowthReading} from './growth-reading.js';
 const fmt=(n,d=1)=>Number.isFinite(n)?n.toFixed(d).replace('.',','):'—';
 export function initFentonOutlook(doc,{fenton,urls=globalThis.URL}){
  if(!fenton)return;
@@ -9,8 +10,10 @@ export function initFentonOutlook(doc,{fenton,urls=globalThis.URL}){
  const refresh=()=>{
   clear();const chart=fenton.getChart(),trend=analyzeWeightTrend(chart),risk=$('fenton-risk');
   risk.hidden=!trend.risk;
-  risk.textContent=trend.risk?`Queda do Z do peso desde o nascimento: ${fmt(trend.dropZ,2)} pontos (${fmt(trend.birthZ,2)} → ${fmt(trend.currentZ,2)}). Risco de RCEU: avaliar aporte proteico-calórico e discutir o caso com especialista.`:'';
-  $('fenton-risk-context').textContent=trend.reason??`Z do peso ao nascimento: ${fmt(trend.birthZ,2)}; na última pesagem: ${fmt(trend.currentZ,2)}. Limiar de alerta definido neste app: queda superior a 2 pontos, para avaliação clínica; não é diagnóstico automático.`;
+  const rows=fentonReadingRows(chart),birth=chart?.data?chart.data.birthGaWeeks*7+chart.data.birthGaDays:null;
+  const reading=weightReadingText(trend,{reference:'Fenton 2025',birthPmaDays:birth,lastWeightPmaDays:rows.findLast(m=>Number.isFinite(m.weight))?.pmaDays});
+  risk.textContent=reading.message;$('fenton-risk-context').textContent=reading.context;
+  renderGrowthReading(doc,'fenton-reading-notices',rows,birth);
   button.disabled=!chart?.scores||busy;
  };
  fenton.subscribe(refresh);refresh();

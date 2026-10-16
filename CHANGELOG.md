@@ -1,5 +1,17 @@
 # Histórico de versões
 
+## 0.8.9 — 15/10/2026; publicação autorizada
+
+- Nova aba Interpretar curvas: Z/percentil, figura matemática original da distribuição normal, proporções entre limites e roteiro clínico com fontes.
+- Avisos contextuais nas duas curvas; substitui o rótulo de risco de RCEU por mudança do padrão de crescimento, preservando o gatilho maior que 2 Z desde o nascimento.
+- Mantém expressamente as simulações de 14/28 dias, cálculos e relatórios. Figura e orientações disponíveis offline, sem novas dependências no app. [Registro](docs/RELEASE_0.8.9.md).
+
+## 0.8.8 — 15/10/2026; versão local
+
+- A segunda página do relatório integrado INTERGROWTH passa a usar a mesma prancha de grade única da tela e do PDF avulso. A primeira página, os cálculos e o relato permanecem preservados.
+- Rodapé mantém emissão única por página e numeração2/2. Prancha reduzida proporcionalmente4% para reservar o rodapé, sem deformar os eixos. Código opcional de identificação aparece somente na página gráfica.
+- Regressão da primeira página compara todas as operações de desenho da0.8.7 em cinco cenários; alterações do número da versão são normalizadas na comparação. [Registro](docs/RELEASE_0.8.8.md).
+
 ## 0.8.7 — 15/10/2026; avaliação, sem congelamento
 
 - Substitui os três gráficos e os dois formatos de PDF avulso INTERGROWTH por uma prancha integrada: grade contínua, IPM compartilhada, escalas próprias, curvas Z -3 a +3 e PDF A4 de uma página. Tela/SVG e PDF usam a mesma geometria.
