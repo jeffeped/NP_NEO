@@ -379,9 +379,9 @@ test('interface: abas seguem as duas colunas solicitadas e o teclado acompanha a
   const app=openApp();
   const key=(id,value)=>{const e=new app.window.Event('keydown',{bubbles:true,cancelable:true});Object.defineProperty(e,'key',{value});app.el(id).dispatchEvent(e);};
   const tabs=Array.from(app.document.querySelectorAll('.tabs [role="tab"]'));
-  const names=['parameters','enteral','standard','growth','hydration','intergrowth','results','notes'];
+  const names=['parameters','enteral','standard','growth','hydration','intergrowth','interpretation','results','notes'];
   assert.deepEqual(tabs.map(tab=>tab.getAttribute('aria-controls')),names);
-  assert.deepEqual(tabs.map(tab=>tab.textContent),['NP ind','Enteral','NP padrão','GROW_Fenton','HV','INTERGROWTH','Resultados','Notas']);
+  assert.deepEqual(tabs.map(tab=>tab.textContent),['NP ind','Enteral','NP padrão','GROW_Fenton','HV','INTERGROWTH','Interpretar curvas','Resultados','Notas']);
   for(let i=0;i<names.length;i++){
     const current=names[i],next=names[(i+1)%names.length];
     key('tab-'+current,'ArrowRight');

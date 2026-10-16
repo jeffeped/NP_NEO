@@ -1,5 +1,6 @@
 import {analyzeIntergrowthTrend,projectIntergrowth,encodeIntergrowthFollowup,decodeIntergrowthFollowup,intergrowthCsv} from './intergrowth-followup.js';
 import {createIntergrowthChart} from './intergrowth-charts.js';
+import {weightReadingText,renderGrowthReading} from './growth-reading.js';
 const fmt=(n,d=1)=>Number.isFinite(n)?n.toFixed(d).replace('.',','):'—';
 export function initIntergrowthTools(doc,{intergrowth,urls=globalThis.URL}){
  const $=id=>doc.getElementById(id),status=$('ig-followup-status'),link=$('ig-followup-download'),file=$('ig-followup-file');
@@ -11,8 +12,9 @@ export function initIntergrowthTools(doc,{intergrowth,urls=globalThis.URL}){
   $('ig-projection-result').hidden=true;$('ig-projection-rows').replaceChildren();$('ig-projection-chart').replaceChildren();$('ig-projection-status').textContent='';
   const result=intergrowth.getResult();let birth=null;try{birth=intergrowth.readBirth();}catch{}
   const trend=analyzeIntergrowthTrend(result,birth),risk=$('ig-risk');risk.hidden=!trend.risk;
-  risk.textContent=trend.risk?`Queda do Z do peso desde o nascimento: ${fmt(trend.dropZ,2)} pontos (${fmt(trend.birthZ,2)} → ${fmt(trend.currentZ,2)}). Risco de RCEU: avaliar aporte proteico-calórico e discutir o caso com especialista.`:'';
-  $('ig-risk-context').textContent=trend.reason??`Z do peso ao nascimento: ${fmt(trend.birthZ,2)}; na última pesagem: ${fmt(trend.currentZ,2)}. Limiar definido neste app: queda superior a 2 pontos, para avaliação clínica; não é diagnóstico automático nem classificação de tamanho ao nascer.`;
+  const rows=result?.measurements??[],reading=weightReadingText(trend,{reference:'INTERGROWTH-21st pós-natal',birthPmaDays:birth,lastWeightPmaDays:rows.findLast(m=>Number.isFinite(m.weight))?.pmaDays});
+  risk.textContent=reading.message;$('ig-risk-context').textContent=reading.context;
+  renderGrowthReading(doc,'ig-reading-notices',rows,birth);
   $('ig-projection-run').disabled=!result;
  };
  intergrowth.subscribe(invalidate);for(const type of ['input','change'])$('ig-assessment').addEventListener(type,invalidate);invalidate();

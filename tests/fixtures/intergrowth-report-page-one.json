@@ -1,0 +1,26 @@
+{
+  "source": "GROW_NEO 0.8.7 original report, captured before replacement; all first-page text, positions, styles, lines and rectangles. Only version label normalized.",
+  "issueDate": "2026-10-15T16:00:00Z",
+  "cases": {
+    "male-20": {
+      "hash": "878762e82f1c63c316a76ae8812229890deb030dbe448f714c68bcb9354b6c8c",
+      "operations": 277
+    },
+    "female-20": {
+      "hash": "d9926eb094260c75b850d36b2144f875ebeef19cae07deb9e4c35dcfd75be968",
+      "operations": 277
+    },
+    "limites": {
+      "hash": "61f1a74c729f420a8676ec940391f28221dd69a259d961f8d2062aeb6f44563d",
+      "operations": 79
+    },
+    "fora-da-grade": {
+      "hash": "7bbb631afda3ab20eef3ed981cbbc5605c9dc9b73e03f2eb6e751ee1de2b3dd8",
+      "operations": 68
+    },
+    "velocidade": {
+      "hash": "90a55ee2fc78af2ba23d3e536353299d0d962f321803bd6b931d6e82152c6ec0",
+      "operations": 82
+    }
+  }
+}

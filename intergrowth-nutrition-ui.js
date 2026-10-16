@@ -7,7 +7,7 @@ export function initIntergrowthNutritionReport(doc,{intergrowth,getNutrition,pre
  for(const id of ['npp-form','std-form','hv-form','enteral-form','ig-form','ig-assessment','ig-velocity-start','ig-velocity-end'])for(const type of ['input','change','submit'])$(id).addEventListener(type,invalidate);
  intergrowth.subscribe(invalidate);
  $('acknowledgements').addEventListener('change',invalidate);$('hv-form').addEventListener('hv-review-change',invalidate);
- const current=s=>s&&s.nutrition===getNutrition()&&s.result===intergrowth.getResult()&&s.assessment===assessment.value;
+ const current=s=>s&&s.nutrition===getNutrition()&&s.result===intergrowth.getResult()&&s.assessment===assessment.value&&s.identification===$('ig-code').value;
  link.addEventListener('click',event=>{
   try{if(!current(download))throw new Error('Dados alterados. Gere novamente o relatório.');validateNutrition(download.nutrition);}
   catch(error){event.preventDefault();invalidate();status.textContent=error.message;}
@@ -19,7 +19,7 @@ export function initIntergrowthNutritionReport(doc,{intergrowth,getNutrition,pre
    const nutrition=prepareNutrition();
    if(!nutrition)throw new Error('Calcule o aporte total na aba Enteral antes de exportar.');
    validateNutrition(nutrition);
-   const result=intergrowth.ensureResult(),snapshot={nutrition,result,assessment:assessment.value};ticket=revision;
+   const result=intergrowth.ensureResult(),snapshot={nutrition,result,assessment:assessment.value,identification:$('ig-code').value};ticket=revision;
    if(!current(snapshot))throw new Error('Dados alterados. Gere novamente o relatório.');
    status.textContent='Preparando relatório integrado de duas páginas…';
    const bytes=await createReport(snapshot);

@@ -38,6 +38,7 @@
         <button id="tab-growth" role="tab" aria-controls="growth" aria-selected="false" type="button">GROW_Fenton</button>
         <button id="tab-hydration" role="tab" aria-controls="hydration" aria-selected="false" type="button" title="Hidratação venosa">HV</button>
         <button id="tab-intergrowth" role="tab" aria-controls="intergrowth" aria-selected="false" type="button">INTERGROWTH</button>
+        <button id="tab-interpretation" role="tab" aria-controls="interpretation" aria-selected="false" type="button">Interpretar curvas</button>
         <button id="tab-results" role="tab" aria-controls="results" aria-selected="false" type="button">Resultados</button>
         <button id="tab-notes" role="tab" aria-controls="notes" aria-selected="false" type="button">Notas</button>
       </div>
@@ -305,6 +306,8 @@
             <h3 id="fenton-outlook-title">Trajetória do peso e simulação</h3>
             <p id="fenton-risk" class="notice caution" role="alert" hidden></p>
             <p id="fenton-risk-context" class="help" role="status"></p>
+            <div id="fenton-reading-notices" aria-live="polite"></div>
+            <p class="help">Leia a aba Interpretar curvas para integrar peso, comprimento, PC, fase clínica e referência utilizada.</p>
             <p class="help">Gere o gráfico das medidas atuais. A simulação usa a VC entre as duas últimas pesagens válidas e estima a posição do peso em 14 e 28 dias, supondo crescimento proporcional constante.</p>
             <button id="fenton-projection-run" class="secondary" type="button" disabled>Simular 14 e 28 dias</button>
             <p id="fenton-projection-status" class="help" role="status"></p>
@@ -450,7 +453,7 @@
           <button id="ig-total-export" class="primary" type="button">Gerar relatório integrado — 2 páginas</button>
           <p id="ig-total-status" class="help" role="status"></p>
           <a id="ig-total-download" class="download-link" hidden>Baixar novamente o relatório integrado</a>
-          <p class="help">Página 1: aporte, metas, velocidade, medidas, escores e relato. Página 2: os três gráficos INTERGROWTH. Processamento local.</p>
+          <p class="help">Página 1: aporte, metas, velocidade, medidas, escores e relato. Página 2: prancha INTERGROWTH de grade única, com peso, comprimento e PC no mesmo eixo de IPM. Processamento local.</p>
         </section>
         <section id="ig-result" hidden>
           <div id="ig-context" class="context"></div>
@@ -486,6 +489,8 @@
           <h3 id="ig-outlook-title">Trajetória do peso e simulação</h3>
           <p id="ig-risk" class="notice caution" role="alert" hidden></p>
           <p id="ig-risk-context" class="help" role="status"></p>
+          <div id="ig-reading-notices" aria-live="polite"></div>
+          <p class="help">Leia a aba Interpretar curvas para integrar peso, comprimento, PC, fase clínica e referência utilizada.</p>
           <button id="ig-projection-run" class="secondary" type="button" disabled>Simular 14 e 28 dias</button>
           <p id="ig-projection-status" class="help" role="status"></p>
           <div id="ig-projection-result" hidden>
@@ -498,6 +503,59 @@
           <p>Padrão pós-natal de prematuros, derivado de uma coorte selecionada sem restrição de crescimento fetal ou morbidade grave. A amostra de nascidos antes de 33 semanas foi pequena; interpretar no contexto clínico.</p>
           <p>A faixa deste módulo é de 27 semanas e 0 dias a 64 semanas e 0 dias de IPM. O aplicativo não extrapola a curva além desses limites e não converte automaticamente para outra referência.</p>
           <p><a href="https://intergrowth21.com/tools-resources/postnatal-growth-preterm-infants" target="_blank" rel="noopener noreferrer">Padrão e materiais oficiais INTERGROWTH-21st</a>. Villar J et al., 2015. <a href="https://doi.org/10.1016/S2214-109X(15)00163-1" target="_blank" rel="noopener noreferrer">Artigo de referência</a>.</p>
+        </div></details>
+      </section>
+      <section id="interpretation" role="tabpanel" aria-labelledby="tab-interpretation" hidden>
+        <h2 class="page-title">Interpretar curvas e escore Z</h2>
+        <section class="section section-inner reading-guide" aria-labelledby="reading-position-title">
+          <h3 id="reading-position-title">O que o Z e o percentil mostram?</h3>
+          <p>Descrevem a posição de uma medida na distribuição de referência para sexo e idade. Z negativo fica abaixo da mediana; Z positivo, acima. Z zero corresponde à mediana (percentil 50), que não é uma meta obrigatória para cada bebê.</p>
+          <p>O percentil é a proporção da referência situada abaixo daquela posição. Estar no percentil 10 significa que aproximadamente 10% estão abaixo e 90% acima; não significa ter crescido 10% nem ter 10% de risco.</p>
+          <figure class="gauss-figure">
+            <div class="gauss-viewport" role="region" aria-label="Curva de Gauss com faixas de Z e percentis; deslize na horizontal em telas pequenas" tabindex="0"><img src="./assets/normal-distribution.svg" alt="Distribuição normal: 68,27% entre Z menos 1 e mais 1; 95,45% entre menos 2 e mais 2; 99,73% entre menos 3 e mais 3. Z zero equivale ao percentil 50. As tabelas abaixo detalham os valores." width="1000" height="650"></div>
+            <figcaption>Curva de Gauss: proporções teóricas da distribuição normal, não uma amostra de pacientes do app. A área representa a proporção; as cores apenas distinguem faixas. Deslize a figura para os lados em telas pequenas.</figcaption>
+          </figure>
+          <div class="table-wrap"><table class="z-percentiles" aria-label="Equivalências aproximadas entre Z e percentil"><thead><tr><th>Z</th><th>−3</th><th>−2</th><th>−1</th><th>0</th><th>+1</th><th>+2</th><th>+3</th></tr></thead><tbody><tr><th>Percentil ≈</th><td>0,13</td><td>2,28</td><td>15,87</td><td>50</td><td>84,13</td><td>97,72</td><td>99,87</td></tr></tbody></table></div>
+          <div class="table-wrap"><table class="z-coverage" aria-label="Proporção contida entre limites de Z"><thead><tr><th>Intervalo de Z</th><th>Proporção entre os limites</th><th>Percentis dos limites ≈</th></tr></thead><tbody><tr><td>−1 a +1</td><td>68,27%</td><td>15,87 a 84,13</td></tr><tr><td>−2 a +2</td><td>95,45%</td><td>2,28 a 97,72</td></tr><tr><td>−3 a +3</td><td>99,73%</td><td>0,13 a 99,87</td></tr></tbody></table></div>
+          <p class="help">Z −2 corresponde aproximadamente ao percentil 2,3, não exatamente ao percentil 3. As proporções acima são arredondadas. Os escores antropométricos usam as equações de cada referência; a figura não afirma que peso, comprimento ou PC em unidades originais tenham sempre distribuição normal.</p>
+          <p class="notice info">Um ponto isolado não estabelece diagnóstico nem prognóstico. Peso para idade, sozinho, não demonstra desnutrição, obesidade ou composição corporal. Posição entre −2 e +2 também não exclui desaceleração do crescimento.</p>
+        </section>
+        <section class="section section-inner reading-guide" aria-labelledby="reading-pattern-title">
+          <h3 id="reading-pattern-title">Leia o padrão ao longo do tempo</h3>
+          <p>Analise peso, comprimento e perímetro cefálico (PC) em conjunto, com medidas seriadas. Um traçado aproximadamente paralelo às curvas pode ser apropriado acima ou abaixo da mediana. Mudança rápida, estagnação persistente ou evolução discordante exigem conferir as medidas e avaliar o contexto. Cruzar uma linha, isoladamente, não define doença.</p>
+          <p><strong>ΔZ = Z atual − Z inicial.</strong> Exemplo: +0,22 → −2,46 resulta em ΔZ de −2,68, ou queda de 2,68 pontos. Registre o parâmetro, a curva e sua versão, as idades/datas e o intervalo. Trocar de referência pode mudar o Z sem mudança biológica correspondente.</p>
+          <p>O app usa queda do Z do peso superior a 2 pontos desde o nascimento como limiar operacional de aviso. Esse corte não é diagnóstico universal validado e sua ausência não garante crescimento adequado. A comparação desde o nascimento inclui a adaptação inicial; uma linha de base pós-adaptação deve ser definida clinicamente, sem substituir silenciosamente o registro ao nascer.</p>
+        </section>
+        <section class="section section-inner reading-guide" aria-labelledby="reading-preterm-title">
+          <h3 id="reading-preterm-title">Particularidades do prematuro</h3>
+          <p>Nas primeiras semanas, o peso sofre influência de água corporal, edema, perdas e doença, podendo coexistir déficit nutricional. Recuperar o peso em gramas não significa recuperar o percentil de nascimento. A idade ou o nadir ponderal isolados não comprovam o fim da adaptação.</p>
+          <p>Fenton e colaboradores (2026) recomendam individualizar a avaliação: nenhum percentil, Z, queda de Z ou velocidade fixa deve ser uma meta universal. Considere história pré-natal, potencial familiar, morbidades, alimentação e evolução das três medidas. Crescimento de recuperação pode ser apropriado; não aumente ou restrinja o aporte automaticamente para perseguir uma linha.</p>
+          <p>As simulações de <strong>14 e 28 dias</strong> permanecem disponíveis. São cenários matemáticos com a velocidade das duas últimas pesagens, supondo crescimento proporcional constante. Não são previsão clínica, meta de peso ou prescrição; não antecipam mudanças na saúde, no aporte ou nas perdas e não entram como medidas reais no acompanhamento.</p>
+        </section>
+        <section class="section section-inner reading-guide" aria-labelledby="reading-age-title">
+          <h3 id="reading-age-title">Confira qual idade está no eixo</h3>
+          <p><strong>Idade pós-menstrual (IPM) = IG ao nascer + idade cronológica.</strong><br><strong>Idade corrigida = IPM − 40 semanas.</strong> Use todas as parcelas na mesma unidade. Exemplo: nascimento com 28 semanas e avaliação 20 semanas depois → IPM de 48 semanas e idade corrigida de 8 semanas.</p>
+          <p>As curvas neonatais deste app usam IPM. INTERGROWTH pós-natal: 27+0 a 64+0; não extrapolar. Aos 64+0 de IPM, a idade corrigida é 24 semanas, aproximadamente seis meses. A avaliação ao nascer tem finalidade e referência próprias; este módulo pós-natal não classifica PIG/AIG/GIG.</p>
+          <p>Na transição para as curvas OMS, registre a referência e a idade utilizada. Não transporte a IPM como se fosse idade corrigida nem retire automaticamente a correção ao atingir 64 semanas. Fenton (2026) discute correção até 36 meses de idade corrigida para nascidos antes de 32 semanas; a duração deve considerar população e protocolo do serviço.</p>
+        </section>
+        <section class="section section-inner reading-guide" aria-labelledby="reading-check-title">
+          <h3 id="reading-check-title">Antes de decidir a conduta</h3>
+          <ol>
+            <li><strong>Validar:</strong> confira sexo, idade, unidades, técnica e equipamento; repita medidas discordantes. Comprimento requer infantômetro; PC, fita inelástica no maior perímetro occipitofrontal.</li>
+            <li><strong>Situar:</strong> considere adaptação hídrica, crescimento estabelecido ou seguimento, além de edema, diurese e doença ativa.</li>
+            <li><strong>Comparar:</strong> confira curva, versão, intervalo e linha de base. Não misture escores de referências diferentes.</li>
+            <li><strong>Integrar:</strong> avalie peso, comprimento, PC, proporcionalidade, exame e desenvolvimento. Peso preservado pode coexistir com desaceleração linear ou cefálica; PC isolado não substitui vigilância do desenvolvimento.</li>
+            <li><strong>Investigar:</strong> confira energia e proteína realmente recebidas, pausas de dieta, tolerância, restrições de volume, medicamentos e comorbidades. O aporte calculado no app não comprova o que foi administrado.</li>
+            <li><strong>Agir e reavaliar:</strong> ajuste o suporte à causa identificada e programe acompanhamento. Não espere um corte de Z para avaliar sinais clínicos de gravidade; discuta casos preocupantes com especialista.</li>
+          </ol>
+          <p>Intervalos curtos sem incremento de comprimento ou PC podem refletir imprecisão. Confirme a aferição e considere o padrão seriado; não atribua automaticamente déficit nutricional nem adote um período fixo de “estagnação segura”.</p>
+        </section>
+        <details class="section reading-guide"><summary>Fontes e limites desta orientação</summary><div class="section-inner">
+          <p><a href="https://bvsms.saude.gov.br/bvs/publicacoes/caderneta_crianca_menino_passaporte_cidadania_7edrev.pdf#page=92" target="_blank" rel="noopener noreferrer">Ministério da Saúde. Caderneta da Criança, menino, 7ª edição revisada, 2025, p. 90: Interpretando os Gráficos</a>. Seus princípios de leitura foram adaptados para o contexto neonatal; a frase sobre dispensar correção da idade após 64 semanas não foi adotada.</p>
+          <p><a href="https://doi.org/10.1016/j.semperi.2026.152228" target="_blank" rel="noopener noreferrer">Fenton TR et al. Expert recommendations for preterm neonates’ growth goals: Considerations for clinicians. Semin Perinatol. 2026;50(4):152228</a>. Recomendações de interpretação, não uma nova curva “Fenton 2026”.</p>
+          <p><a href="https://doi.org/10.1159/000541226" target="_blank" rel="noopener noreferrer">Fenton TR et al. What Is Normal Growth? Principles, Practicalities and Pitfalls of Growth Assessments in Infants and Children. 2024</a>; <a href="https://doi.org/10.1038/s41372-024-02202-z" target="_blank" rel="noopener noreferrer">Elmrayed S et al. Preterm growth assessment: the latest findings on age correction. 2025</a>.</p>
+          <p><a href="https://globalhealthtrainingcentre.tghn.org/preterm-infant-feeding-and-growth-monitoring-implementation-intergrowth-21st-protocol/faqs/" target="_blank" rel="noopener noreferrer">INTERGROWTH-21st: perguntas frequentes e recomendações de uso</a>. Manter as referências próprias de cada módulo.</p>
+          <p>Material clínico de apoio: revisão narrativa “Restrição do crescimento extrauterino no prematuro: avaliação longitudinal e decisão clínica em neonatologia”, de Jefferson Pereira Guilherme, fornecida ao projeto. Síntese educativa; não estabelece diagnóstico, prognóstico ou ajuste automático de nutrientes. Ilustração matemática original da distribuição normal: GROW_NEO / Jefferson Guilherme.</p>
         </div></details>
       </section>
       <footer class="app-footer">
