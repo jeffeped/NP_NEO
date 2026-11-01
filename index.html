@@ -564,12 +564,14 @@
         <button id="install-app" type="button" class="text-button" hidden>Instalar no celular</button>
         <button id="install-help-button" type="button" class="text-button">Como instalar</button>
         <p id="install-help" hidden>No iPhone: abra este link no Safari, toque em Compartilhar e em Adicionar à Tela de Início. No Android: abra no Chrome e use Instalar app ou Adicionar à tela inicial. Se o atalho instalado continuar com o ícone antigo NP_NEO após a atualização, remova apenas o atalho e adicione o app novamente.</p>
-        <details class="privacy"><summary>Privacidade e dados</summary><p>Parâmetros, cálculos e PDFs são processados neste aparelho. Não há salvamento automático. Fechar ou recarregar a página descarta os dados do formulário; salve o acompanhamento em arquivo para reabri-lo depois. O arquivo de acompanhamento e o PDF ficam no destino escolhido por você. O relato não é enviado ao serviço Fenton; somente sexo, idade gestacional e medidas são enviados quando você solicita o gráfico ou os escores. A hospedagem e o acesso ao link podem gerar registros técnicos do provedor.</p></details>
+        <details class="privacy"><summary>Privacidade e dados</summary><p>Parâmetros, cálculos e PDFs são processados neste aparelho. Não há salvamento automático de dados clínicos. Fechar ou recarregar a página descarta os dados do formulário; salve o acompanhamento em arquivo para reabri-lo depois. O arquivo de acompanhamento e o PDF ficam no destino escolhido por você. O relato não é enviado ao serviço Fenton; somente sexo, idade gestacional e medidas são enviados quando você solicita o gráfico ou os escores. A hospedagem e o acesso ao link podem gerar registros técnicos do provedor.</p></details>
+        <details id="usage-preference" class="privacy" hidden><summary>Estatísticas de uso</summary><p>Registramos aberturas e solicitações de cálculo, gráfico, simulação ou relatório para acompanhar o uso do app. Esta medição não envia nomes, medidas, prescrições ou resultados. Um identificador aleatório por navegador é renovado diariamente; os eventos ficam disponíveis por 90 dias. O provedor processa metadados técnicos da conexão.</p><label><input id="usage-enabled" type="checkbox"> Permitir estatísticas de uso</label><p id="usage-status" role="status"></p><p>Uso offline pode ser enviado quando a conexão voltar, por até 7 dias. Desativar apaga os eventos ainda não enviados. Preferências Do Not Track e Global Privacy Control do navegador também são respeitadas.</p></details>
         <span>GROW_NEO by Prof. Jefferson · versão <span id="app-version"></span></span>
       </footer>
     </main>
   </div>
   <script src="./vendor/pdf-lib.min.js" defer></script>
   <script type="module" src="./app.js"></script>
+  <script type="module" src="./usage-ui.js"></script>
 </body>
 </html>

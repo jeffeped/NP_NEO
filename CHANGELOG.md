@@ -1,5 +1,12 @@
 # Histórico de versões
 
+## 0.8.10 — 01/11/2026; implantação das estatísticas pendente
+
+- Prepara medição independente de aberturas, atividade diária e ações por função, sem leitura dos campos clínicos.
+- Preferência de desativação, respeito a DNT/GPC, fila offline e deduplicação de retries.
+- Worker separado, banco D1 com retenção de 90 dias e painel protegido por chave privada; exportação CSV.
+- Coleta permanece desativada até configurar e verificar o endpoint real na Cloudflare. [Guia](docs/USAGE_METRICS.md).
+
 ## 0.8.9 — 15/10/2026; publicação autorizada
 
 - Nova aba Interpretar curvas: Z/percentil, figura matemática original da distribuição normal, proporções entre limites e roteiro clínico com fontes.

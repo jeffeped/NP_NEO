@@ -1,0 +1,10 @@
+{
+ "name":"grow-neo-usage",
+ "main":"src/index.js",
+ "compatibility_date":"2026-11-01",
+ "observability":{"enabled":false},
+ "secrets":{"required":["DASHBOARD_TOKEN"]},
+ "d1_databases":[{"binding":"USAGE_DB","database_name":"grow-neo-usage"}],
+ "ratelimits":[{"name":"RATE_LIMITER","namespace_id":"20261101","simple":{"limit":120,"period":60}}],
+ "triggers":{"crons":["15 4 * * *"]}
+}
