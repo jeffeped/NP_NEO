@@ -9,7 +9,7 @@ test('offline install stores all ambulatory modules and serves them without netw
  let requests=0;
  const cache={put:async(url,response)=>stored.set(String(url),response),match:async url=>stored.get(String(url))};
  const context={URL,Request,Set,Promise,self:{registration:{scope},location:{origin:'https://example.test'},addEventListener:(type,fn)=>handlers[type]=fn},
-  caches:{open:async key=>{assert.equal(key,`npp-neo-static-${VERSION}`);return cache;}},
+  caches:{open:async key=>{assert.equal(key,`npp-neo-static-${VERSION}-usage1`);return cache;}},
   fetch:async request=>{requests++;return {ok:true,redirected:false,headers:{get:()=>/\.m?js$/.test(request.url)?'application/javascript':'text/html'},url:request.url};}
  };
  vm.runInNewContext(readFileSync(new URL('../sw.js',import.meta.url),'utf8'),context);
