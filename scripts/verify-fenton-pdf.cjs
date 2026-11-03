@@ -13,6 +13,8 @@ const server=http.createServer((req,res)=>{
  const browser=await chromium.launch({headless:true,...(process.env.GROW_QA_CHROME?{executablePath:process.env.GROW_QA_CHROME}:{})}),requests=[],errors=[];
  try{
   const ctx=await browser.newContext({viewport:{width:1100,height:900},acceptDownloads:true});
+  // Keep synthetic clinical QA isolated from live usage metrics; retain the zero case-storage assertion.
+  await ctx.addInitScript(()=>Object.defineProperty(navigator,'doNotTrack',{get:()=> '1'}));
   let fixture=null;
   await ctx.route('https://grow-neo-fenton-proxy.jeffeped.workers.dev/**',async route=>{
    const endpoint=route.request().url().split('/').at(-1);requests.push(endpoint);assert.deepEqual(route.request().postDataJSON(),data);
@@ -88,7 +90,7 @@ const server=http.createServer((req,res)=>{
   });
   await download('integrated-edited-fabricated.pdf');assert.equal(requests.length,5);
   await ctx.setOffline(true);await page.reload();await page.locator('#tab-growth').click();assert.equal(await page.locator('#fenton-figure').isVisible(),false);assert.equal(await page.evaluate(()=>localStorage.length+sessionStorage.length),0);
-  assert.ok(await page.evaluate(async()=>{const c=await caches.open('npp-neo-static-'+document.getElementById('app-version').textContent);return (await Promise.all(['fenton-pdf-scores.js','vendor/pdfjs/pdf.min.mjs','vendor/pdfjs/pdf.worker.min.mjs','followup.js'].map(p=>c.match(new URL(p,location.href).href)))).every(Boolean);}));
+  assert.ok(await page.evaluate(async()=>{const c=await caches.open('npp-neo-static-'+document.getElementById('app-version').textContent+'-usage1');return (await Promise.all(['fenton-pdf-scores.js','vendor/pdfjs/pdf.min.mjs','vendor/pdfjs/pdf.worker.min.mjs','followup.js'].map(p=>c.match(new URL(p,location.href).href)))).every(Boolean);}));
   assert.deepEqual(errors,[]);
   const summary={passed:true,browser:browser.version(),pdfPages:2,requests,checks:['single action from filled forms','automatic nutrition and growth calculation','PDF fallback after CSV 502','grouped Z/percentile values','fractional age','weight loss percentage','offline export','input invalidation and fresh recalculation','secondary exports collapsed','download fallback link','main action before chart','mobile widths 320/390/768','offline reader cache','no case persistence'],limitations:'Transport, graph and scores are simulated with fabricated data. Parser layout was derived from the supplied official API PDF; this does not establish clinical validation or live Fenton connectivity.'};
   fs.writeFileSync(path.join(out,'browser-results.json'),JSON.stringify(summary,null,2));console.log('GROW_BROWSER_RESULT:'+JSON.stringify(summary));
