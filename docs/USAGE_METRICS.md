@@ -1,6 +1,6 @@
 # Estatísticas de uso — implantação e interpretação
 
-Estado desta entrega: implementação preparada; **coleta desativada** em `usage-config.js` até configurar e testar o serviço. Não existe histórico recuperado. Não interpretar testes locais como uso real.
+Estado em 02/11/2026: serviço Cloudflare publicado e verificado; configuração de coleta ativada em `usage-config.js` para publicação aprovada. Não existe histórico recuperado. Não interpretar testes locais como uso real.
 
 ## O que será medido
 

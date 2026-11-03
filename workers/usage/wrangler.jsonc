@@ -4,7 +4,7 @@
  "compatibility_date":"2026-11-01",
  "observability":{"enabled":false},
  "secrets":{"required":["DASHBOARD_TOKEN"]},
- "d1_databases":[{"binding":"USAGE_DB","database_name":"grow-neo-usage"}],
+ "d1_databases":[{"binding":"USAGE_DB","database_name":"grow-neo-usage","database_id":"c6b2fc49-6622-4dfa-a18c-f860ebf8d0eb"}],
  "ratelimits":[{"name":"RATE_LIMITER","namespace_id":"20261101","simple":{"limit":120,"period":60}}],
  "triggers":{"crons":["15 4 * * *"]}
 }
